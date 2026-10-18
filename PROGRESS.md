@@ -1,6 +1,6 @@
 # YHQ Test — progress log
 
-_Last updated: 2026-10-18 (stage 9: remaining features tested — modes, certificate, referral, reminders, uploads)_
+_Last updated: 2026-10-18 (stage 10: git repository, first commit `d9a235d`)_
 
 **Status legend**
 - ✅ **verified**: exercised in a running app against a real PostgreSQL database, or covered by passing unit tests
@@ -38,6 +38,16 @@ _Last updated: 2026-10-18 (stage 9: remaining features tested — modes, certifi
 16. Admin: analytics shows real figures (users, conversion, revenue, top promo code). Question list and editor work, and a blank Cyrillic field is auto-filled. Bulk import validates row by row (unknown category, bad `correct` index), imports the valid row, and delete works. Payments CSV export works.
 17. Access control: a regular user gets 404 on `/admin` and on the admin export API.
 18. Library search works in Latin, Cyrillic and Russian, for both signs and rule articles. Leaderboard, privacy, terms, offline page, sitemap, robots, manifest and service worker all return 200.
+
+## Stage 10: git repository (✅)
+
+- Repository initialised on branch `main`; first commit **`d9a235d`** "Initial commit: YHQ Test driving-theory exam prep app" (175 files). **No remote is configured and nothing was pushed.**
+- **`.gitignore`** checked and confirmed with `git check-ignore`: `.env` (and every `.env.*` except `.env.example`), `node_modules`, `.next`, `.localdb`, `public/uploads`, plus build caches, logs and OS files.
+- **`.gitattributes`** added: LF line endings on every OS (the files were written with LF; without it Windows would convert them to CRLF), and images marked binary.
+- **Secret scan before committing:** no API keys, private keys or passwords with values. `.env.example` only has empty values or "change-me".
+- **Commit author:** the identity already set up by GitHub Desktop on this machine (javlonbekbusiness-maker).
+- **Git isn't on this machine's PATH.** The commit used the copy bundled with GitHub Desktop (`%LOCALAPPDATA%\GitHubDesktop\app-3.5.8\resources\app\git\cmd\git.exe`). You can also open the folder in GitHub Desktop, or install Git for Windows to use `git` in a terminal.
+- This PROGRESS.md update was made after the commit, so it's an uncommitted change.
 
 ## Stage 9: remaining features played through (✅ tested in the browser)
 
@@ -329,7 +339,6 @@ Phone + OTP auth, sessions, onboarding, landing, paywall, **all six test modes**
 - The Payme / Click handlers follow public docs and must pass each provider's sandbox; Uzum is a stub.
 - The share-card font has no Cyrillic, so the card text is always Latin.
 - The site footer also shows on the test screen (cosmetic).
-- Not under git yet: run `git init` and commit to make stages restorable.
 
 ## Local test database (for resuming)
 - **For new setups:** use `npm run db:local` or Docker, as described in the README.
@@ -337,9 +346,9 @@ Phone + OTP auth, sessions, onboarding, landing, paywall, **all six test modes**
 - Seeded admin login: phone `+998 90 000 00 01` (dev code shown on screen).
 
 ## Next steps (one small stage each)
-1. `git init` and a first commit, so each stage can be restored.
-2. Test the last 🔵 items that don't need provider accounts: email + password login, profile settings save, repeat-trial block, production-build service worker.
-3. Consider: user data deletion (privacy law), a refund action, partner sign-up links, real web push.
+1. Test the last 🔵 items that don't need provider accounts: email + password login, profile settings save, repeat-trial block, production-build service worker. Commit after each stage from now on.
+2. Consider: user data deletion (privacy law), a refund action, partner sign-up links, real web push.
+3. Optional: create a private GitHub repository and push (only when you decide to; nothing is pushed yet).
 4. Before launch: work through the README's going-live checklist (licensed content, exam format, provider contracts and sandbox tests).
 
 Test data now in the local DB: promo NAVRUZ25 (30%, partner Avtomaktab №1), batch `b_f61fdf84` (25 SCHOOL1- codes, one used), MINUS15K deleted during testing (re-run `npm run db:seed` to restore it).
