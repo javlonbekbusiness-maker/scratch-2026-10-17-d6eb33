@@ -1,0 +1,20 @@
+# dependencies and build output
+node_modules
+.next
+out
+*.tsbuildinfo
+next-env.d.ts
+
+# secrets: every env file except the documented template
+.env
+.env.*
+!.env.example
+
+# local data
+.localdb
+public/uploads
+
+# logs and OS files
+*.log
+.DS_Store
+Thumbs.db

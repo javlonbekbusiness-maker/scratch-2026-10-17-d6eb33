@@ -1,0 +1,539 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TestMode {
+  EXAM
+  TICKET
+  TOPIC
+  MISTAKES
+  MARATHON
+  ADAPTIVE
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentProvider {
+  CLICK
+  PAYME
+  UZUM
+  FREE
+}
+
+enum PromoType {
+  PERCENT
+  FIXED
+  FREE_DAYS
+  FREE_TRIAL
+}
+
+enum CampaignType {
+  WELCOME
+  SEASONAL
+  WINBACK
+  REFERRAL
+  PARTNER
+}
+
+enum MessageChannel {
+  SMS
+  EMAIL
+  PUSH
+}
+
+// ─── Users & auth ────────────────────────────────────────────────────────────
+
+model User {
+  id               String    @id @default(cuid())
+  phone            String    @unique
+  name             String?
+  email            String?   @unique
+  passwordHash     String?
+  role             Role      @default(USER)
+  locale           String    @default("uz")
+  categoryId       String?
+  category         Category? @relation(fields: [categoryId], references: [id])
+  referralCode     String    @unique
+  referredById     String?
+  referredBy       User?     @relation("Referrals", fields: [referredById], references: [id])
+  referrals        User[]    @relation("Referrals")
+  consentAt        DateTime?
+  onboarded        Boolean   @default(false)
+  trialUsedAt      DateTime?
+  leaderboardOptIn Boolean   @default(false)
+  nickname         String?
+  remindSms        Boolean   @default(true)
+  remindEmail      Boolean   @default(true)
+  remindPush       Boolean   @default(true)
+  passedAt         DateTime?
+  lastActiveAt     DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  authSessions   AuthSession[]
+  tests          TestSession[]
+  subscriptions  Subscription[]
+  payments       Payment[]
+  promoUses      PromoUse[]
+  bookmarks      Bookmark[]
+  notes          Note[]
+  reviews        ReviewItem[]
+  pushSubs       PushSubscription[]
+  rewardsGiven   ReferralReward[] @relation("Referrer")
+  rewardAsFriend ReferralReward?  @relation("Friend")
+}
+
+/// Opaque random token lives in an httpOnly cookie; only its SHA-256 is stored.
+model AuthSession {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ─── Content ─────────────────────────────────────────────────────────────────
+
+model Category {
+  id        String  @id @default(cuid())
+  slug      String  @unique
+  code      String
+  nameUz    String
+  nameCy    String
+  nameRu    String
+  descUz    String  @default("")
+  descCy    String  @default("")
+  descRu    String  @default("")
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+
+  questions     Question[]
+  tickets       Ticket[]
+  users         User[]
+  tests         TestSession[]
+  examTemplates ExamTemplate[]
+}
+
+model Topic {
+  id        String @id @default(cuid())
+  slug      String @unique
+  nameUz    String
+  nameCy    String
+  nameRu    String
+  icon      String @default("📘")
+  sortOrder Int    @default(0)
+
+  questions Question[]
+}
+
+model Question {
+  id            String   @id @default(cuid())
+  externalId    String?  @unique
+  categoryId    String
+  category      Category @relation(fields: [categoryId], references: [id])
+  topicId       String?
+  topic         Topic?   @relation(fields: [topicId], references: [id])
+  ticketNumber  Int?
+  sortOrder     Int      @default(0)
+  textUz        String
+  textCy        String
+  textRu        String
+  imageUrl      String?
+  explanationUz String   @default("")
+  explanationCy String   @default("")
+  explanationRu String   @default("")
+  ruleRef       String?
+  difficulty    Int      @default(1)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  answers        Answer[]
+  sessionAnswers SessionAnswer[]
+  bookmarks      Bookmark[]
+  notes          Note[]
+  reviews        ReviewItem[]
+
+  @@index([categoryId, ticketNumber])
+  @@index([topicId])
+}
+
+model Answer {
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  textUz     String
+  textCy     String
+  textRu     String
+  isCorrect  Boolean  @default(false)
+  sortOrder  Int      @default(0)
+
+  sessionAnswers SessionAnswer[]
+
+  @@index([questionId])
+}
+
+/// Ticket membership comes from Question.ticketNumber; this row holds metadata.
+model Ticket {
+  id         String   @id @default(cuid())
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+  number     Int
+  isFree     Boolean  @default(false)
+
+  @@unique([categoryId, number])
+}
+
+/// kind = EXAM (exam simulation format) or TICKET (auto-generated practice tickets).
+model ExamTemplate {
+  id            String   @id @default(cuid())
+  name          String
+  kind          String   @default("EXAM")
+  categoryId    String
+  category      Category @relation(fields: [categoryId], references: [id])
+  questionCount Int      @default(20)
+  timeLimitSec  Int      @default(1500)
+  passPercent   Int      @default(90)
+  /// { "<topicSlug>": count } — empty means random across all topics
+  topicMix      Json     @default("{}")
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+}
+
+model RoadSign {
+  id        String @id @default(cuid())
+  code      String
+  group     String
+  nameUz    String
+  nameCy    String
+  nameRu    String
+  descUz    String @default("")
+  descCy    String @default("")
+  descRu    String @default("")
+  imageUrl  String
+  sortOrder Int    @default(0)
+}
+
+model RuleArticle {
+  id      String @id @default(cuid())
+  number  String @unique
+  chapter String @default("")
+  titleUz String
+  titleCy String
+  titleRu String
+  bodyUz  String
+  bodyCy  String
+  bodyRu  String
+}
+
+// ─── Testing ─────────────────────────────────────────────────────────────────
+
+model TestSession {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mode         TestMode
+  categoryId   String?
+  category     Category? @relation(fields: [categoryId], references: [id])
+  topicId      String?
+  ticketNumber Int?
+  questionIds  String[]
+  totalQ       Int       @default(0)
+  correctQ     Int       @default(0)
+  score        Float     @default(0)
+  passed       Boolean?
+  passPercent  Int?
+  timeLimitSec Int?
+  timeSpentSec Int?
+  startedAt    DateTime  @default(now())
+  finishedAt   DateTime?
+
+  answers SessionAnswer[]
+
+  @@index([userId, startedAt])
+}
+
+model SessionAnswer {
+  id         String      @id @default(cuid())
+  sessionId  String
+  session    TestSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  questionId String
+  question   Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answerId   String?
+  answer     Answer?     @relation(fields: [answerId], references: [id], onDelete: SetNull)
+  isCorrect  Boolean
+  createdAt  DateTime    @default(now())
+
+  @@unique([sessionId, questionId])
+  @@index([questionId])
+}
+
+/// Leitner-style spaced repetition for mistakes.
+model ReviewItem {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  box        Int      @default(1)
+  dueAt      DateTime @default(now())
+  lapses     Int      @default(0)
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, questionId])
+  @@index([userId, dueAt])
+}
+
+model Bookmark {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, questionId])
+}
+
+model Note {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text       String
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, questionId])
+}
+
+// ─── Commerce ────────────────────────────────────────────────────────────────
+
+model Plan {
+  id           String  @id @default(cuid())
+  slug         String  @unique
+  durationDays Int
+  untilPass    Boolean @default(false)
+  priceUzs     Int
+  labelUz      String
+  labelCy      String
+  labelRu      String
+  isFeatured   Boolean @default(false)
+  isActive     Boolean @default(true)
+  sortOrder    Int     @default(0)
+
+  subscriptions Subscription[]
+  payments      Payment[]
+}
+
+/// Access = any row with expiresAt > now(). source: PAYMENT | PROMO | TRIAL | REFERRAL | ADMIN
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId    String?
+  plan      Plan?    @relation(fields: [planId], references: [id])
+  source    String   @default("PAYMENT")
+  startsAt  DateTime @default(now())
+  expiresAt DateTime
+  paymentId String?  @unique
+  payment   Payment? @relation(fields: [paymentId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([userId, expiresAt])
+}
+
+model Payment {
+  id             String          @id @default(cuid())
+  userId         String
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId         String
+  plan           Plan            @relation(fields: [planId], references: [id])
+  provider       PaymentProvider
+  status         PaymentStatus   @default(PENDING)
+  amountUzs      Int
+  discountUzs    Int             @default(0)
+  finalAmountUzs Int
+  /// [{ label, amountUzs, source }]
+  discountLines  Json            @default("[]")
+  promoCodeId    String?
+  promoCode      PromoCode?      @relation(fields: [promoCodeId], references: [id])
+  campaignId     String?
+  campaign       Campaign?       @relation(fields: [campaignId], references: [id])
+  bonusDays      Int             @default(0)
+  providerRef    String?
+  paidAt         DateTime?
+  receiptSentAt  DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  subscription Subscription?
+  promoUse     PromoUse?
+
+  @@index([userId, status])
+  @@index([status, createdAt])
+}
+
+model PromoCode {
+  id           String    @id @default(cuid())
+  code         String    @unique
+  type         PromoType
+  /// percent, UZS amount, or days depending on type
+  value        Int
+  startsAt     DateTime?
+  endsAt       DateTime?
+  usageLimit   Int?
+  perUserLimit Int       @default(1)
+  minOrderUzs  Int?
+  planSlugs    String[]
+  newUsersOnly Boolean   @default(false)
+  combinable   Boolean   @default(false)
+  isActive     Boolean   @default(true)
+  partnerId    String?
+  partner      Partner?  @relation(fields: [partnerId], references: [id])
+  batchId      String?
+  note         String?
+  createdAt    DateTime  @default(now())
+
+  uses     PromoUse[]
+  payments Payment[]
+
+  @@index([batchId])
+}
+
+/// Created only once a payment succeeds (or a free code is redeemed).
+model PromoUse {
+  id          String    @id @default(cuid())
+  promoCodeId String
+  promoCode   PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paymentId   String?   @unique
+  payment     Payment?  @relation(fields: [paymentId], references: [id])
+  createdAt   DateTime  @default(now())
+
+  @@index([promoCodeId, userId])
+}
+
+model Partner {
+  id            String   @id @default(cuid())
+  name          String
+  contact       String?
+  commissionPct Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  codes PromoCode[]
+}
+
+model Campaign {
+  id            String       @id @default(cuid())
+  name          String
+  type          CampaignType
+  discountPct   Int
+  /// WELCOME: offer window after phone verification
+  durationHours Int?
+  startsAt      DateTime?
+  endsAt        DateTime?
+  isActive      Boolean      @default(false)
+  bannerUz      String       @default("")
+  bannerCy      String       @default("")
+  bannerRu      String       @default("")
+  planSlugs     String[]
+  createdAt     DateTime     @default(now())
+
+  payments Payment[]
+}
+
+model ReferralReward {
+  id         String   @id @default(cuid())
+  referrerId String
+  referrer   User     @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  friendId   String   @unique
+  friend     User     @relation("Friend", fields: [friendId], references: [id], onDelete: Cascade)
+  freeDays   Int
+  createdAt  DateTime @default(now())
+}
+
+/// Blocks repeat free trials per phone or device.
+model TrialClaim {
+  id        String   @id @default(cuid())
+  phone     String
+  deviceId  String
+  createdAt DateTime @default(now())
+
+  @@index([phone])
+  @@index([deviceId])
+}
+
+// ─── Messaging & settings ────────────────────────────────────────────────────
+
+/// key: OTP | WELCOME | RECEIPT | EXPIRY | ABANDONED | WINBACK | STREAK | REFERRAL
+model MessageTemplate {
+  id               String         @id @default(cuid())
+  key              String
+  channel          MessageChannel
+  lang             String
+  subject          String?
+  body             String
+  providerApproved Boolean        @default(false)
+  updatedAt        DateTime       @updatedAt
+
+  @@unique([key, channel, lang])
+}
+
+model MessageLog {
+  id        String         @id @default(cuid())
+  userId    String?
+  to        String
+  channel   MessageChannel
+  key       String
+  body      String
+  status    String
+  createdAt DateTime       @default(now())
+
+  @@index([userId, key, createdAt])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+}
+
+/// Admin overrides of UI strings shipped in src/i18n/messages.
+model TranslationOverride {
+  id    String @id @default(cuid())
+  lang  String
+  key   String
+  value String
+
+  @@unique([lang, key])
+}
+
+model Setting {
+  key   String @id
+  value Json
+}
