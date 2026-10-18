@@ -119,7 +119,8 @@ const uzCyrl: Messages = {
     "emailLogin": "Email ва парол билан кириш",
     "phoneLogin": "Телефон орқали кириш",
     "password": "Парол",
-    "wrongCredentials": "Email ёки парол нотўғри"
+    "wrongCredentials": "Email ёки парол нотўғри",
+    "passwordShort": "Парол камида 8 белгидан иборат бўлиши керак"
   },
   "dashboard": {
     "greeting": "Салом, {name}!",
@@ -304,7 +305,12 @@ const uzCyrl: Messages = {
     "passedThanks": "Табриклаймиз! Омад йўлларда!",
     "subscription": "Обуна",
     "payments": "Тўловлар тарихи",
-    "noPayments": "Тўловлар йўқ"
+    "noPayments": "Тўловлар йўқ",
+    "history": "Тестлар тарихи",
+    "memberSince": "Аъзо: {date} дан",
+    "security": "Хавфсизлик",
+    "logoutAll": "Барча қурилмалардан чиқиш",
+    "logoutAllHint": "Телефон ёки компьютерингизни йўқотган бўлсангиз, барча сеансларни ёпинг."
   },
   "leaderboard": {
     "title": "Ҳафталик рейтинг",

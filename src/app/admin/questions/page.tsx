@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/session';
 import Link from 'next/link';
 import type { Prisma } from '@prisma/client';
 import { db } from '@/lib/db';
@@ -6,6 +7,7 @@ import { PageHeader, Badge, inputSm } from '../ui';
 const PAGE = 30;
 
 export default async function QuestionsAdmin({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await requireAdmin();
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page ?? 1));
   const where: Prisma.QuestionWhereInput = {

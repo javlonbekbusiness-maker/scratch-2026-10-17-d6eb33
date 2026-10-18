@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/session';
 import Link from 'next/link';
 import type { Campaign } from '@prisma/client';
 import { db } from '@/lib/db';
@@ -54,6 +55,7 @@ function schedule(c: Campaign) {
 const pct = (a: number, b: number) => (b ? `${Math.round((100 * a) / b)}%` : '—');
 
 export default async function CampaignsAdmin({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await requireAdmin();
   const sp = await searchParams;
   const [campaigns, plans, pays, templates, winbackSent, referralRewards] = await Promise.all([
     db.campaign.findMany({ orderBy: [{ isActive: 'desc' }, { createdAt: 'desc' }] }),

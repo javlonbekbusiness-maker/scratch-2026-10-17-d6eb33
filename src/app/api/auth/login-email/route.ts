@@ -5,7 +5,8 @@ import { db } from '@/lib/db';
 import { createSession } from '@/lib/session';
 import { clientIp, rateLimit } from '@/lib/rate-limit';
 
-const schema = z.object({ email: z.string().email().max(120), password: z.string().min(1).max(100) });
+const DUMMY_HASH = bcrypt.hashSync('timing-equalizer', 10);
+const schema =z.object({ email: z.string().email().max(120), password: z.string().min(1).max(100) });
 
 export async function POST(req: Request) {
   const parsed = schema.safeParse(await req.json().catch(() => null));
@@ -19,7 +20,9 @@ export async function POST(req: Request) {
   }
 
   const user = await db.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } } });
-  const ok = user?.passwordHash ? await bcrypt.compare(parsed.data.password, user.passwordHash) : false;
+  // Always run bcrypt so response time doesn't reveal whether the email is registered.
+  const ok = await bcrypt.compare(parsed.data.password, user?.passwordHash ?? DUMMY_HASH);
+  if (!user?.passwordHash) return NextResponse.json({ error: 'invalid' }, { status: 401 });
   if (!user || !ok) return NextResponse.json({ error: 'invalid' }, { status: 401 });
 
   await createSession(user.id);

@@ -1,6 +1,6 @@
 # YHQ Test — progress log
 
-_Last updated: 2026-10-18 (stage 10: git repository, first commit `d9a235d`)_
+_Last updated: 2026-10-18 (stage 11: authentication hardening)_
 
 **Status legend**
 - ✅ **verified**: exercised in a running app against a real PostgreSQL database, or covered by passing unit tests
@@ -13,6 +13,7 @@ _Last updated: 2026-10-18 (stage 10: git repository, first commit `d9a235d`)_
 |---|---|---|
 | Type check | `npm run typecheck` | ✅ 0 errors |
 | Unit tests | `npm test` | ✅ 13/13 pass (adds adaptive selection ×3 and upload signature checks) |
+| Auth end-to-end | `npm run test:e2e` (against `npm run dev`) | ✅ 8/8 pass (stage 11) |
 | Production build | `npm run build` | ✅ exit 0, 54 routes (stage 3: `/admin/promo`, `/admin/promo/[id]`; stage 4: `/admin/campaigns`; stage 5: `/admin/users`, `/admin/users/[id]`, `/admin/payments`, `/admin/plans`; stage 6: `/admin/tickets`, `/admin/exam`, `/admin/categories`; stage 7: `/admin/messages`, `/admin/translations`, `/admin/library`, `/admin/settings`) |
 | Admin navigation | all 15 admin menu links | ✅ every link returns 200 (no more 404s) |
 | Schema + seed | `npx prisma db push` → `npm run db:seed` (run twice) | ✅ 6 categories, 8 topics, 40 questions, 4 tickets, 4 plans, 16 signs, 72 message templates, 6 demo promo codes, admin user. Same counts on the second run, so the seed is safe to re-run. |
@@ -38,6 +39,41 @@ _Last updated: 2026-10-18 (stage 10: git repository, first commit `d9a235d`)_
 16. Admin: analytics shows real figures (users, conversion, revenue, top promo code). Question list and editor work, and a blank Cyrillic field is auto-filled. Bulk import validates row by row (unknown category, bad `correct` index), imports the valid row, and delete works. Payments CSV export works.
 17. Access control: a regular user gets 404 on `/admin` and on the admin export API.
 18. Library search works in Latin, Cyrillic and Russian, for both signs and rule articles. Leaderboard, privacy, terms, offline page, sitemap, robots, manifest and service worker all return 200.
+
+## Stage 11: authentication hardening (✅ tested)
+
+Audit of the existing auth (phone OTP + optional email/password, DB sessions). Nothing was rewritten; no data was deleted except the throwaway users the tests created.
+
+**Already sound (kept):** zod validation on every auth route; unique phone and email in the schema; OTP hashed with TTL, attempt limit, resend cooldown and rate limits; only a SHA-256 hash of the session token is stored; httpOnly/SameSite cookie; every API route, server action and user page checks the session and ownership on the server.
+
+**Fixed or added:**
+- **Admin pages:** each of the 18 admin pages now calls `requireAdmin()` itself. Before, only `admin/layout.tsx` did, and a crafted RSC request for a single page segment can skip the layout.
+- **Client IP spoofing:** `clientIp()` took the *first* `X-Forwarded-For` entry, which the client controls, so per-IP limits (OTP sends, email login, promo codes) could be bypassed by sending a fake header. It now counts `TRUSTED_PROXY_HOPS` (default 1) entries from the end. A test proves a spoofed prefix no longer resets the limit.
+- **Sessions:**
+  - expired session rows are deleted when presented
+  - setting a new password deletes every other session for that user
+  - new "Log out of all devices" (Profile → Xavfsizlik)
+- **Email login:** constant-time bcrypt for unknown emails (no user enumeration by timing); 429 now shows "Juda ko'p so'rov…" instead of "wrong password"; network errors handled.
+- **Profile:** test history (last 20, with total count, mode, date, time, score, linking to results) and "member since" date.
+- **Messages:** new `auth.passwordShort` and profile strings in uz / uz-Cyrl / ru (i18n parity test passes). The OTP field refocuses after a wrong code.
+
+**Tests:**
+- New `tests/auth.e2e.ts` (`npm run test:e2e`), 8 tests:
+  - anonymous visitors are redirected away from protected pages
+  - a forged cookie is rejected
+  - registration validation (bad phone, no consent, wrong code, no duplicates, only hashes stored)
+  - users get 404 on 5 admin URLs; admins get 200
+  - expired session → redirect and the row is deleted
+  - email login gives a generic error, is case-insensitive and never returns hashes
+  - IP rate limit plus the spoofing check
+- **Checked in the browser:**
+  - **Profile:** shows test history (4 tests).
+  - **Logout:** deletes the session row (6 → 5), goes to `/`, and `/profile` then redirects to login.
+  - **Registration:** messages "consent required" and "Kod noto'g'ri" shown; onboarding done.
+  - **Password change:** `minLength=8` blocks short passwords; saving shows "Saqlandi" and the other-device session is deleted while this browser stays logged in.
+  - **Log out of all devices:** 2 → 0 sessions, redirect to `/`.
+
+**Remaining:** the middleware still only checks that the cookie exists (Edge runtime, no DB). That's fine because every page re-checks on the server. Set `TRUSTED_PROXY_HOPS` to match production proxies. The test login rate limit is in memory unless `REDIS_URL` is set.
 
 ## Stage 10: git repository (✅)
 
@@ -317,11 +353,10 @@ Notes:
 ## Feature status
 
 ### ✅ Verified
-Phone + OTP auth, sessions, onboarding, landing, paywall, **all six test modes** (ticket, exam, mistakes, topic, marathon, adaptive), session resume, results, share card, **certificate**, dashboard stats, bookmarks, notes, AI fallback, pricing + discount engine (welcome offer, every promo type and rule), sandbox payment success/failure, free trial, subscription stacking, receipts (SMS mock), **referral discount + referrer reward**, **reminders cron**, 3 languages, profile, logout/login, library search, the full admin panel, **image upload**, admin access control, seed script, `npm run db:local`.
+Phone + OTP auth, sessions, onboarding, landing, paywall, **all six test modes** (ticket, exam, mistakes, topic, marathon, adaptive), session resume, results, share card, **certificate**, dashboard stats, bookmarks, notes, AI fallback, pricing + discount engine (welcome offer, every promo type and rule), sandbox payment success/failure, free trial, subscription stacking, receipts (SMS mock), **referral discount + referrer reward**, **reminders cron**, 3 languages, profile (with test history), logout/login, **email + password login, password change signing out other devices, log out of all devices, session expiry**, library search, the full admin panel, **image upload**, admin access control, seed script, `npm run db:local`.
 
 ### 🔵 Builds, not yet exercised
 - Repeat-trial block on a *different* trial code for the same phone or device
-- Email login with a password; saving the profile settings form
 - Removing an empty ticket (the button only shows for tickets with no questions)
 - Real SMS providers (Eskiz, PlayMobile), real Click / Payme / Uzum callbacks, Claude API with a real key, SMTP email
 - Service worker offline caching (it only registers in production builds)
@@ -346,7 +381,7 @@ Phone + OTP auth, sessions, onboarding, landing, paywall, **all six test modes**
 - Seeded admin login: phone `+998 90 000 00 01` (dev code shown on screen).
 
 ## Next steps (one small stage each)
-1. Test the last 🔵 items that don't need provider accounts: email + password login, profile settings save, repeat-trial block, production-build service worker. Commit after each stage from now on.
+1. Test the last 🔵 items that don't need provider accounts: repeat-trial block, production-build service worker. (Email + password login and profile save were verified in stage 11.) Commit after each stage.
 2. Consider: user data deletion (privacy law), a refund action, partner sign-up links, real web push.
 3. Optional: create a private GitHub repository and push (only when you decide to; nothing is pushed yet).
 4. Before launch: work through the README's going-live checklist (licensed content, exam format, provider contracts and sandbox tests).

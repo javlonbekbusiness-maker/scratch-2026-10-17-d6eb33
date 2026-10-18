@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/session';
 import Link from 'next/link';
 import type { Prisma } from '@prisma/client';
 import { db } from '@/lib/db';
@@ -31,6 +32,7 @@ const PAGE = 50;
 const pct = (a: number, b: number) => (b ? `${Math.round((100 * a) / b)}%` : '—');
 
 export default async function PromoAdmin({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await requireAdmin();
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
   const where: Prisma.PromoCodeWhereInput = {

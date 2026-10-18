@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/session';
 import { db } from '@/lib/db';
 import { deleteCategory, deleteTopic, saveCategory, saveTopic } from '../actions';
 import { Badge, PageHeader, inputSm } from '../ui';
@@ -25,6 +26,7 @@ const MESSAGES: Record<string, [string, boolean]> = {
 };
 
 export default async function CategoriesAdmin({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await requireAdmin();
   const sp = await searchParams;
   const [cats, topics, topicCounts] = await Promise.all([
     db.category.findMany({ orderBy: { sortOrder: 'asc' }, include: { _count: { select: { questions: true, users: true, tickets: true } } } }),

@@ -118,6 +118,7 @@ const uz = {
     phoneLogin: 'Telefon orqali kirish',
     password: 'Parol',
     wrongCredentials: "Email yoki parol noto'g'ri",
+    passwordShort: "Parol kamida 8 belgidan iborat bo'lishi kerak",
   },
   dashboard: {
     greeting: 'Salom, {name}!',
@@ -303,6 +304,11 @@ const uz = {
     subscription: 'Obuna',
     payments: "To'lovlar tarixi",
     noPayments: "To'lovlar yo'q",
+    history: 'Testlar tarixi',
+    memberSince: "A'zo: {date} dan",
+    security: 'Xavfsizlik',
+    logoutAll: 'Barcha qurilmalardan chiqish',
+    logoutAllHint: "Telefon yoki kompyuteringizni yo'qotgan bo'lsangiz, barcha seanslarni yoping.",
   },
   leaderboard: {
     title: 'Haftalik reyting',

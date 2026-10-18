@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/session';
 import Link from 'next/link';
 import { db } from '@/lib/db';
 import { formatDate, formatUzs } from '@/lib/format';
@@ -12,6 +13,7 @@ const PAGE = 50;
 const time = (d: Date) => new Date(d.getTime() + 5 * 3600_000).toISOString().slice(11, 16);
 
 export default async function PaymentsAdmin({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await requireAdmin();
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
   const filters = pickPaymentFilters(sp);

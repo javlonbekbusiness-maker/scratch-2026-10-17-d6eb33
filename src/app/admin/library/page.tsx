@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/session';
 import Link from 'next/link';
 import { db } from '@/lib/db';
 import { deleteLibraryItem, saveArticle, saveSign } from '../actions';
@@ -31,6 +32,7 @@ const F = ({ label, children, wide }: { label: string; children: React.ReactNode
 );
 
 export default async function LibraryAdmin({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await requireAdmin();
   const sp = await searchParams;
   const tab = sp.tab === 'rules' ? 'rules' : 'signs';
   const [signs, rules] = await Promise.all([

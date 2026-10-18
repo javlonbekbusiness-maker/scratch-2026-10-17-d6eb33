@@ -143,6 +143,7 @@ Notes:
 | `npm run build` / `npm start` | Production build / run it |
 | `npm run typecheck` | TypeScript check |
 | `npm test` | Unit tests (phone, CSV, transliteration, SMS length, i18n key parity) |
+| `npm run test:e2e` | Auth end-to-end tests against a running `npm run dev` (needs `SMS_PROVIDER="mock"`; creates and then deletes throwaway users; `BASE_URL` overrides the address) |
 | `npm run db:push` | Apply `prisma/schema.prisma` to the database |
 | `npm run db:migrate` | Create a migration (use migrations once in production) |
 | `npm run db:seed` | Load demo data (safe to re-run) |
@@ -163,6 +164,7 @@ Copy `.env.example` to `.env`. Variables marked **prod** are only needed before 
 | `NEXT_PUBLIC_APP_URL` | yes | Public base URL: referral links, payment return URLs, sitemap |
 | `SESSION_SECRET` | prod | Long random string used to hash OTP codes |
 | `CRON_SECRET` | prod | Bearer token for `/api/cron/reminders` |
+| `TRUSTED_PROXY_HOPS` | prod | Number of reverse proxies in front of the app (default `1`). Rate limits read the client IP this many entries from the end of `X-Forwarded-For`; the start of that header is client-controlled. |
 | `ADMIN_PHONE` | seed | Phone the seed script makes admin |
 | `SMS_PROVIDER` | yes | `mock` (codes in the server log), `eskiz` or `playmobile` |
 | `ESKIZ_EMAIL`, `ESKIZ_PASSWORD`, `ESKIZ_FROM` | prod | Eskiz.uz account and approved sender name |
@@ -290,7 +292,11 @@ Examples: a Linux crontab, a GitHub Actions schedule, or your host's cron featur
 
 ## Security and privacy
 
-- **Sessions:** a random token in an httpOnly, SameSite=Lax cookie (`Secure` in production). Only a SHA-256 hash of the token is stored in the database.
+- **Sessions:** a random token in an httpOnly, SameSite=Lax cookie (`Secure` in production), valid for 30 days. Only a SHA-256 hash of the token is stored in the database.
+  - Logout deletes the session row; expired rows are deleted when next presented.
+  - Setting a new password signs out every other device; Profile → Security → "Log out of all devices" ends every session.
+  - The middleware only checks that the cookie exists (fast redirect); every page, server action and API validates the session against the database, and every admin page calls `requireAdmin()` itself rather than relying on the layout.
+- **Email login:** one generic error for a wrong password or unknown email, with constant-time bcrypt either way; 10 attempts per 15 min per IP and per email.
 - **OTP:**
   - Codes are 6 digits, stored hashed, and valid for 5 minutes, with at most 5 wrong attempts.
   - Resend is limited to once a minute; requests are capped at 5 per hour per phone and 20 per hour per IP, plus a verification lockout.
@@ -322,6 +328,7 @@ Examples: a Linux crontab, a GitHub Actions schedule, or your host's cron featur
 - [ ] Redis configured (`REDIS_URL`)
 - [ ] `NEXT_PUBLIC_APP_URL` set to the real HTTPS domain
 - [ ] Strong `SESSION_SECRET` and `CRON_SECRET`
+- [ ] `TRUSTED_PROXY_HOPS` matches your proxy setup, and the proxy appends (not passes through) `X-Forwarded-For`
 - [ ] Hourly cron calling `/api/cron/reminders`
 - [ ] Image uploads moved to object storage if you run more than one server
 - [ ] Backups for the database

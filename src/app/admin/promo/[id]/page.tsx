@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/session';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/db';
@@ -11,6 +12,7 @@ import { PromoForm } from '../PromoForm';
 export const dynamic = 'force-dynamic';
 
 export default async function EditPromo({ params }: { params: Promise<{ id: string }> }) {
+  await requireAdmin();
   const { id } = await params;
   const [code, plans, partners, stats, payments] = await Promise.all([
     db.promoCode.findUnique({ where: { id } }),

@@ -4,10 +4,10 @@ import { getAccess } from '@/lib/access';
 import { getSettings } from '@/lib/settings';
 import { getT } from '@/i18n/server';
 import { pick } from '@/i18n/config';
-import { formatDate, formatUzs } from '@/lib/format';
+import { formatDate, formatDuration, formatUzs } from '@/lib/format';
 import { formatPhone } from '@/lib/phone';
 import { providerLabel } from '@/lib/payments';
-import { logout, markPassed } from '@/app/actions';
+import { logout, logoutEverywhere, markPassed } from '@/app/actions';
 import { ProfileForm } from './ProfileForm';
 import { CopyLink } from './CopyLink';
 
@@ -16,7 +16,7 @@ export const metadata = { robots: { index: false } };
 export default async function ProfilePage() {
   const user = await requireUser();
   const { t, locale } = await getT();
-  const [access, settings, cats, bookmarks, notes, invited, rewarded, payments] = await Promise.all([
+  const [access, settings, cats, bookmarks, notes, invited, rewarded, payments, history, testCount] = await Promise.all([
     getAccess(user.id),
     getSettings(),
     db.category.findMany({ where: { isActive: true }, orderBy: { sortOrder: 'asc' } }),
@@ -25,7 +25,10 @@ export default async function ProfilePage() {
     db.user.count({ where: { referredById: user.id } }),
     db.referralReward.count({ where: { referrerId: user.id } }),
     db.payment.findMany({ where: { userId: user.id, status: { in: ['PAID', 'FAILED'] } }, include: { plan: true }, orderBy: { createdAt: 'desc' }, take: 10 }),
+    db.testSession.findMany({ where: { userId: user.id, finishedAt: { not: null } }, orderBy: { finishedAt: 'desc' }, take: 20 }),
+    db.testSession.count({ where: { userId: user.id, finishedAt: { not: null } } }),
   ]);
+  const modeLabel = (m: string, n: number | null) => (m === 'TICKET' ? t('modes.ticketN', { n: n ?? '' }) : t(`modes.${m.toLowerCase()}` as 'modes.exam'));
   const refUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/?ref=${user.referralCode}`;
 
   return (
@@ -63,11 +66,32 @@ export default async function ProfilePage() {
 
       <section className="card p-5" aria-labelledby="me-h">
         <h2 id="me-h" className="font-bold">{t('profile.personal')}</h2>
-        <p className="mt-1 text-sm muted">{formatPhone(user.phone)}</p>
+        <p className="mt-1 text-sm muted">
+          {formatPhone(user.phone)} · {t('profile.memberSince', { date: formatDate(user.createdAt) })}
+        </p>
         <ProfileForm
           user={{ name: user.name ?? '', email: user.email ?? '', categoryId: user.categoryId ?? '', remindSms: user.remindSms, remindEmail: user.remindEmail, remindPush: user.remindPush, leaderboardOptIn: user.leaderboardOptIn }}
           categories={cats.map((c) => ({ id: c.id, label: `${c.code} — ${pick(c, 'name', locale)}` }))}
         />
+      </section>
+
+      <section className="card p-5" aria-labelledby="hist-h">
+        <h2 id="hist-h" className="font-bold">📊 {t('profile.history')} <span className="font-normal muted">({testCount})</span></h2>
+        {history.length === 0 ? <p className="mt-2 text-sm muted">{t('dashboard.noTests')}</p> : (
+          <ul className="mt-3 divide-y divide-slate-100 text-sm dark:divide-slate-800">
+            {history.map((r) => (
+              <li key={r.id}>
+                <a href={`/results/${r.id}`} className="flex items-center gap-3 py-2">
+                  <span className={`h-2.5 w-2.5 rounded-full ${r.passed === null ? 'bg-brand-500' : r.passed ? 'bg-mint-500' : 'bg-red-500'}`} />
+                  <span className="flex-1 truncate">{modeLabel(r.mode, r.ticketNumber)}</span>
+                  <span className="muted">{formatDate(r.finishedAt!)}</span>
+                  <span className="tabular-nums muted">{formatDuration(r.timeSpentSec ?? 0)}</span>
+                  <span className="w-12 text-right font-bold tabular-nums">{Math.round(r.score)}%</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section className="card p-5" aria-labelledby="bm-h">
@@ -107,6 +131,12 @@ export default async function ProfilePage() {
             ))}
           </ul>
         )}
+      </section>
+
+      <section className="card p-5" aria-labelledby="sec-h">
+        <h2 id="sec-h" className="font-bold">🔒 {t('profile.security')}</h2>
+        <p className="mt-1 text-sm muted">{t('profile.logoutAllHint')}</p>
+        <form action={logoutEverywhere} className="mt-3"><button className="btn-secondary btn-sm">{t('profile.logoutAll')}</button></form>
       </section>
     </div>
   );

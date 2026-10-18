@@ -31,11 +31,22 @@ export async function destroySession() {
   jar.delete(SESSION_COOKIE);
 }
 
+/** Signs the user out everywhere except (optionally) the current browser, e.g. after a password change. */
+export async function destroyOtherSessions(userId: string, keepCurrent = true) {
+  const token = keepCurrent ? (await cookies()).get(SESSION_COOKIE)?.value : undefined;
+  await db.authSession.deleteMany({ where: { userId, ...(token ? { tokenHash: { not: sha(token) } } : {}) } });
+}
+
 export const getCurrentUser = cache(async () => {
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
   if (!token) return null;
   const s = await db.authSession.findUnique({ where: { tokenHash: sha(token) }, include: { user: true } });
-  if (!s || s.expiresAt < new Date()) return null;
+  if (!s) return null;
+  if (s.expiresAt < new Date()) {
+    // Expired: remove the row so the token can never be revived.
+    await db.authSession.deleteMany({ where: { id: s.id } });
+    return null;
+  }
   return s.user;
 });
 

@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/session';
 import Link from 'next/link';
 import { db } from '@/lib/db';
 import { deleteEmptyTicket, generateTickets, toggleTicketFree } from '../actions';
@@ -22,6 +23,7 @@ function message(msg?: string): [string, 'ok' | 'warn' | 'err'] | null {
 const TONE = { ok: 'bg-mint-500/10 text-mint-700', warn: 'bg-amber-100 text-amber-800', err: 'bg-red-500/10 text-red-700' };
 
 export default async function TicketsAdmin({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await requireAdmin();
   const sp = await searchParams;
   const categories = await db.category.findMany({ orderBy: { sortOrder: 'asc' }, include: { _count: { select: { tickets: true, questions: true } } } });
   const category = categories.find((c) => c.id === sp.category) ?? categories.find((c) => c._count.tickets > 0) ?? categories[0];

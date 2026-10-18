@@ -7,7 +7,7 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import type { TestMode } from '@prisma/client';
 import { db } from '@/lib/db';
-import { destroySession, getCurrentUser, requireUser } from '@/lib/session';
+import { destroyOtherSessions, destroySession, getCurrentUser, requireUser } from '@/lib/session';
 import { LOCALE_COOKIE, isLocale } from '@/i18n/config';
 import { startTest } from '@/lib/tests';
 
@@ -20,6 +20,13 @@ export async function setLocale(locale: string) {
 }
 
 export async function logout() {
+  await destroySession();
+  redirect('/');
+}
+
+export async function logoutEverywhere() {
+  const user = await getCurrentUser();
+  if (user) await destroyOtherSessions(user.id, false);
   await destroySession();
   redirect('/');
 }
@@ -92,7 +99,7 @@ export async function updateProfile(_: unknown, formData: FormData) {
     const taken = await db.user.findFirst({ where: { email: d.email, id: { not: user.id } } });
     if (taken) return { ok: false, error: 'auth.emailTaken' };
   }
-  if (d.password && d.password.length < 8) return { ok: false, error: 'common.error' };
+  if (d.password && d.password.length < 8) return { ok: false, error: 'auth.passwordShort' };
   await db.user.update({
     where: { id: user.id },
     data: {
@@ -107,6 +114,8 @@ export async function updateProfile(_: unknown, formData: FormData) {
       ...(d.password ? { passwordHash: await bcrypt.hash(d.password, 10) } : {}),
     },
   });
+  // A new password must lock out anyone holding an old session on another device.
+  if (d.password) await destroyOtherSessions(user.id);
   revalidatePath('/profile');
   return { ok: true, error: null };
 }

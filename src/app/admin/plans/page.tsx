@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/session';
 import { db } from '@/lib/db';
 import { formatUzs } from '@/lib/format';
 import { savingVsWeekly } from '@/lib/pricing';
@@ -18,6 +19,7 @@ const MESSAGES: Record<string, [string, boolean]> = {
 const inp = 'input min-h-[40px] rounded-xl px-3 text-sm';
 
 export default async function PlansAdmin({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await requireAdmin();
   const sp = await searchParams;
   const now = new Date();
   const [plans, active, sold] = await Promise.all([

@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/session';
 import { getSettings } from '@/lib/settings';
 import { isSandbox } from '@/lib/payments';
 import { saveSettings } from '../actions';
@@ -35,6 +36,7 @@ function envStatus() {
 }
 
 export default async function SettingsAdmin({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await requireAdmin();
   const sp = await searchParams;
   const s = await getSettings();
   const msg = sp.msg ? MESSAGES[sp.msg] : undefined;

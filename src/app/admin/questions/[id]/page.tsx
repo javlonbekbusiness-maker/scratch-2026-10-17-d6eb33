@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/session';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/db';
@@ -17,6 +18,7 @@ const ERRORS: Record<string, string> = {
 };
 
 export default async function EditQuestion({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ err?: string }> }) {
+  await requireAdmin();
   const { id } = await params;
   const { err } = await searchParams;
   const isNew = id === 'new';

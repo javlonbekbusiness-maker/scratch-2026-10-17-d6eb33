@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/session';
 import Link from 'next/link';
 import { db } from '@/lib/db';
 import { examTemplateAction } from '../actions';
@@ -17,6 +18,7 @@ const MESSAGES: Record<string, [string, boolean]> = {
 };
 
 export default async function ExamTemplatesAdmin({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await requireAdmin();
   const sp = await searchParams;
   const [templates, categories, topics, perCategory, perCategoryTopic] = await Promise.all([
     db.examTemplate.findMany({ include: { category: true }, orderBy: [{ category: { sortOrder: 'asc' } }, { kind: 'asc' }, { createdAt: 'asc' }] }),

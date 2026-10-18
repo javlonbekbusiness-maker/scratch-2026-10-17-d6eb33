@@ -64,6 +64,8 @@ function OtpStep() {
       if (!r.ok) {
         setError(t(j.error === 'expired' ? 'auth.otpExpired' : j.error === 'locked' ? 'auth.otpLocked' : 'auth.otpInvalid'));
         setCode('');
+        // Keep the cursor in the field so the user can retype straight away.
+        setTimeout(() => inputRef.current?.focus(), 0);
         return;
       }
       sessionStorage.removeItem('otp');
@@ -155,15 +157,24 @@ function EmailStep() {
     const fd = new FormData(e.currentTarget);
     setBusy(true);
     setError(null);
-    const r = await fetch('/api/auth/login-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') }),
-    });
-    setBusy(false);
-    if (!r.ok) return setError(t('auth.wrongCredentials'));
-    router.replace(nextParam() ?? '/dashboard');
-    router.refresh();
+    try {
+      const r = await fetch('/api/auth/login-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') }),
+      });
+      if (r.status === 429) {
+        const j = await r.json().catch(() => ({}));
+        return setError(t('auth.tooMany', { s: j.retryAfter ?? 60 }));
+      }
+      if (!r.ok) return setError(t('auth.wrongCredentials'));
+      router.replace(nextParam() ?? '/dashboard');
+      router.refresh();
+    } catch {
+      setError(t('common.error'));
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (

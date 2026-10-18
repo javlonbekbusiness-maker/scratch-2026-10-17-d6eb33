@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/session';
 import Link from 'next/link';
 import { db } from '@/lib/db';
 import { LOCALES, LOCALE_LABELS, isLocale, type Locale } from '@/i18n/config';
@@ -18,6 +19,7 @@ const TONE = { ok: 'bg-mint-500/10 text-mint-700', warn: 'bg-amber-100 text-ambe
 const LIMIT = 80;
 
 export default async function TranslationsAdmin({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await requireAdmin();
   const sp = await searchParams;
   const lang: Locale = isLocale(sp.lang) ? sp.lang : 'uz';
   const q = (sp.q ?? '').trim().toLowerCase();

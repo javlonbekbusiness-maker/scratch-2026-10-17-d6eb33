@@ -1,7 +1,9 @@
+import { requireAdmin } from '@/lib/session';
 import { PageHeader } from '../ui';
 import { ImportForm } from './ImportForm';
 
 export default async function ImportPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await requireAdmin();
   const sp = await searchParams;
   return (
     <>

@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/lib/session';
 import Link from 'next/link';
 import { db } from '@/lib/db';
 import { formatUzs } from '@/lib/format';
@@ -22,6 +23,7 @@ function Bars({ data, format }: { data: { day: string; v: number }[]; format?: (
 }
 
 export default async function AdminHome() {
+  await requireAdmin();
   const since = new Date(Date.now() - 30 * 86400_000);
   const [users, signups30, payers, active, revenue30, missed, signupDays, revenueDays, topCodes] = await Promise.all([
     db.user.count(),

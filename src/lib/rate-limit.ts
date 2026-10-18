@@ -19,7 +19,14 @@ export async function recordFailure(key: string, windowSec: number) {
   await kv.incr(`rlf:${key}`, windowSec);
 }
 
+/**
+ * The client's IP as seen by our own reverse proxy. Entries at the start of X-Forwarded-For are
+ * whatever the client sent, so we count TRUSTED_PROXY_HOPS (default 1) entries back from the end,
+ * where each trusted proxy appends the address it received the request from.
+ */
 export async function clientIp() {
   const h = await headers();
-  return h.get('x-forwarded-for')?.split(',')[0].trim() || h.get('x-real-ip') || 'unknown';
+  const hops = Math.max(1, Number(process.env.TRUSTED_PROXY_HOPS) || 1);
+  const chain = (h.get('x-forwarded-for') ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+  return chain[chain.length - hops] || chain[0] || h.get('x-real-ip') || 'unknown';
 }

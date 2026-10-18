@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/db';
-import { getCurrentUser } from '@/lib/session';
+import { getCurrentUser, requireAdmin } from '@/lib/session';
 import { userStats } from '@/lib/stats';
 import { formatDate, formatUzs } from '@/lib/format';
 import { formatPhone } from '@/lib/phone';
@@ -26,6 +26,7 @@ const TONE = { ok: 'bg-mint-500/10 text-mint-700', warn: 'bg-amber-100 text-ambe
 const SOURCE_LABEL: Record<string, string> = { PAYMENT: 'Payment', ADMIN: 'Granted by admin', TRIAL: 'Free trial', REFERRAL: 'Referral reward', PROMO: 'Promo' };
 
 export default async function UserDetail({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | undefined>> }) {
+  await requireAdmin();
   const [{ id }, sp, me] = await Promise.all([params, searchParams, getCurrentUser()]);
   const user = await db.user.findUnique({ where: { id }, include: { category: true, referredBy: true } });
   if (!user) notFound();

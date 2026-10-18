@@ -120,6 +120,7 @@ const ru: Messages = {
     phoneLogin: 'Войти по телефону',
     password: 'Пароль',
     wrongCredentials: 'Неверный email или пароль',
+    passwordShort: 'Пароль должен содержать не менее 8 символов',
   },
   dashboard: {
     greeting: 'Привет, {name}!',
@@ -305,6 +306,11 @@ const ru: Messages = {
     subscription: 'Подписка',
     payments: 'История платежей',
     noPayments: 'Платежей нет',
+    history: 'История тестов',
+    memberSince: 'С нами с {date}',
+    security: 'Безопасность',
+    logoutAll: 'Выйти на всех устройствах',
+    logoutAllHint: 'Если вы потеряли телефон или компьютер, завершите все сеансы.',
   },
   leaderboard: {
     title: 'Рейтинг недели',

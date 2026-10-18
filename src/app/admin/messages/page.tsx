@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { db } from '@/lib/db';
-import { getCurrentUser } from '@/lib/session';
+import { getCurrentUser, requireAdmin } from '@/lib/session';
 import { loadTemplate } from '@/lib/notify';
 import { smsSegments } from '@/lib/sms-segments';
 import { DEFAULT_TEMPLATES, TEMPLATE_INFO, TEMPLATE_KEYS, TEMPLATE_VARS, type TemplateKey } from '@/lib/template-defaults';
@@ -40,6 +40,7 @@ function defaultFor(key: TemplateKey, channel: (typeof CHANNELS)[number], lang: 
 }
 
 export default async function MessagesAdmin({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await requireAdmin();
   const sp = await searchParams;
   const key = ((TEMPLATE_KEYS as readonly string[]).includes(sp.key ?? '') ? sp.key : 'OTP') as TemplateKey;
   const channel = (CHANNELS as readonly string[]).includes(sp.channel ?? '') ? (sp.channel as (typeof CHANNELS)[number]) : 'SMS';
