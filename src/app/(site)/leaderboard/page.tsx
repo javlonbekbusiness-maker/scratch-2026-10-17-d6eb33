@@ -1,9 +1,13 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/session';
 import { getT } from '@/i18n/server';
 
-export const metadata = { title: 'Leaderboard' };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getT();
+  return { title: t('leaderboard.title') };
+}
 export const revalidate = 300;
 
 export default async function Leaderboard() {

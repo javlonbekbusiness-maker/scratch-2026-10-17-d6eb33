@@ -1,10 +1,15 @@
 import Link from 'next/link';
-import { requireAdmin } from '@/lib/session';
+import type { Metadata } from 'next';
+import { getCurrentUser, requireAdmin } from '@/lib/session';
 import { Logo } from '@/components/Logo';
 import { ThemeToggle } from '@/components/HeaderControls';
 import { AdminNav } from './AdminNav';
 
-export const metadata = { title: 'Admin', robots: { index: false, follow: false } };
+// Only admins see an "Admin" title; everyone else gets the plain 404, which shouldn't hint that the panel exists.
+export async function generateMetadata(): Promise<Metadata> {
+  const user = await getCurrentUser();
+  return { ...(user?.role === 'ADMIN' ? { title: 'Admin' } : {}), robots: { index: false, follow: false } };
+}
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const admin = await requireAdmin();

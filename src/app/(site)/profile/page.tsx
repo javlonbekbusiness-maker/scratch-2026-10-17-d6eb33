@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { db } from '@/lib/db';
 import { requireUser } from '@/lib/session';
 import { getAccess } from '@/lib/access';
@@ -11,7 +12,10 @@ import { logout, logoutEverywhere, markPassed } from '@/app/actions';
 import { ProfileForm } from './ProfileForm';
 import { CopyLink } from './CopyLink';
 
-export const metadata = { robots: { index: false } };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getT();
+  return { title: t('profile.title'), robots: { index: false } };
+}
 
 export default async function ProfilePage() {
   const user = await requireUser();

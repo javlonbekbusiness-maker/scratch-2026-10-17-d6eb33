@@ -1,10 +1,14 @@
+import type { Metadata } from 'next';
 import { db } from '@/lib/db';
 import { requireUser } from '@/lib/session';
 import { getT } from '@/i18n/server';
 import { pick } from '@/i18n/config';
 import { OnboardingForm } from './OnboardingForm';
 
-export const metadata = { robots: { index: false } };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getT();
+  return { title: t('auth.onboardTitle'), robots: { index: false } };
+}
 
 export default async function OnboardingPage() {
   const user = await requireUser({ allowNotOnboarded: true });
