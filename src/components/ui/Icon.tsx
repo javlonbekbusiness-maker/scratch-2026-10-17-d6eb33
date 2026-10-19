@@ -39,6 +39,11 @@ const PATHS = {
   grid: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
   note: 'M5 3h10l4 4v14H5zM15 3v4h4M8 12h8M8 16h6',
   arrowRight: 'M5 12h14M13 6l6 6-6 6',
+  phone: 'M5 4h3l2 5-2.5 1.5a11 11 0 0 0 6 6L15 14l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z',
+  mail: 'M3 6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1zM3.5 6l8.5 7 8.5-7',
+  send: 'M21 3 10 14M21 3l-7 18-4-7-7-4z',
+  car: 'M5 16h14M6 16l1.5-5.5A2 2 0 0 1 9.4 9h5.2a2 2 0 0 1 1.9 1.5L18 16M4 16v3h3v-3M17 16v3h3v-3M7.5 13.5h.01M16.5 13.5h.01',
+  menu: 'M4 7h16M4 12h16M4 17h16',
 } as const;
 
 export type IconName = keyof typeof PATHS;

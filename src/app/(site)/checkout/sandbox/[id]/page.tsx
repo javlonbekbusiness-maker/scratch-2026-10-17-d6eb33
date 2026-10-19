@@ -20,10 +20,10 @@ export default async function SandboxPage({ params }: { params: Promise<{ id: st
   return (
     <div className="container-app grid min-h-[60vh] place-items-center py-10">
       <div className="card w-full max-w-md p-6 text-center">
-        <span className="chip bg-amber-100 text-amber-800">SANDBOX</span>
+        <span className="chip bg-warning/15 text-warning">SANDBOX</span>
         <h1 className="mt-3 text-2xl font-bold">{t('checkout.sandboxTitle', { provider: providerLabel[p.provider] })}</h1>
         <p className="mt-1 text-sm muted">{t('checkout.sandboxText')}</p>
-        <div className="my-6 rounded-2xl bg-slate-50 p-4 dark:bg-slate-800">
+        <div className="card-raised my-6 p-4">
           <p className="text-sm muted">{pick(p.plan, 'label', locale)}</p>
           <p className="text-3xl font-extrabold tabular-nums">{formatUzs(p.finalAmountUzs)} {t('common.soum')}</p>
           {p.discountUzs > 0 && <p className="text-sm muted"><s>{formatUzs(p.amountUzs)}</s> · −{formatUzs(p.discountUzs)}</p>}

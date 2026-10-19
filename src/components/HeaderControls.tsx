@@ -7,7 +7,8 @@ import { useT } from '@/i18n/client';
 import { setLocale } from '@/app/actions';
 import { Icon } from '@/components/ui/Icon';
 
-export function LangSwitcher() {
+/** `compact` shows only the language code (for tight headers on phones). */
+export function LangSwitcher({ compact = false }: { compact?: boolean }) {
   const { locale, t } = useT();
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -22,8 +23,8 @@ export function LangSwitcher() {
         aria-label={t('common.language')}
       >
         {LOCALES.map((l) => (
-          <option key={l} value={l}>
-            {LOCALE_SHORT[l]} · {LOCALE_LABELS[l]}
+          <option key={l} value={l} title={LOCALE_LABELS[l]}>
+            {compact ? LOCALE_SHORT[l] : `${LOCALE_SHORT[l]} · ${LOCALE_LABELS[l]}`}
           </option>
         ))}
       </select>

@@ -16,9 +16,9 @@ export default async function OnboardingPage() {
   const cats = await db.category.findMany({ where: { isActive: true }, orderBy: { sortOrder: 'asc' } });
   return (
     <div className="container-app grid min-h-[70vh] place-items-center py-10">
-      <div className="card w-full max-w-lg animate-fade-up p-6 sm:p-8">
-        <h1 className="text-2xl font-bold">{t('auth.onboardTitle')}</h1>
-        <p className="mb-6 mt-1 muted">{t('auth.onboardSubtitle')}</p>
+      <div className="card w-full max-w-lg motion-safe:animate-fade-up p-6 sm:p-8">
+        <h1 className="text-h1">{t('auth.onboardTitle')}</h1>
+        <p className="mb-6 mt-1 text-muted">{t('auth.onboardSubtitle')}</p>
         <OnboardingForm
           defaults={{ name: user.name ?? '', email: user.email ?? '', categoryId: user.categoryId ?? cats.find((c) => c.code === 'B')?.id ?? '' }}
           categories={cats.map((c) => ({ id: c.id, code: c.code, name: pick(c, 'name', locale), desc: pick(c, 'desc', locale) }))}

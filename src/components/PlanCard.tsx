@@ -2,36 +2,37 @@ import Link from 'next/link';
 import type { PlanView } from '@/lib/plans-view';
 import type { TFn } from '@/i18n/translate';
 import { formatUzs } from '@/lib/format';
+import { Icon } from './ui/Icon';
 
 export function PlanCard({ plan, t, href, cta, active }: { plan: PlanView; t: TFn; href?: string; cta?: React.ReactNode; active?: boolean }) {
   const perDay = Math.round(plan.finalUzs / plan.durationDays);
   return (
     <div
-      className={`card relative flex flex-col p-5 transition hover:-translate-y-0.5 hover:shadow-md ${
-        plan.featured ? 'border-2 border-brand-500 ring-4 ring-brand-500/10' : active ? 'border-2 border-mint-500' : ''
+      className={`card relative flex flex-col p-5 transition hover:border-brand-500/40 ${
+        plan.featured ? 'border-2 border-brand-500 shadow-glow' : active ? 'border-2 border-success' : ''
       }`}
     >
       {plan.featured && (
-        <span className="chip absolute -top-3 left-5 bg-brand-600 text-white">⭐ {t('pricing.bestValue')}</span>
+        <span className="chip absolute -top-3 left-5 bg-brand-600 text-white"><Icon name="sparkles" size={14} /> {t('pricing.bestValue')}</span>
       )}
-      <h3 className="text-lg font-bold">{plan.label}</h3>
-      {plan.untilPass && <p className="text-xs muted">{t('pricing.untilPassNote')}</p>}
+      <h3 className="text-title">{plan.label}</h3>
+      {plan.untilPass && <p className="text-small text-muted">{t('pricing.untilPassNote')}</p>}
       <div className="mt-3 flex items-baseline gap-2">
-        <span className="text-3xl font-extrabold tabular-nums">{formatUzs(plan.finalUzs)}</span>
-        <span className="text-sm muted">{t('common.soum')}</span>
+        <span className="num text-display">{formatUzs(plan.finalUzs)}</span>
+        <span className="text-sm text-muted">{t('common.soum')}</span>
       </div>
       {plan.discountPct > 0 && (
         <div className="mt-1 flex items-center gap-2 text-sm">
-          <s className="muted tabular-nums">{formatUzs(plan.priceUzs)}</s>
-          <span className="chip bg-cta-500/15 text-cta-700 dark:text-cta-400">−{plan.discountPct}%</span>
+          <s className="num text-muted">{formatUzs(plan.priceUzs)}</s>
+          <span className="chip bg-warning/15 text-warning">−{plan.discountPct}%</span>
         </div>
       )}
-      <p className="mt-1 text-xs muted">{t('pricing.perDay', { p: `${formatUzs(perDay)} ${t('common.soum')}` })}</p>
-      {plan.saving > 0 && <span className="chip mt-3 w-fit bg-mint-500/15 text-mint-700 dark:text-mint-400">{t('pricing.save', { p: plan.saving })}</span>}
+      <p className="num mt-1 text-small text-muted">{t('pricing.perDay', { p: `${formatUzs(perDay)} ${t('common.soum')}` })}</p>
+      {plan.saving > 0 && <span className="chip mt-3 w-fit bg-success/15 text-accent-fg">{t('pricing.save', { p: plan.saving })}</span>}
       <div className="mt-auto pt-5">
         {cta ??
           (href && (
-            <Link href={href} className={plan.featured ? 'btn-cta w-full' : 'btn-secondary w-full'}>
+            <Link href={href} className={plan.featured ? 'btn-primary w-full' : 'btn-secondary w-full'}>
               {t('pricing.choose')}
             </Link>
           ))}

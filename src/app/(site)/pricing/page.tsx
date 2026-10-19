@@ -7,6 +7,7 @@ import { welcomeOffer } from '@/lib/pricing';
 import { formatDate } from '@/lib/format';
 import { PlanCard } from '@/components/PlanCard';
 import { Countdown } from '@/components/Countdown';
+import { Icon } from '@/components/ui/Icon';
 import { Checkout } from './Checkout';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -26,13 +27,13 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
         <h1 className="text-3xl font-extrabold sm:text-4xl">{t('pricing.title')}</h1>
         <p className="mt-2 muted">{t('pricing.subtitle')}</p>
         {access?.active && (
-          <p className="chip mx-auto mt-4 bg-mint-500/15 py-2 text-sm text-mint-700 dark:text-mint-300">
-            ✓ {t('dashboard.subscriptionActive', { date: formatDate(access.expiresAt!) })}
+          <p className="chip mx-auto mt-4 bg-success/15 py-2 text-sm text-accent-fg">
+            <Icon name="check" size={14} /> {t('dashboard.subscriptionActive', { date: formatDate(access.expiresAt!) })}
           </p>
         )}
         {welcome && (
-          <p className="mx-auto mt-4 w-fit rounded-2xl bg-cta-500/10 px-4 py-2 text-sm font-semibold text-cta-700 dark:text-cta-400">
-            🎁 {t('pricing.welcomeOffer', { p: welcome.campaign.discountPct })} · {t('pricing.endsIn', { time: '' })}
+          <p className="mx-auto mt-4 w-fit rounded-2xl flex items-center gap-2 border border-warning/40 bg-warning/10 px-4 py-2 text-sm font-semibold text-ink">
+            <Icon name="gift" size={16} className="text-warning" /> {t('pricing.welcomeOffer', { p: welcome.campaign.discountPct })} · {t('pricing.endsIn', { time: '' })}
             <Countdown until={welcome.endsAt.toISOString()} />
           </p>
         )}

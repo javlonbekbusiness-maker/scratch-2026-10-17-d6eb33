@@ -7,6 +7,7 @@ import type { MessageKey } from '@/i18n/translate';
 import type { PlanView } from '@/lib/plans-view';
 import type { DiscountLine } from '@/lib/pricing';
 import { formatUzs } from '@/lib/format';
+import { Icon } from '@/components/ui/Icon';
 
 type QuoteRes = {
   amountUzs: number;
@@ -98,20 +99,20 @@ export function Checkout({ plans, initialPlan, initialCode }: { plans: PlanView[
             <label key={p.id} className="cursor-pointer">
               <input type="radio" name="plan" value={p.slug} checked={plan === p.slug} onChange={() => setPlan(p.slug)} className="peer sr-only" />
               <div className={`card relative h-full p-5 transition peer-focus-visible:ring-2 peer-focus-visible:ring-brand-500 ${plan === p.slug ? 'border-2 border-brand-500 bg-brand-50/50 dark:bg-brand-950/40' : 'border-2 hover:border-brand-300'}`}>
-                {p.featured && <span className="chip absolute -top-3 right-4 bg-brand-600 text-white">⭐ {t('pricing.bestValue')}</span>}
+                {p.featured && <span className="chip absolute -top-3 right-4 bg-brand-600 text-white"><Icon name="sparkles" size={14} /> {t('pricing.bestValue')}</span>}
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="text-lg font-bold">{p.label}</p>
                     {p.untilPass && <p className="text-xs muted">{t('pricing.untilPassNote')}</p>}
                   </div>
-                  <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 ${plan === p.slug ? 'border-brand-600 bg-brand-600 text-white' : 'border-slate-300'}`} aria-hidden>
-                    {plan === p.slug && '✓'}
+                  <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 ${plan === p.slug ? 'border-brand-600 bg-brand-600 text-white' : 'border-line'}`} aria-hidden>
+                    {plan === p.slug && <Icon name="check" size={14} />}
                   </span>
                 </div>
                 <p className="mt-3 text-2xl font-extrabold tabular-nums">{money(p.finalUzs)}</p>
-                {p.discountPct > 0 && <p className="text-sm"><s className="muted">{money(p.priceUzs)}</s> <span className="font-semibold text-cta-600">−{p.discountPct}%</span></p>}
+                {p.discountPct > 0 && <p className="text-sm"><s className="num text-muted">{money(p.priceUzs)}</s> <span className="font-semibold text-warning">−{p.discountPct}%</span></p>}
                 <p className="text-xs muted">{t('pricing.perDay', { p: money(Math.round(p.finalUzs / p.durationDays)) })}</p>
-                {p.saving > 0 && <span className="chip mt-2 bg-mint-500/15 text-mint-700 dark:text-mint-300">{t('pricing.save', { p: p.saving })}</span>}
+                {p.saving > 0 && <span className="chip mt-2 bg-success/15 text-accent-fg">{t('pricing.save', { p: p.saving })}</span>}
               </div>
             </label>
           ))}
@@ -136,25 +137,25 @@ export function Checkout({ plans, initialPlan, initialCode }: { plans: PlanView[
             <button className="btn-secondary px-4">{t('pricing.apply')}</button>
           )}
         </form>
-        <p role="status" className={`mt-2 min-h-[1.25rem] text-sm font-medium ${msg?.ok ? 'text-mint-700 dark:text-mint-400' : 'text-red-600'}`}>{msg?.text}</p>
+        <p role="status" className={`mt-2 min-h-[1.25rem] text-sm font-medium ${msg?.ok ? 'text-accent-fg' : 'text-danger'}`}>{msg?.text}</p>
 
         {q?.trialDays ? (
-          <button onClick={activateTrial} disabled={busy} className="btn-cta mt-2 w-full">{t('pricing.activateTrial')}</button>
+          <button onClick={activateTrial} disabled={busy} className="btn-success mt-2 w-full">{t('pricing.activateTrial')}</button>
         ) : (
           q && (
             <>
               <dl className="mt-3 space-y-2 text-sm">
                 <div className="flex justify-between"><dt className="muted">{t('pricing.original')}</dt><dd className="tabular-nums">{money(q.amountUzs)}</dd></div>
                 {q.lines.map((l, i) => (
-                  <div key={i} className="flex justify-between text-cta-700 dark:text-cta-400">
+                  <div key={i} className="flex justify-between text-warning">
                     <dt>{lineLabel(l)}{l.pct ? ` (−${l.pct}%)` : ''}</dt>
                     <dd className="tabular-nums">−{money(l.amountUzs)}</dd>
                   </div>
                 ))}
                 {q.bonusDays > 0 && (
-                  <div className="flex justify-between text-mint-700 dark:text-mint-400"><dt>{t('pricing.discPromo', { code: q.promo?.code ?? '' })}</dt><dd>{t('pricing.promoBonusDays', { n: q.bonusDays })}</dd></div>
+                  <div className="flex justify-between text-accent-fg"><dt>{t('pricing.discPromo', { code: q.promo?.code ?? '' })}</dt><dd>{t('pricing.promoBonusDays', { n: q.bonusDays })}</dd></div>
                 )}
-                <div className="flex justify-between border-t border-slate-200 pt-3 text-lg font-extrabold dark:border-slate-700">
+                <div className="flex justify-between num border-t border-line pt-3 text-lg font-extrabold">
                   <dt>{t('pricing.total')}</dt><dd className="tabular-nums">{money(q.finalAmountUzs)}</dd>
                 </div>
               </dl>
@@ -166,7 +167,7 @@ export function Checkout({ plans, initialPlan, initialCode }: { plans: PlanView[
                     {PROVIDERS.map((p) => (
                       <label key={p.id} className="cursor-pointer">
                         <input type="radio" name="provider" value={p.id} checked={provider === p.id} onChange={() => setProvider(p.id)} className="peer sr-only" />
-                        <span className={`flex h-12 items-center justify-center gap-1.5 rounded-xl border-2 text-sm font-bold peer-focus-visible:ring-2 ${provider === p.id ? 'border-brand-500' : 'border-slate-200 dark:border-slate-700'}`}>
+                        <span className={`flex h-12 items-center justify-center gap-1.5 rounded-xl border-2 text-sm font-bold peer-focus-visible:ring-2 ${provider === p.id ? 'border-brand-500 bg-brand-600/10' : 'border-line bg-raised'}`}>
                           <span className={`h-3 w-3 rounded-full ${p.color}`} aria-hidden />{p.name}
                         </span>
                       </label>
@@ -174,10 +175,10 @@ export function Checkout({ plans, initialPlan, initialCode }: { plans: PlanView[
                   </div>
                 </fieldset>
               )}
-              <button onClick={pay} disabled={busy || !plan} className="btn-cta mt-5 w-full">
+              <button onClick={pay} disabled={busy || !plan} className="btn-primary mt-5 w-full">
                 {busy ? t('common.loading') : t('pricing.pay', { amount: money(q.finalAmountUzs) })}
               </button>
-              <p className="mt-3 text-center text-xs muted">🔒 {t('pricing.secure')}<br />{t('pricing.receiptNote')}</p>
+              <p className="mt-3 text-center text-xs text-muted"><Icon name="lock" size={12} className="-mt-0.5 mr-1 inline" />{t('pricing.secure')}<br />{t('pricing.receiptNote')}</p>
             </>
           )
         )}

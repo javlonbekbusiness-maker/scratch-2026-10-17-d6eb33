@@ -24,7 +24,7 @@ export function LoginFlow({ step }: { step: 'phone' | 'otp' | 'email' }) {
       <h1 className="text-2xl font-bold">{t('auth.phoneTitle')}</h1>
       <p className="mb-6 mt-1 muted">{t('auth.phoneSubtitle')}</p>
       <PhoneForm />
-      <Link href="/login?step=email" className="mt-2 block text-center text-sm font-medium text-brand-600 hover:underline">
+      <Link href="/login?step=email" className="mt-2 block text-center text-sm font-medium text-brand-fg hover:underline">
         {t('auth.emailLogin')}
       </Link>
     </>
@@ -102,7 +102,7 @@ function OtpStep() {
       <h1 className="text-2xl font-bold">{t('auth.otpTitle')}</h1>
       <p className="mb-6 mt-1 muted">{t('auth.otpSubtitle', { phone: formatPhone(pending.phone) })}</p>
       {pending.devCode && (
-        <p className="mb-4 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
+        <p className="mb-4 rounded-xl border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-ink">
           {t('auth.devCode', { code: pending.devCode })}
         </p>
       )}
@@ -120,24 +120,24 @@ function OtpStep() {
             setCode(v);
             if (v.length === 6) verify(v);
           }}
-          className={`input h-16 text-center font-mono text-3xl tracking-[0.5em] ${error ? 'animate-shake border-red-400' : ''}`}
+          className={`input h-16 text-center font-mono text-3xl tracking-[0.5em] ${error ? 'animate-shake border-danger' : ''}`}
           placeholder="••••••"
           aria-invalid={!!error}
           aria-describedby="otp-err"
         />
-        <p id="otp-err" role="alert" className="mt-2 min-h-[1.25rem] text-sm font-medium text-red-600">{error}</p>
-        <button type="submit" disabled={busy || code.length !== 6} className="btn-cta mt-2 w-full">
+        <p id="otp-err" role="alert" className="mt-2 min-h-[1.25rem] text-sm font-medium text-danger">{error}</p>
+        <button type="submit" disabled={busy || code.length !== 6} className="btn-primary mt-2 w-full">
           {busy ? t('common.loading') : t('auth.verify')}
         </button>
       </form>
       <div className="mt-5 flex items-center justify-between text-sm">
-        <button type="button" onClick={() => router.replace('/login')} className="font-medium text-slate-500 hover:underline">
+        <button type="button" onClick={() => router.replace('/login')} className="font-medium text-muted hover:underline">
           ← {t('auth.changePhone')}
         </button>
         {wait > 0 ? (
           <span className="tabular-nums muted">{t('auth.resendIn', { s: wait })}</span>
         ) : (
-          <button type="button" onClick={resend} className="font-semibold text-brand-600 hover:underline">
+          <button type="button" onClick={resend} className="font-semibold text-brand-fg hover:underline">
             {t('auth.resend')}
           </button>
         )}
@@ -189,10 +189,10 @@ function EmailStep() {
           <label htmlFor="password" className="label">{t('auth.password')}</label>
           <input id="password" name="password" type="password" autoComplete="current-password" required className="input" />
         </div>
-        <p role="alert" className="min-h-[1.25rem] text-sm font-medium text-red-600">{error}</p>
+        <p role="alert" className="min-h-[1.25rem] text-sm font-medium text-danger">{error}</p>
         <button disabled={busy} className="btn-primary w-full">{t('common.login')}</button>
       </form>
-      <Link href="/login" className="mt-4 block text-center text-sm font-medium text-brand-600 hover:underline">
+      <Link href="/login" className="mt-4 block text-center text-sm font-medium text-brand-fg hover:underline">
         {t('auth.phoneLogin')}
       </Link>
     </>

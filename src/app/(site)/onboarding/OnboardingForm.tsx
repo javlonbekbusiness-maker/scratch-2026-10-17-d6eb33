@@ -26,8 +26,8 @@ export function OnboardingForm({ defaults, categories }: { defaults: { name: str
         <legend className="label">{t('auth.category')}</legend>
         <CategoryPicker categories={categories} defaultValue={defaults.categoryId} />
       </fieldset>
-      {state?.error && <p role="alert" className="text-sm font-medium text-red-600">{t(state.error as MessageKey)}</p>}
-      <button disabled={pending} className="btn-cta w-full">{pending ? t('common.loading') : t('auth.finishSignup')}</button>
+      {state?.error && <p role="alert" className="text-sm font-medium text-danger">{t(state.error as MessageKey)}</p>}
+      <button disabled={pending} className="btn-primary w-full">{pending ? t('common.loading') : t('auth.finishSignup')}</button>
     </form>
   );
 }

@@ -41,6 +41,23 @@ _Last updated: 2026-10-18 (stage 12: daily limit of two full tests; not committe
 17. Access control: a regular user gets 404 on `/admin` and on the admin export API.
 18. Library search works in Latin, Cyrillic and Russian, for both signs and rule articles. Leaderboard, privacy, terms, offline page, sitemap, robots, manifest and service worker all return 200.
 
+## Redesign — stage 6: public pages (✅ tested)
+
+- **Public header and footer:** tokens and our icons; the header is for visitors only; compact language picker on phones; the logo never wraps. The offer strip uses our amber style and icon.
+- **Landing:**
+  - Hero with an original product preview drawn from our own components (readiness card + action tiles), the phone form and a stats row with **real** database counts (questions, topics, tickets).
+  - Benefit cards with icon tiles, steps, a try-it question using the test screen's answer states, plans, FAQ with chevrons, and a final CTA.
+  - The fake-looking testimonials placeholder (gold stars, grey bars) is removed until real reviews exist.
+  - The "three languages (Latin and Cyrillic)" benefit was corrected to two languages.
+- **Login:** card plus a privacy note; phone + OTP + consent flow unchanged; colours moved to tokens.
+- **Onboarding:** category picker with our icon, a check badge and 48 px+ targets.
+- **Pricing:** plan cards, checkout, sandbox and payment result restyled (icons, status tiles, tabular prices).
+- **Library:** search field with icon, segmented tabs, signs on a light tile (true colours in dark mode), rule cards.
+- **Leaderboard:** podium badges in our colours; the opt-in link now points to Sozlamalar (where the switch lives).
+- **Other pages:** legal pages and the offline page.
+- **Process note:** a PowerShell bulk replace with single-item lists flattened into character replacements and corrupted two files; both were restored from git and edited properly.
+- **Tests:** lint, type check, unit 16/16, DB 13/13, e2e 22/22; screenshots checked with no page errors.
+
 ## Redesign — stage 5: Profil, Sozlamalar, Saqlangan, Statistika (✅ tested)
 
 - **Profil (rebuilt):** account header (avatar, name, phone, member since, settings button), subscription card ("I passed" kept), referral link with a copy button, rows to Saqlangan with bookmark and note counts, test history with status icons, payments. The personal form, bookmarks/notes and sign-out now live only in Sozlamalar / Saqlangan (no duplicates).

@@ -48,7 +48,7 @@ export function PhoneForm({ compact = false, initial = '' }: { compact?: boolean
       </label>
       <div className={`flex gap-2 ${compact ? 'flex-col sm:flex-row' : 'flex-col'}`}>
         <div className="relative flex-1">
-          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-slate-500">+998</span>
+          <span className="num pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-muted">+998</span>
           <input
             id="phone"
             type="tel"
@@ -57,24 +57,24 @@ export function PhoneForm({ compact = false, initial = '' }: { compact?: boolean
             placeholder="90 123 45 67"
             value={maskLocalDigits(digits)}
             onChange={(e) => setDigits(e.target.value.replace(/\D/g, '').replace(/^998/, '').slice(0, 9))}
-            className="input h-14 pl-[4.25rem] text-lg tracking-wide"
+            className="input num h-14 pl-[4.25rem] text-lg tracking-wide"
             aria-invalid={!!error}
             aria-describedby="phone-err"
           />
         </div>
-        <button type="submit" disabled={busy} className={`btn-cta h-14 ${compact ? 'sm:px-8' : 'w-full'}`}>
+        <button type="submit" disabled={busy} className={`btn-primary h-14 ${compact ? 'sm:px-8' : 'w-full'}`}>
           {busy ? t('common.loading') : compact ? t('landing.heroCta') : t('auth.sendCode')}
         </button>
       </div>
-      <label className="flex cursor-pointer items-start gap-2.5 text-sm">
-        <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-brand-600" />
-        <span className="muted">
+      <label className="flex min-h-[48px] cursor-pointer items-start gap-3 py-1 text-sm">
+        <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-6 w-6 shrink-0 accent-brand-600" />
+        <span className="text-muted">
           {t('auth.consent')} (
           <Link href="/privacy" className="underline" target="_blank">{t('legal.privacyTitle')}</Link>,{' '}
           <Link href="/terms" className="underline" target="_blank">{t('legal.termsTitle')}</Link>)
         </span>
       </label>
-      <p id="phone-err" role="alert" className="min-h-[1.25rem] pb-3 text-sm font-medium text-red-600">{error}</p>
+      <p id="phone-err" role="alert" className="min-h-[1.25rem] pb-3 text-sm font-medium text-danger">{error}</p>
     </form>
   );
 }
