@@ -69,8 +69,6 @@ export default async function LibraryAdmin({ searchParams }: { searchParams: Pro
           </div>
           <form action={saveSign} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {editSign && <input type="hidden" name="id" value={editSign.id} />}
-            {editSign && <input type="hidden" name="nameUzPrev" value={editSign.nameUz} />}
-            {editSign && <input type="hidden" name="descUzPrev" value={editSign.descUz} />}
             <F label="Code"><input name="code" required maxLength={20} defaultValue={editSign?.code} placeholder="2.5" className={inp} /></F>
             <F label="Group">
               <input name="group" required maxLength={80} defaultValue={editSign?.group} list="sign-groups" className={inp} />
@@ -78,11 +76,11 @@ export default async function LibraryAdmin({ searchParams }: { searchParams: Pro
             </F>
             <F label="Order"><input name="sortOrder" type="number" defaultValue={editSign?.sortOrder ?? 0} className={inp} /></F>
             <F label="Name — O'zbek"><input name="nameUz" required maxLength={120} defaultValue={editSign?.nameUz} className={inp} /></F>
-            <F label="Name — Кирилл"><input name="nameCy" maxLength={120} defaultValue={editSign?.nameCy} placeholder="auto from Uzbek" className={inp} /></F>
             <F label="Name — Русский"><input name="nameRu" required maxLength={120} defaultValue={editSign?.nameRu} className={inp} /></F>
+            <div className="hidden lg:block" />
             <F label="Description — O'zbek"><textarea name="descUz" rows={2} defaultValue={editSign?.descUz} className="input py-2 text-sm" /></F>
-            <F label="Description — Кирилл"><textarea name="descCy" rows={2} defaultValue={editSign?.descCy} placeholder="auto from Uzbek" className="input py-2 text-sm" /></F>
             <F label="Description — Русский"><textarea name="descRu" rows={2} defaultValue={editSign?.descRu} className="input py-2 text-sm" /></F>
+            <div className="hidden lg:block" />
             <F label="Image URL"><input name="imageUrl" defaultValue={editSign?.imageUrl} placeholder="/signs/stop.svg or https://…" className={inp} /></F>
             <F label="…or upload (PNG/JPEG/WebP, ≤2 MB)"><input name="image" type="file" accept="image/png,image/jpeg,image/webp" className="text-sm" /></F>
             {editSign?.imageUrl && (
@@ -102,17 +100,15 @@ export default async function LibraryAdmin({ searchParams }: { searchParams: Pro
           </div>
           <form action={saveArticle} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {editRule && <input type="hidden" name="id" value={editRule.id} />}
-            {editRule && <input type="hidden" name="titleUzPrev" value={editRule.titleUz} />}
-            {editRule && <input type="hidden" name="bodyUzPrev" value={editRule.bodyUz} />}
             <F label="Article number"><input name="number" required maxLength={20} defaultValue={editRule?.number} placeholder="10.4" className={`${inp} font-mono`} /></F>
             <F label="Chapter"><input name="chapter" maxLength={120} defaultValue={editRule?.chapter} className={inp} /></F>
             <div className="hidden lg:block" />
             <F label="Title — O'zbek"><input name="titleUz" required defaultValue={editRule?.titleUz} className={inp} /></F>
-            <F label="Title — Кирилл"><input name="titleCy" defaultValue={editRule?.titleCy} placeholder="auto from Uzbek" className={inp} /></F>
             <F label="Title — Русский"><input name="titleRu" required defaultValue={editRule?.titleRu} className={inp} /></F>
+            <div className="hidden lg:block" />
             <F label="Text — O'zbek"><textarea name="bodyUz" required rows={6} defaultValue={editRule?.bodyUz} className="input py-2 text-sm" /></F>
-            <F label="Text — Кирилл"><textarea name="bodyCy" rows={6} defaultValue={editRule?.bodyCy} placeholder="auto from Uzbek" className="input py-2 text-sm" /></F>
             <F label="Text — Русский"><textarea name="bodyRu" required rows={6} defaultValue={editRule?.bodyRu} className="input py-2 text-sm" /></F>
+            <div className="hidden lg:block" />
             <div className="sm:col-span-2 lg:col-span-3"><button className="btn-primary btn-sm">{editRule ? 'Save article' : 'Add article'}</button></div>
           </form>
         </section>

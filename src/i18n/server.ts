@@ -1,12 +1,13 @@
 import { cache } from 'react';
 import { cookies, headers } from 'next/headers';
-import { DEFAULT_LOCALE, LOCALE_COOKIE, isLocale, type Locale } from './config';
+import { DEFAULT_LOCALE, LOCALE_COOKIE, toLocale, type Locale } from './config';
 import { MESSAGES, flatten, makeT } from './translate';
 import { db } from '@/lib/db';
 
 export const getLocale = cache(async (): Promise<Locale> => {
   const c = (await cookies()).get(LOCALE_COOKIE)?.value;
-  if (isLocale(c)) return c;
+  // A chosen language wins; a retired one (e.g. "uz-Cyrl") becomes Uzbek Latin rather than guessing.
+  if (c) return toLocale(c);
   const al = (await headers()).get('accept-language') ?? '';
   if (/^ru/i.test(al)) return 'ru';
   return DEFAULT_LOCALE;

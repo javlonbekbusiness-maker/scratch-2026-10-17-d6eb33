@@ -1,21 +1,28 @@
-export const LOCALES = ['uz', 'uz-Cyrl', 'ru'] as const;
+export const LOCALES = ['uz', 'ru'] as const;
 export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = 'uz';
 export const LOCALE_COOKIE = 'lang';
 
 export const LOCALE_LABELS: Record<Locale, string> = {
   uz: "O'zbekcha",
-  'uz-Cyrl': 'Ўзбекча',
   ru: 'Русский',
 };
 
-export const LOCALE_SHORT: Record<Locale, string> = { uz: 'UZ', 'uz-Cyrl': 'ЎЗ', ru: 'RU' };
+export const LOCALE_SHORT: Record<Locale, string> = { uz: 'UZ', ru: 'RU' };
 
-/** Suffix of multilingual DB columns: textUz / textCy / textRu. */
-export const FIELD_SUFFIX: Record<Locale, 'Uz' | 'Cy' | 'Ru'> = { uz: 'Uz', 'uz-Cyrl': 'Cy', ru: 'Ru' };
+/** Suffix of multilingual DB columns: textUz / textRu. */
+export const FIELD_SUFFIX: Record<Locale, 'Uz' | 'Ru'> = { uz: 'Uz', ru: 'Ru' };
 
 export function isLocale(v: unknown): v is Locale {
   return typeof v === 'string' && (LOCALES as readonly string[]).includes(v);
+}
+
+/**
+ * Any stored or requested language → a supported locale. Retired values such as the old
+ * Uzbek Cyrillic "uz-Cyrl" (still in some cookies and User.locale rows) fall back to Uzbek Latin.
+ */
+export function toLocale(v: unknown): Locale {
+  return isLocale(v) ? v : DEFAULT_LOCALE;
 }
 
 /** Picks the localized column, e.g. pick(q, 'text', 'ru') → q.textRu, falling back to Uzbek. */

@@ -3,21 +3,21 @@ import { db } from './db';
 import { smsProvider } from './sms';
 import { sendEmail } from './email';
 import { DEFAULT_TEMPLATES, type TemplateKey } from './template-defaults';
-import { latinToCyrillic } from './translit';
+import { toLocale } from '@/i18n/config';
 
 export function renderTemplate(body: string, vars: Record<string, string | number | undefined>) {
   return body.replace(/\{(\w+)\}/g, (m, k) => (vars[k] !== undefined ? String(vars[k]) : m));
 }
 
-export async function loadTemplate(key: TemplateKey, channel: MessageChannel, lang: string) {
+export async function loadTemplate(key: TemplateKey, channel: MessageChannel, requestedLang: string) {
+  // Users whose saved language is retired (e.g. "uz-Cyrl") get Uzbek Latin messages.
+  const lang = toLocale(requestedLang);
   const row =
     (await db.messageTemplate.findUnique({ where: { key_channel_lang: { key, channel, lang } } })) ??
     (await db.messageTemplate.findUnique({ where: { key_channel_lang: { key, channel, lang: 'uz' } } }));
   if (row) return { subject: row.subject ?? '', body: row.body };
-  const d = DEFAULT_TEMPLATES[key][lang === 'ru' ? 'ru' : 'uz'];
-  const body = channel === 'SMS' ? d.sms : channel === 'EMAIL' ? d.email : d.push;
-  const conv = lang === 'uz-Cyrl' && channel !== 'SMS' ? latinToCyrillic : (s: string) => s;
-  return { subject: conv(d.emailSubject), body: conv(body) };
+  const d = DEFAULT_TEMPLATES[key][lang];
+  return { subject: d.emailSubject, body: channel === 'SMS' ? d.sms : channel === 'EMAIL' ? d.email : d.push };
 }
 
 type SendArgs = {

@@ -2,12 +2,35 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { formatPhone, isValidPhone, maskLocalDigits, normalizePhone } from '../src/lib/phone';
 import { parseCsv, toCsv } from '../src/lib/csv';
-import { latinToCyrillic } from '../src/lib/translit';
+import { LOCALES, pick, toLocale } from '../src/i18n/config';
 import { formatDuration, formatUzs } from '../src/lib/format';
 import { smsSegments } from '../src/lib/sms';
 import { flatten, makeT, MESSAGES } from '../src/i18n/translate';
 import { pickAdaptive } from '../src/lib/adaptive';
 import { sniffImage } from '../src/lib/image-sniff';
+import { dailyStatus, tashkentDayRange } from '../src/lib/daily-limit';
+
+test('daily limit: calendar day boundaries are midnight in Asia/Tashkent (UTC+5)', () => {
+  // 23:59:59 on 18 Oct in Tashkent is 18:59:59 UTC.
+  const lastSecond = tashkentDayRange(new Date('2026-10-18T18:59:59Z'));
+  assert.equal(lastSecond.start.toISOString(), '2026-10-17T19:00:00.000Z');
+  assert.equal(lastSecond.end.toISOString(), '2026-10-18T19:00:00.000Z');
+  // One second later it is 00:00:00 on 19 Oct: a new day.
+  const midnight = tashkentDayRange(new Date('2026-10-18T19:00:00Z'));
+  assert.equal(midnight.start.toISOString(), '2026-10-18T19:00:00.000Z');
+  // Early UTC morning is already afternoon in Tashkent, same day.
+  assert.equal(tashkentDayRange(new Date('2026-10-18T00:30:00Z')).start.toISOString(), '2026-10-17T19:00:00.000Z');
+  // Month and year rollovers.
+  assert.equal(tashkentDayRange(new Date('2026-12-31T19:00:00Z')).start.toISOString(), '2026-12-31T19:00:00.000Z');
+  assert.equal(tashkentDayRange(new Date('2026-12-31T18:59:59Z')).start.toISOString(), '2026-12-30T19:00:00.000Z');
+});
+
+test('daily limit: remaining count never goes below zero and resets at the next Tashkent midnight', () => {
+  const now = new Date('2026-10-18T10:00:00Z');
+  assert.deepEqual(dailyStatus(0, now), { used: 0, remaining: 2, limit: 2, resetsAt: new Date('2026-10-18T19:00:00Z') });
+  assert.equal(dailyStatus(2, now).remaining, 0);
+  assert.equal(dailyStatus(5, now).remaining, 0);
+});
 
 test('uploads: images are identified by their bytes, not the declared type', () => {
   const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0]);
@@ -88,18 +111,17 @@ test('csv: neutralizes spreadsheet formulas on export', () => {
   assert.ok(phone.includes('\r\n+998901234567,-15000'), phone);
 });
 
-test('translit: Uzbek Latin to Cyrillic', () => {
-  assert.equal(latinToCyrillic("O'zbekiston"), 'Ўзбекистон');
-  assert.equal(latinToCyrillic('shahar choyxona'), 'шаҳар чойхона');
-  assert.equal(latinToCyrillic("so'm"), 'сўм');
-  assert.equal(latinToCyrillic('ekran'), 'экран');
-  assert.equal(latinToCyrillic("ma'lumot"), 'маълумот');
-});
-
-test('translit: keeps placeholders, URLs and brand words', () => {
-  assert.equal(latinToCyrillic('Salom {name}'), 'Салом {name}');
-  assert.equal(latinToCyrillic('YHQ Test SMS'), 'YHQ Test SMS');
-  assert.equal(latinToCyrillic('https://a.uz/x'), 'https://a.uz/x');
+test('locales: only Uzbek Latin and Russian; retired Uzbek Cyrillic falls back to Uzbek', () => {
+  assert.deepEqual([...LOCALES], ['uz', 'ru']);
+  assert.deepEqual(Object.keys(MESSAGES).sort(), ['ru', 'uz']);
+  assert.equal(toLocale('uz-Cyrl'), 'uz');
+  assert.equal(toLocale('ru'), 'ru');
+  assert.equal(toLocale(undefined), 'uz');
+  // Content picks never read the old Cyrillic columns, even if a row still has them.
+  const row = { textUz: 'Savol', textCy: 'Савол', textRu: 'Вопрос' };
+  assert.equal(pick(row, 'text', 'uz'), 'Savol');
+  assert.equal(pick(row, 'text', 'ru'), 'Вопрос');
+  assert.equal(pick(row, 'text', toLocale('uz-Cyrl')), 'Savol');
 });
 
 test('format: money and durations', () => {
@@ -116,7 +138,7 @@ test('sms: segment counting for Latin and Cyrillic', () => {
 
 test('i18n: every locale has exactly the same keys as uz', () => {
   const base = Object.keys(flatten(MESSAGES.uz)).sort();
-  for (const l of ['uz-Cyrl', 'ru'] as const) assert.deepEqual(Object.keys(flatten(MESSAGES[l])).sort(), base, l);
+  for (const l of ['ru'] as const) assert.deepEqual(Object.keys(flatten(MESSAGES[l])).sort(), base, l);
 });
 
 test('i18n: interpolation', () => {

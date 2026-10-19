@@ -17,7 +17,7 @@ export default async function ImportPage({ searchParams }: { searchParams: Promi
       <section className="card mb-6 p-5">
         <h2 className="font-bold">Templates</h2>
         <p className="mt-1 text-sm muted">
-          Questions: one row per question; <code>correct</code> is the answer number (1–5); Cyrillic columns may be left empty and will be transliterated.
+          Questions: one row per question; <code>correct</code> is the answer number (1–5). Text columns are Uzbek (<code>_uz</code>) and Russian (<code>_ru</code>); older files with <code>_cy</code> columns still import and those columns are ignored.
           Rows with an existing <code>external_id</code> are updated.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">

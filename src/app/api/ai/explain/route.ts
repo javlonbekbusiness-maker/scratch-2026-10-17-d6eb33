@@ -11,7 +11,6 @@ import { pick, type Locale } from '@/i18n/config';
 
 const LANG_NAME: Record<Locale, string> = {
   uz: 'Uzbek (Latin script)',
-  'uz-Cyrl': 'Uzbek (Cyrillic script)',
   ru: 'Russian',
 };
 

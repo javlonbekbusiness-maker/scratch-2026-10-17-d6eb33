@@ -13,6 +13,7 @@ next-env.d.ts
 # local data
 .localdb
 public/uploads
+backups
 
 # logs and OS files
 *.log

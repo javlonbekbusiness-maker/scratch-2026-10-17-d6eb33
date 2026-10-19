@@ -8,7 +8,6 @@
  */
 import { randomBytes } from 'node:crypto';
 import { PrismaClient, type MessageChannel } from '@prisma/client';
-import { latinToCyrillic as cy } from '../src/lib/translit';
 import { DEFAULT_TEMPLATES, TEMPLATE_KEYS } from '../src/lib/template-defaults';
 
 const db = new PrismaClient();
@@ -17,14 +16,13 @@ const SAMPLE_NOTE_RU = ' (Пример — замените официальны
 
 // ─── Reference data ──────────────────────────────────────────────────────────
 
-// nameCy/descCy are given where automatic transliteration gets loanwords or Latin letters wrong.
-const CATEGORIES: { code: string; nameUz: string; nameRu: string; descUz: string; descRu: string; nameCy?: string; descCy?: string }[] = [
-  { code: 'A', nameUz: 'Mototsikllar', nameCy: 'Мотоцикллар', nameRu: 'Мотоциклы', descUz: 'Mototsikl va motorollerlar', descCy: 'Мотоцикл ва мотороллерлар', descRu: 'Мотоциклы и мотороллеры' },
+const CATEGORIES: { code: string; nameUz: string; nameRu: string; descUz: string; descRu: string }[] = [
+  { code: 'A', nameUz: 'Mototsikllar', nameRu: 'Мотоциклы', descUz: 'Mototsikl va motorollerlar', descRu: 'Мотоциклы и мотороллеры' },
   { code: 'B', nameUz: 'Yengil avtomobillar', nameRu: 'Легковые автомобили', descUz: 'Yengil avtomobil, 3,5 t gacha', descRu: 'Легковые, до 3,5 т' },
   { code: 'C', nameUz: 'Yuk avtomobillari', nameRu: 'Грузовые автомобили', descUz: 'Yuk avtomobillari, 3,5 t dan ortiq', descRu: 'Грузовые, свыше 3,5 т' },
   { code: 'D', nameUz: 'Avtobuslar', nameRu: 'Автобусы', descUz: "8 dan ortiq yo'lovchi o'rni", descRu: 'Более 8 пассажирских мест' },
-  { code: 'BE', nameUz: 'B + tirkama', nameCy: 'B + тиркама', nameRu: 'B + прицеп', descUz: 'B toifasi og‘ir tirkama bilan', descCy: 'B тоифаси оғир тиркама билан', descRu: 'Категория B с тяжёлым прицепом' },
-  { code: 'CE', nameUz: 'C + tirkama', nameCy: 'C + тиркама', nameRu: 'C + прицеп', descUz: 'C toifasi tirkama bilan', descCy: 'C тоифаси тиркама билан', descRu: 'Категория C с прицепом' },
+  { code: 'BE', nameUz: 'B + tirkama', nameRu: 'B + прицеп', descUz: 'B toifasi og‘ir tirkama bilan', descRu: 'Категория B с тяжёлым прицепом' },
+  { code: 'CE', nameUz: 'C + tirkama', nameRu: 'C + прицеп', descUz: 'C toifasi tirkama bilan', descRu: 'Категория C с прицепом' },
 ];
 
 const TOPICS = [
@@ -208,8 +206,8 @@ async function main() {
   const catIds: Record<string, string> = {};
   for (const [i, c] of CATEGORIES.entries()) {
     const data = {
-      code: c.code, nameUz: c.nameUz, nameCy: c.nameCy ?? cy(c.nameUz), nameRu: c.nameRu,
-      descUz: c.descUz, descCy: c.descCy ?? cy(c.descUz), descRu: c.descRu, sortOrder: i,
+      code: c.code, nameUz: c.nameUz, nameRu: c.nameRu,
+      descUz: c.descUz, descRu: c.descRu, sortOrder: i,
     };
     const row = await db.category.upsert({ where: { slug: c.code.toLowerCase() }, create: { slug: c.code.toLowerCase(), ...data }, update: data });
     catIds[c.code] = row.id;
@@ -217,14 +215,13 @@ async function main() {
 
   const topicIds: Record<string, string> = {};
   for (const [i, t] of TOPICS.entries()) {
-    const data = { nameUz: t.nameUz, nameCy: cy(t.nameUz), nameRu: t.nameRu, icon: t.icon, sortOrder: i };
+    const data = { nameUz: t.nameUz, nameRu: t.nameRu, icon: t.icon, sortOrder: i };
     const row = await db.topic.upsert({ where: { slug: t.slug }, create: { slug: t.slug, ...data }, update: data });
     topicIds[t.slug] = row.id;
   }
 
   for (const p of PLANS) {
-    const data = { ...p, labelCy: cy(p.labelUz) };
-    await db.plan.upsert({ where: { slug: p.slug }, create: data, update: data });
+    await db.plan.upsert({ where: { slug: p.slug }, create: p, update: p });
   }
 
   // Exam format — UNVERIFIED defaults; confirm against the official exam and edit in Admin → Exam templates.
@@ -251,16 +248,14 @@ async function main() {
       ticketNumber: Math.floor(pos / 10) + 1,
       sortOrder: pos % 10,
       textUz: text[0],
-      textCy: cy(text[0]),
       textRu: text[1],
       imageUrl: img,
       explanationUz: exp[0] + SAMPLE_NOTE_UZ,
-      explanationCy: cy(exp[0] + SAMPLE_NOTE_UZ),
       explanationRu: exp[1] + SAMPLE_NOTE_RU,
       ruleRef: ref,
       difficulty: 1,
     };
-    const answerRows = answers.map(([uz, ru], i) => ({ textUz: uz, textCy: cy(uz), textRu: ru, isCorrect: i === correct, sortOrder: i }));
+    const answerRows = answers.map(([uz, ru], i) => ({ textUz: uz, textRu: ru, isCorrect: i === correct, sortOrder: i }));
     const existing = await db.question.findUnique({ where: { externalId } });
     if (existing) {
       await db.answer.deleteMany({ where: { questionId: existing.id } });
@@ -279,28 +274,25 @@ async function main() {
 
   await db.roadSign.deleteMany();
   await db.roadSign.createMany({
-    data: SIGNS.map(([file, group, code, nameUz, nameRu], i) => ({ code, group, nameUz, nameCy: cy(nameUz), nameRu, descUz: 'Namuna tavsif.', descCy: cy('Namuna tavsif.'), descRu: 'Пример описания.', imageUrl: `/signs/${file}.svg`, sortOrder: i })),
+    data: SIGNS.map(([file, group, code, nameUz, nameRu], i) => ({ code, group, nameUz, nameRu, descUz: 'Namuna tavsif.', descRu: 'Пример описания.', imageUrl: `/signs/${file}.svg`, sortOrder: i })),
   });
 
   for (const [number, titleUz, titleRu] of ARTICLES) {
     const bodyUz = `[NAMUNA] Bu yerda YHQning tegishli moddasi matni joylashadi. Rasmiy matnni Admin → Signs & rules bo'limida kiriting.`;
     const bodyRu = `[ПРИМЕР] Здесь будет текст соответствующей статьи ПДД. Введите официальный текст в разделе Admin → Signs & rules.`;
-    const data = { chapter: 'Namuna', titleUz, titleCy: cy(titleUz), titleRu, bodyUz, bodyCy: cy(bodyUz), bodyRu };
+    const data = { chapter: 'Namuna', titleUz, titleRu, bodyUz, bodyRu };
     await db.ruleArticle.upsert({ where: { number }, create: { number, ...data }, update: data });
   }
 
-  // Message templates: uz-Cyrl SMS stays Latin (GSM-7 is ~2× cheaper per segment than UCS-2).
+  // Message templates in Uzbek and Russian.
   for (const key of TEMPLATE_KEYS) {
     const d = DEFAULT_TEMPLATES[key];
     const rows: { channel: MessageChannel; lang: string; subject: string | null; body: string }[] = [
       { channel: 'SMS', lang: 'uz', subject: null, body: d.uz.sms },
-      { channel: 'SMS', lang: 'uz-Cyrl', subject: null, body: d.uz.sms },
       { channel: 'SMS', lang: 'ru', subject: null, body: d.ru.sms },
       { channel: 'EMAIL', lang: 'uz', subject: d.uz.emailSubject, body: d.uz.email },
-      { channel: 'EMAIL', lang: 'uz-Cyrl', subject: cy(d.uz.emailSubject), body: cy(d.uz.email) },
       { channel: 'EMAIL', lang: 'ru', subject: d.ru.emailSubject, body: d.ru.email },
       { channel: 'PUSH', lang: 'uz', subject: null, body: d.uz.push },
-      { channel: 'PUSH', lang: 'uz-Cyrl', subject: null, body: cy(d.uz.push) },
       { channel: 'PUSH', lang: 'ru', subject: null, body: d.ru.push },
     ];
     for (const r of rows) {

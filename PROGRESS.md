@@ -1,6 +1,6 @@
 # YHQ Test — progress log
 
-_Last updated: 2026-10-18 (stage 11: authentication hardening)_
+_Last updated: 2026-10-18 (stage 12: daily limit of two full tests; not committed yet, awaiting review)_
 
 **Status legend**
 - ✅ **verified**: exercised in a running app against a real PostgreSQL database, or covered by passing unit tests
@@ -12,8 +12,9 @@ _Last updated: 2026-10-18 (stage 11: authentication hardening)_
 | Check | Command | Result |
 |---|---|---|
 | Type check | `npm run typecheck` | ✅ 0 errors |
-| Unit tests | `npm test` | ✅ 13/13 pass (adds adaptive selection ×3 and upload signature checks) |
-| Auth end-to-end | `npm run test:e2e` (against `npm run dev`) | ✅ 8/8 pass (stage 11) |
+| Unit tests | `npm test` | ✅ 15/15 pass (stage 12 adds Tashkent day boundaries and the remaining count) |
+| Daily-limit DB tests | `npm run test:db` | ✅ 10/10 pass (stage 12) |
+| End-to-end | `npm run test:e2e` (against `npm run dev`) | ✅ 11/11 pass (8 auth + 3 daily limit) |
 | Production build | `npm run build` | ✅ exit 0, 54 routes (stage 3: `/admin/promo`, `/admin/promo/[id]`; stage 4: `/admin/campaigns`; stage 5: `/admin/users`, `/admin/users/[id]`, `/admin/payments`, `/admin/plans`; stage 6: `/admin/tickets`, `/admin/exam`, `/admin/categories`; stage 7: `/admin/messages`, `/admin/translations`, `/admin/library`, `/admin/settings`) |
 | Admin navigation | all 15 admin menu links | ✅ every link returns 200 (no more 404s) |
 | Schema + seed | `npx prisma db push` → `npm run db:seed` (run twice) | ✅ 6 categories, 8 topics, 40 questions, 4 tickets, 4 plans, 16 signs, 72 message templates, 6 demo promo codes, admin user. Same counts on the second run, so the seed is safe to re-run. |
@@ -39,6 +40,63 @@ _Last updated: 2026-10-18 (stage 11: authentication hardening)_
 16. Admin: analytics shows real figures (users, conversion, revenue, top promo code). Question list and editor work, and a blank Cyrillic field is auto-filled. Bulk import validates row by row (unknown category, bad `correct` index), imports the valid row, and delete works. Payments CSV export works.
 17. Access control: a regular user gets 404 on `/admin` and on the admin export API.
 18. Library search works in Latin, Cyrillic and Russian, for both signs and rule articles. Leaderboard, privacy, terms, offline page, sitemap, robots, manifest and service worker all return 200.
+
+## Stage 14: Uzbek Cyrillic removed (✅ tested, not committed)
+
+- **Languages:** Uzbek Latin (default) and Russian only. `uz-Cyrl` is gone from the locale list, types, switcher, message files, admin template languages and hreflang. The transliteration code and `scripts/gen-cyrillic.ts` are deleted.
+- **Fallback:** an old `lang=uz-Cyrl` cookie renders Uzbek Latin, even with a Russian browser, and the cookie is rewritten to `uz`. `/uz-Cyrl/...` URLs get a 308 redirect without the prefix. Users with `locale = uz-Cyrl` receive Uzbek SMS, email and push.
+- **Admin and CSV:** Cyrillic inputs are removed from the question, category, topic, sign, rule, plan and campaign forms. The CSV and JSON templates no longer have `_cy` columns; old files with `_cy` columns still import, and those columns are ignored.
+- **Database (confirmed by the owner, 2026-10-19):**
+  - The 12 `*Cy` columns are dropped (Category name/desc, Topic name, Question text/explanation, Answer text, RoadSign name/desc, RuleArticle title/body, Plan label, Campaign banner).
+  - The 24 `uz-Cyrl` MessageTemplate rows are deleted, and 1 user's locale changed from `uz-Cyrl` to `uz`.
+  - Backup first: `backups/uz-cyrl-removed-2026-10-19.json` (git-ignored).
+  - Afterwards: 0 `*Cy` columns; all 40 questions, 121 answers, users, tests and subscriptions intact.
+- **Tests:** unit 14/14 (a locale test replaces the 2 transliteration tests); e2e 15/15 (adds 4 locale tests); DB 10/10; type check passes; build passes; crawl clean.
+
+## Stage 13: site-wide error check (✅, not committed)
+
+- **Crawl:** every route (15 public, 9 user, 21 admin, plus 3 APIs) as visitor, regular user and admin. No 500s, no server render errors. A browser pass found no console errors, hydration warnings or failed requests.
+- **Fixed:**
+  - Next's bare English 404 is replaced by a localized, styled page (`src/app/not-found.tsx`) with a link back.
+  - `/admin` no longer has an "Admin" tab title for non-admins.
+  - Tab titles are localized (dashboard, tests, profile, leaderboard, onboarding, test, results).
+- **Added:** `npm run make-admin -- +998…` (`--revoke` removes the role; it refuses to remove the last admin).
+- **Note:** non-admins still get 404 on `/admin` on purpose.
+
+## Stage 12: daily limit of two full tests (✅ tested, ⏳ not committed until reviewed)
+
+- **Rule:**
+  - A full test is exam mode, always exactly 20 questions; practice modes (tickets, topics, marathon, mistakes, adaptive) are unlimited.
+  - At most 2 per user per Asia/Tashkent calendar day, counted from saved results (`finishedAt`), on the day of submission. It resets at 00:00 Tashkent time.
+  - Subscription rules are unchanged: exam mode still needs a subscription, and the limit applies on top.
+- **No schema change:** counts come from the existing `TestSession` rows. Pre-existing finished 20-question exams from today count too; the one old 10-question exam does not.
+- **Server:**
+  - `finishSession` runs inside a transaction: advisory lock per user, re-read, validation (20 distinct questions, `totalQ` = 20), count today's finished exams, then a conditional save (`finishedAt IS NULL`).
+  - Any failure rolls back, so no attempt is used.
+  - It's idempotent: re-submitting returns the saved result.
+  - `startTest` refuses a new exam at the limit (`/tests?limit=1`); an unfinished exam can't be continued once the limit is reached.
+  - Expired exams that are auto-submitted from the test and results pages respect the limit.
+- **API:** `/api/tests/finish` returns `daily {used, remaining, limit, resetsAt}`. 429 `daily_limit` and 422 `invalid_test` carry a translated message. 500 means nothing was saved.
+- **UI:**
+  - remaining count on the dashboard, the exam card and the exam result page
+  - disabled exam card and button at 0, plus a banner
+  - TestRunner shows the server's message instead of always navigating to results (that was an existing bug)
+- **Admin:** exam templates must have 20 questions.
+- **Tests:**
+  - `npm test` 15/15; `npm run test:db` 10/10, covering scenarios 1–10 of the brief plus scoring and start
+  - `npm run test:e2e` 11/11 (8 auth + 3 limit over HTTP)
+  - production build passes
+  - With the lock deliberately disabled, the concurrency test failed (6 of 6 accepted), so the lock is what enforces the limit.
+- **Browser check (throwaway user, then deleted):**
+  - dashboard showed "1 / 2"
+  - the exam started with 20 questions
+  - after another device used the second attempt, submitting showed the limit message
+  - the tests page and dashboard were blocked, the results page showed the limit and hid "retry", and reopening the unfinished exam redirected
+- **Limitations:**
+  - The lock needs PostgreSQL (already the project's database).
+  - Exams submitted after midnight count toward the new day.
+  - Early-finished exams (unanswered questions are graded wrong) count, as before.
+  - The client-side timer auto-submits at 0; if the limit was used elsewhere meanwhile, that submission is rejected.
 
 ## Stage 11: authentication hardening (✅ tested)
 

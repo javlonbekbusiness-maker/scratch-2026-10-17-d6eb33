@@ -62,7 +62,6 @@ export default async function PlansAdmin({ searchParams }: { searchParams: Promi
               </p>
               <form action={savePlan} className="space-y-3">
                 <input type="hidden" name="id" value={p.id} />
-                <input type="hidden" name="labelUzPrev" value={p.labelUz} />
                 <div className="grid gap-3 sm:grid-cols-3">
                   <label className="block">
                     <span className="label">Price (so&apos;m)</span>
@@ -77,9 +76,8 @@ export default async function PlansAdmin({ searchParams }: { searchParams: Promi
                     <input name="sortOrder" type="number" defaultValue={p.sortOrder} className={inp} />
                   </label>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="grid gap-3 sm:grid-cols-2">
                   <label className="block"><span className="label">Name — O&apos;zbek</span><input name="labelUz" required maxLength={40} defaultValue={p.labelUz} className={inp} /></label>
-                  <label className="block"><span className="label">Name — Кирилл</span><input name="labelCy" maxLength={40} defaultValue={p.labelCy} placeholder="auto from Uzbek" className={inp} /></label>
                   <label className="block"><span className="label">Name — Русский</span><input name="labelRu" required maxLength={40} defaultValue={p.labelRu} className={inp} /></label>
                 </div>
                 {p.untilPass && <p className="text-xs muted">“Until you pass”: access lasts this many days at most and ends early when the user taps “I passed”.</p>}

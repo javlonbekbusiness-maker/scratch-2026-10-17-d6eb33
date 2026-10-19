@@ -2,7 +2,6 @@ import { randomBytes } from 'node:crypto';
 import { z } from 'zod';
 import { db } from './db';
 import { parseCsv } from './csv';
-import { latinToCyrillic } from './translit';
 import { normalizePhone, PHONE_RE } from './phone';
 import { normalizeCode } from './promo';
 
@@ -17,12 +16,12 @@ const optDate = z.preprocess((v) => (v ? new Date(String(v)) : undefined), z.dat
 
 export const QUESTION_CSV_COLUMNS = [
   'external_id', 'category', 'ticket', 'topic',
-  'text_uz', 'text_cy', 'text_ru', 'image_url',
-  ...[1, 2, 3, 4, 5].flatMap((n) => [`answer${n}_uz`, `answer${n}_cy`, `answer${n}_ru`]),
-  'correct', 'explanation_uz', 'explanation_cy', 'explanation_ru', 'rule_ref', 'difficulty',
+  'text_uz', 'text_ru', 'image_url',
+  ...[1, 2, 3, 4, 5].flatMap((n) => [`answer${n}_uz`, `answer${n}_ru`]),
+  'correct', 'explanation_uz', 'explanation_ru', 'rule_ref', 'difficulty',
 ];
 
-const l3 = z.object({ uz: z.string().trim().min(1, 'uz text required'), cy: z.string().trim().optional().default(''), ru: z.string().trim().min(1, 'ru text required') });
+const l3 = z.object({ uz: z.string().trim().min(1, 'uz text required'), ru: z.string().trim().min(1, 'ru text required') });
 
 const questionSchema = z
   .object({
@@ -34,7 +33,7 @@ const questionSchema = z
     imageUrl: z.union([z.literal(''), z.string().trim().regex(/^(https:\/\/|\/)[^\s]+$/, 'image_url must be https:// or /path')]).optional(),
     answers: z.array(l3).min(3, 'need 3–5 answers').max(5, 'need 3–5 answers'),
     correct: z.coerce.number().int().min(1, 'correct must be 1–5'),
-    explanation: z.object({ uz: z.string().trim().default(''), cy: z.string().trim().default(''), ru: z.string().trim().default('') }),
+    explanation: z.object({ uz: z.string().trim().default(''), ru: z.string().trim().default('') }),
     ruleRef: z.string().trim().max(40).optional().default(''),
     difficulty: z.coerce.number().int().min(1).max(3).optional().default(1),
   })
@@ -44,18 +43,18 @@ export type QuestionRow = z.infer<typeof questionSchema>;
 
 function csvToQuestion(r: Record<string, string>) {
   const answers = [1, 2, 3, 4, 5]
-    .map((n) => ({ uz: r[`answer${n}_uz`] ?? '', cy: r[`answer${n}_cy`] ?? '', ru: r[`answer${n}_ru`] ?? '' }))
+    .map((n) => ({ uz: r[`answer${n}_uz`] ?? '', ru: r[`answer${n}_ru`] ?? '' }))
     .filter((a) => a.uz || a.ru);
   return {
     externalId: r.external_id,
     category: r.category,
     ticket: r.ticket ? Number(r.ticket) : undefined,
     topic: r.topic,
-    text: { uz: r.text_uz ?? '', cy: r.text_cy ?? '', ru: r.text_ru ?? '' },
+    text: { uz: r.text_uz ?? '', ru: r.text_ru ?? '' },
     imageUrl: r.image_url,
     answers,
     correct: r.correct,
-    explanation: { uz: r.explanation_uz ?? '', cy: r.explanation_cy ?? '', ru: r.explanation_ru ?? '' },
+    explanation: { uz: r.explanation_uz ?? '', ru: r.explanation_ru ?? '' },
     ruleRef: r.rule_ref,
     difficulty: r.difficulty || 1,
   };
@@ -103,7 +102,6 @@ export async function commitQuestions(rows: QuestionRow[]) {
   const lk = await lookups();
   let created = 0;
   let updated = 0;
-  const cy = (cyText: string | undefined, uzText: string) => (cyText?.trim() ? cyText : latinToCyrillic(uzText));
   for (const r of rows) {
     const categoryId = lk.cat.get(r.category.toUpperCase())!;
     const data = {
@@ -111,16 +109,14 @@ export async function commitQuestions(rows: QuestionRow[]) {
       topicId: r.topic ? lk.topic.get(r.topic.toLowerCase()) ?? null : null,
       ticketNumber: r.ticket ?? null,
       textUz: r.text.uz,
-      textCy: cy(r.text.cy, r.text.uz),
       textRu: r.text.ru,
       imageUrl: r.imageUrl || null,
       explanationUz: r.explanation.uz,
-      explanationCy: cy(r.explanation.cy, r.explanation.uz),
       explanationRu: r.explanation.ru,
       ruleRef: r.ruleRef || null,
       difficulty: r.difficulty,
     };
-    const answers = r.answers.map((a, i) => ({ textUz: a.uz, textCy: cy(a.cy, a.uz), textRu: a.ru, isCorrect: i + 1 === r.correct, sortOrder: i }));
+    const answers = r.answers.map((a, i) => ({ textUz: a.uz, textRu: a.ru, isCorrect: i + 1 === r.correct, sortOrder: i }));
     const existing = r.externalId ? await db.question.findUnique({ where: { externalId: r.externalId } }) : null;
     await db.$transaction(async (tx) => {
       if (existing) {

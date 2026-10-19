@@ -18,11 +18,11 @@ export default async function LibraryPage({ searchParams }: { searchParams: Prom
 
   const [signs, rules] = await Promise.all([
     db.roadSign.findMany({
-      where: q ? { OR: [{ code: contains }, { nameUz: contains }, { nameCy: contains }, { nameRu: contains }, { descUz: contains }, { descRu: contains }] } : {},
+      where: q ? { OR: [{ code: contains }, { nameUz: contains }, { nameRu: contains }, { descUz: contains }, { descRu: contains }] } : {},
       orderBy: [{ group: 'asc' }, { sortOrder: 'asc' }],
     }),
     db.ruleArticle.findMany({
-      where: q ? { OR: [{ number: contains }, { titleUz: contains }, { titleCy: contains }, { titleRu: contains }, { bodyUz: contains }, { bodyCy: contains }, { bodyRu: contains }] } : {},
+      where: q ? { OR: [{ number: contains }, { titleUz: contains }, { titleRu: contains }, { bodyUz: contains }, { bodyRu: contains }] } : {},
       orderBy: { number: 'asc' },
     }),
   ]);

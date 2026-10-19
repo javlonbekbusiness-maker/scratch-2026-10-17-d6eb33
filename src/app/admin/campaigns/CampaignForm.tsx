@@ -12,7 +12,6 @@ export type CampaignDefaults = Partial<{
   startsAt: string;
   endsAt: string;
   bannerUz: string;
-  bannerCy: string;
   bannerRu: string;
   planSlugs: string[];
   isActive: boolean;
@@ -36,8 +35,8 @@ export function CampaignForm({ defaults = {}, plans }: { defaults?: CampaignDefa
     return dv === undefined ? '' : String(dv);
   };
   const [type, setType] = useState(v('type') || 'SEASONAL');
-  const [banner, setBanner] = useState({ uz: v('bannerUz'), cy: v('bannerCy'), ru: v('bannerRu') });
-  const [previewLang, setPreviewLang] = useState<'uz' | 'cy' | 'ru'>('uz');
+  const [banner, setBanner] = useState({ uz: v('bannerUz'), ru: v('bannerRu') });
+  const [previewLang, setPreviewLang] = useState<'uz' | 'ru'>('uz');
   const planChecked = (slug: string) => {
     const list = state ? state.values.planSlugs : defaults.planSlugs;
     return (Array.isArray(list) ? list : list ? [list] : []).includes(slug);
@@ -45,12 +44,11 @@ export function CampaignForm({ defaults = {}, plans }: { defaults?: CampaignDefa
   const isActive = state ? state.values.isActive === 'on' : !!defaults.isActive;
   const help = TYPES.find((t) => t.value === type)?.help;
   const needsDates = type === 'SEASONAL';
-  const previewText = banner[previewLang] || (previewLang === 'cy' ? '(auto-transliterated from Uzbek)' : '');
+  const previewText = banner[previewLang];
 
   return (
     <form key={state?.attempt ?? 0} action={action} className="space-y-4">
       {defaults.id && <input type="hidden" name="id" value={defaults.id} />}
-      {defaults.id && <input type="hidden" name="bannerUzPrev" value={defaults.bannerUz ?? ''} />}
       {state?.error && <p role="alert" className="rounded-xl bg-red-500/10 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300">{state.error}</p>}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -105,13 +103,13 @@ export function CampaignForm({ defaults = {}, plans }: { defaults?: CampaignDefa
 
       {type === 'SEASONAL' && (
         <fieldset className="space-y-3">
-          <legend className="label">Site banner <span className="font-normal muted">(max 140 characters; Cyrillic is auto-filled from Uzbek if empty)</span></legend>
-          <div className="grid gap-3 md:grid-cols-3">
-            {(['uz', 'cy', 'ru'] as const).map((l) => (
+          <legend className="label">Site banner <span className="font-normal muted">(max 140 characters)</span></legend>
+          <div className="grid gap-3 md:grid-cols-2">
+            {(['uz', 'ru'] as const).map((l) => (
               <label key={l} className="block">
-                <span className="text-xs font-semibold muted">{l === 'uz' ? "O'zbek (lotin)" : l === 'cy' ? 'Ўзбек (кирилл)' : 'Русский'}</span>
+                <span className="text-xs font-semibold muted">{l === 'uz' ? "O'zbek" : 'Русский'}</span>
                 <input
-                  name={`banner${l === 'uz' ? 'Uz' : l === 'cy' ? 'Cy' : 'Ru'}`}
+                  name={l === 'uz' ? 'bannerUz' : 'bannerRu'}
                   maxLength={140}
                   value={banner[l]}
                   onChange={(e) => setBanner((b) => ({ ...b, [l]: e.target.value }))}
@@ -122,7 +120,7 @@ export function CampaignForm({ defaults = {}, plans }: { defaults?: CampaignDefa
             ))}
           </div>
           <div>
-            <p className="mb-1 text-xs muted">Preview ({previewLang === 'uz' ? 'Uzbek' : previewLang === 'cy' ? 'Cyrillic' : 'Russian'}):</p>
+            <p className="mb-1 text-xs muted">Preview ({previewLang === 'uz' ? 'Uzbek' : 'Russian'}):</p>
             <div className="rounded-xl bg-gradient-to-r from-brand-600 to-mint-600 py-2 text-center text-sm font-semibold text-white" aria-live="polite">
               🎉 {previewText || <span className="opacity-70">Banner text appears here</span>} · 2d 4:12:09
             </div>

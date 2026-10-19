@@ -2,7 +2,7 @@
 
 Mobile-first web app for preparing for the Uzbekistan driving licence theory exam. Freemium: users verify their phone, try demo tickets for free, then buy a subscription for the full question bank.
 
-- **Languages:** Uzbek (Latin), Uzbek (Cyrillic), Russian
+- **Languages:** Uzbek (Latin script) and Russian
 - **Test modes:** exam simulation (timer, pass mark), tickets, topics, mistakes review (spaced repetition), marathon, adaptive practice
 - **Learning tools:** progress dashboard, bookmarks and notes, AI "explain this rule" button, signs and rules library, leaderboard, shareable result cards
 - **Payments:** Click, Payme and Uzum, with promo codes, campaigns and referral rewards
@@ -114,7 +114,7 @@ Notes:
 | Plans | 1 week 29 000, 1 month 79 000, 3 months 179 000 ("Best value"), until-pass 249 000 so'm |
 | Exam templates | Per category: 20 questions, 25 min, 90%. **Placeholder values; see below.** Plus a 10-question ticket template for B. |
 | Library | 16 sample road signs, 8 placeholder rule articles |
-| Message templates | 72 (8 messages × SMS/email/push × 3 languages) |
+| Message templates | 48 (8 messages × SMS/email/push × 2 languages) |
 | Campaigns | Active welcome offer: −20% for 24 h after sign-up |
 | Admin user | Phone `ADMIN_PHONE` (default `+998 90 000 00 01`) |
 
@@ -129,7 +129,7 @@ Notes:
 | `MONTHONLY` | −30%, only on the 1-month plan |
 | `EXPIRED` | always expired (to see the error message) |
 
-**Admin login:** go to `/login`, enter the `ADMIN_PHONE` number and type the code shown on screen (development) or sent by SMS (production). Then open `/admin`. To make another user an admin, use Admin → Users → user → **Make admin**.
+**Admin login:** go to `/login`, enter the `ADMIN_PHONE` number and type the code shown on screen (development) or sent by SMS (production). Then open `/admin`. To make another user an admin, use Admin → Users → user → **Make admin**, or from a terminal: `npm run make-admin -- +998XXXXXXXXX` (the account must exist; `--revoke` removes the role). Non-admins who open `/admin` get a "page not found" screen on purpose, so the panel isn't advertised.
 
 **Sandbox payments:** with `PAYMENTS_SANDBOX="true"`, choosing any provider at checkout opens a built-in test page with **Confirm** and **Decline** buttons. No money moves.
 
@@ -142,14 +142,15 @@ Notes:
 | `npm run dev` | Development server on http://localhost:3000 |
 | `npm run build` / `npm start` | Production build / run it |
 | `npm run typecheck` | TypeScript check |
-| `npm test` | Unit tests (phone, CSV, transliteration, SMS length, i18n key parity) |
-| `npm run test:e2e` | Auth end-to-end tests against a running `npm run dev` (needs `SMS_PROVIDER="mock"`; creates and then deletes throwaway users; `BASE_URL` overrides the address) |
+| `npm test` | Unit tests (phone, CSV, locales, SMS length, i18n key parity) |
+| `npm run make-admin -- +998XXXXXXXXX` | Give an existing account admin rights (`--revoke` to remove) |
+| `npm run test:db` | Daily-limit integration tests against the database in `DATABASE_URL` (no server needed; creates and then deletes throwaway users) |
+| `npm run test:e2e` | Auth and daily-limit end-to-end tests against a running `npm run dev` (needs `SMS_PROVIDER="mock"`; creates and then deletes throwaway users; `BASE_URL` overrides the address) |
 | `npm run db:push` | Apply `prisma/schema.prisma` to the database |
 | `npm run db:migrate` | Create a migration (use migrations once in production) |
 | `npm run db:seed` | Load demo data (safe to re-run) |
 | `npm run db:studio` | Prisma Studio database browser |
 | `npm run db:local` | Local PostgreSQL without Docker (see above) |
-| `npx tsx scripts/gen-cyrillic.ts` | Regenerate `src/i18n/messages/uz-Cyrl.ts` from `uz.ts` |
 
 ---
 
@@ -192,13 +193,12 @@ public/
   sw.js, manifest.webmanifest   PWA (installable, offline fallback)
 scripts/
   local-db.mjs         embedded PostgreSQL for development
-  gen-cyrillic.ts      Uzbek Latin → Cyrillic message file
 src/
   app/(site)/          public and user pages (landing, login, tests, results, pricing, …)
   app/admin/           admin panel; all admin mutations are in admin/actions.ts
   app/api/             auth, tests, payments (+ provider callbacks), promo, AI, cron, exports
   components/          shared UI
-  i18n/                locales, messages (uz, uz-Cyrl, ru), server/client helpers
+  i18n/                locales, messages (uz, ru), server/client helpers
   lib/                 domain logic: otp, session, pricing, promo, payments, tests, stats, srs, sms, notify, importers
 tests/unit.test.ts     unit tests
 ```
@@ -209,11 +209,11 @@ tests/unit.test.ts     unit tests
 
 ## Content: question bank and exam format
 
-**Importing questions.** Use Admin → Bulk import. Download the CSV or JSON template there; columns cover category, ticket, topic, the text in three languages, image URL, up to 5 answers, the correct answer number, explanation, rule reference and difficulty.
+**Importing questions.** Use Admin → Bulk import. Download the CSV or JSON template there; columns cover category, ticket, topic, the text in Uzbek and Russian (`_uz` / `_ru`), image URL, up to 5 answers, the correct answer number, explanation, rule reference and difficulty.
 
 - **Validation first:** every row is checked and errors are shown row by row before anything is saved.
 - **Updating questions:** rows with an existing `external_id` update that question.
-- **Cyrillic:** you can leave Cyrillic columns empty; they are transliterated from Uzbek Latin. Review the result: loanwords sometimes need a manual fix.
+- **Older files:** `_cy` (Uzbek Cyrillic) columns from earlier templates are ignored; the app no longer has a Cyrillic version.
 - **Replacing the samples:** use your own `external_id`s and delete the sample questions (`SAMPLE-B-001…040`) in Admin → Questions, or reuse those IDs to overwrite them.
 
 **Exam format.** The official number of questions, time limit and pass mark were **not verified** for this project. They appear to be set by Cabinet of Ministers Resolution No. 408 (31 May 2018) and the Unified Examination Center. Practice apps commonly use 20 questions with at most 2 mistakes. Set the confirmed values on each category's default template in Admin → Exam templates.
@@ -233,7 +233,7 @@ All providers require business contracts. Register before launch; approval can t
 - **Choose a provider:** set `SMS_PROVIDER` to `eskiz` or `playmobile`, plus that provider's credentials. `mock` prints messages to the server log.
 - **Sender name:** Eskiz requires a registered sender name (`ESKIZ_FROM`).
 - **Pre-approved texts:** Eskiz also requires pre-approved message texts. Mark approved templates in Admin → Message templates; the page warns when an approved text is edited and needs re-approval.
-- **Cost:** keep the OTP message to one SMS segment. Latin text allows 160 characters per segment, Cyrillic only 70. The editor shows the count. Uzbek Cyrillic SMS templates are seeded in Latin for this reason.
+- **Cost:** keep the OTP message to one SMS segment. Latin text allows 160 characters per segment, Cyrillic only 70. The editor shows the count.
 - **Verify the requests:** the request formats in `src/lib/sms.ts` follow the providers' public docs. Confirm the endpoints with your provider account.
 
 ### Payments: Click, Payme, Uzum
@@ -300,6 +300,11 @@ Examples: a Linux crontab, a GitHub Actions schedule, or your host's cron featur
 - **OTP:**
   - Codes are 6 digits, stored hashed, and valid for 5 minutes, with at most 5 wrong attempts.
   - Resend is limited to once a minute; requests are capped at 5 per hour per phone and 20 per hour per IP, plus a verification lockout.
+- **Daily full-test limit:** each user can complete at most 2 full tests (exam mode, always exactly 20 questions) per calendar day in Asia/Tashkent; practice modes are unlimited.
+  - A test counts only once its result is saved (`TestSession.finishedAt`); abandoned tests don't count.
+  - `finishSession` (`src/lib/tests.ts`) checks the limit and saves the result in one transaction, under a per-user PostgreSQL advisory lock (`pg_advisory_xact_lock`), so concurrent requests from other tabs or devices can't exceed it.
+  - Re-submitting a finished test returns the saved result without counting again. Scores come only from answers stored by `/api/tests/answer`.
+  - Constants live in `src/lib/daily-limit.ts`. Admin exam templates must have 20 questions.
 - **Promo codes:** only invalid attempts count toward the limit (10 per 10 min per user and per IP).
 - **Admin access:** admin pages and APIs return 404 to non-admins. The last admin can't be demoted, and admins can't change their own role.
 - **Uploads:** only PNG, JPEG or WebP, up to 2 MB, stored in `public/uploads/` (SVG is refused because it can carry scripts). Use object storage (S3, R2, Cloudinary) when running more than one server.

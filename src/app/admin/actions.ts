@@ -8,10 +8,10 @@ import { redirect } from 'next/navigation';
 import type { CampaignType, MessageChannel, PromoType, Role } from '@prisma/client';
 import { db } from '@/lib/db';
 import { kv } from '@/lib/kv';
+import { FULL_TEST_QUESTIONS } from '@/lib/daily-limit';
 import { requireAdmin } from '@/lib/session';
 import { grantDays } from '@/lib/access';
 import { normalizeCode } from '@/lib/promo';
-import { latinToCyrillic } from '@/lib/translit';
 import { z } from 'zod';
 import { sendMessage } from '@/lib/notify';
 import { SAMPLE_VARS, TEMPLATE_KEYS, TEMPLATE_VARS, type TemplateKey } from '@/lib/template-defaults';
@@ -36,21 +36,6 @@ const d = (fd: FormData, k: string) => {
   const date = new Date(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(v) ? `${v}:00+05:00` : v);
   return isNaN(date.getTime()) ? null : date;
 };
-/**
- * Cyrillic value for a field: what the admin typed, else transliterated from Uzbek.
- * Edit forms send the previous Uzbek text as `<uz>Prev`; if the Cyrillic is still the
- * automatic version of that old text and the Uzbek changed, it is regenerated so it
- * doesn't go stale. Hand-written Cyrillic is never overwritten.
- */
-const cyOr = (fd: FormData, cy: string, uz: string) => {
-  const cyVal = s(fd, cy);
-  const uzVal = s(fd, uz);
-  const prevUz = fd.has(`${uz}Prev`) ? s(fd, `${uz}Prev`) : null;
-  if (!cyVal) return latinToCyrillic(uzVal);
-  if (prevUz !== null && prevUz !== uzVal && cyVal === latinToCyrillic(prevUz)) return latinToCyrillic(uzVal);
-  return cyVal;
-};
-
 // ─── Questions ───────────────────────────────────────────────────────────────
 
 async function saveUpload(file: File | null) {
@@ -75,7 +60,7 @@ export async function saveQuestion(fd: FormData) {
   // Validation failures go back to the editor with a message instead of throwing (which showed a crash page).
   const back = (err: string): never => redirect(`/admin/questions/${encodeURIComponent(id || 'new')}?err=${err}`);
   const answers = [0, 1, 2, 3, 4]
-    .map((i) => ({ uz: s(fd, `a${i}_uz`), cy: s(fd, `a${i}_cy`), ru: s(fd, `a${i}_ru`), i }))
+    .map((i) => ({ uz: s(fd, `a${i}_uz`), ru: s(fd, `a${i}_ru`), i }))
     .filter((a) => a.uz || a.ru);
   const correct = Number(s(fd, 'correct'));
   if (!s(fd, 'textUz') || !s(fd, 'textRu')) back('text');
@@ -100,17 +85,15 @@ export async function saveQuestion(fd: FormData) {
     ticketNumber: n(fd, 'ticketNumber'),
     sortOrder: n(fd, 'sortOrder') ?? 0,
     textUz: s(fd, 'textUz'),
-    textCy: cyOr(fd, 'textCy', 'textUz'),
     textRu: s(fd, 'textRu'),
     imageUrl: uploaded ?? (s(fd, 'imageUrl') || null),
     explanationUz: s(fd, 'explanationUz'),
-    explanationCy: cyOr(fd, 'explanationCy', 'explanationUz'),
     explanationRu: s(fd, 'explanationRu'),
     ruleRef: s(fd, 'ruleRef') || null,
     difficulty: n(fd, 'difficulty') ?? 1,
     isActive: b(fd, 'isActive'),
   };
-  const answerRows = answers.map((a, idx) => ({ textUz: a.uz, textCy: cyOr(fd, `a${a.i}_cy`, `a${a.i}_uz`), textRu: a.ru, isCorrect: a.i === correct, sortOrder: idx }));
+  const answerRows = answers.map((a, idx) => ({ textUz: a.uz, textRu: a.ru, isCorrect: a.i === correct, sortOrder: idx }));
 
   await db.$transaction(async (tx) => {
     if (id) {
@@ -247,10 +230,8 @@ export async function saveCategory(fd: FormData) {
   const data = {
     code,
     nameUz: s(fd, 'nameUz'),
-    nameCy: cyOr(fd, 'nameCy', 'nameUz'),
     nameRu: s(fd, 'nameRu'),
     descUz: s(fd, 'descUz'),
-    descCy: cyOr(fd, 'descCy', 'descUz'),
     descRu: s(fd, 'descRu'),
     sortOrder: n(fd, 'sortOrder') ?? 0,
     isActive: b(fd, 'isActive'),
@@ -293,7 +274,6 @@ export async function saveTopic(fd: FormData) {
   const id = s(fd, 'id');
   const data = {
     nameUz: s(fd, 'nameUz'),
-    nameCy: cyOr(fd, 'nameCy', 'nameUz'),
     nameRu: s(fd, 'nameRu'),
     icon: s(fd, 'icon').slice(0, 8) || '📘',
     sortOrder: n(fd, 'sortOrder') ?? 0,
@@ -360,6 +340,7 @@ export async function saveExamTemplate(prev: TemplateFormState, fd: FormData): P
   if (!data.name || data.name.length > 80) return fail('Name is required (max 80 characters).');
   if (!(await db.category.findUnique({ where: { id: data.categoryId } }))) return fail('Choose a category.');
   if (!Number.isInteger(data.questionCount) || data.questionCount < 1 || data.questionCount > 100) return fail('Questions must be 1–100.');
+  if (kind === 'EXAM' && data.questionCount !== FULL_TEST_QUESTIONS) return fail(`Full exams always have exactly ${FULL_TEST_QUESTIONS} questions (daily limit rule).`);
   if (kind === 'EXAM' && (!Number.isInteger(data.timeLimitSec / 60) || data.timeLimitSec < 60 || data.timeLimitSec > 180 * 60)) return fail('Time limit must be 1–180 minutes.');
   if (!Number.isInteger(data.passPercent) || data.passPercent < 1 || data.passPercent > 100) return fail('Pass mark must be 1–100%.');
   const mixTotal = Object.values(mix).reduce((a, b) => a + b, 0);
@@ -430,10 +411,8 @@ export async function saveSign(fd: FormData) {
     code: s(fd, 'code'),
     group: s(fd, 'group'),
     nameUz: s(fd, 'nameUz'),
-    nameCy: cyOr(fd, 'nameCy', 'nameUz'),
     nameRu: s(fd, 'nameRu'),
     descUz: s(fd, 'descUz'),
-    descCy: cyOr(fd, 'descCy', 'descUz'),
     descRu: s(fd, 'descRu'),
     imageUrl,
     sortOrder: n(fd, 'sortOrder') ?? 0,
@@ -455,10 +434,8 @@ export async function saveArticle(fd: FormData) {
     number: s(fd, 'number'),
     chapter: s(fd, 'chapter'),
     titleUz: s(fd, 'titleUz'),
-    titleCy: cyOr(fd, 'titleCy', 'titleUz'),
     titleRu: s(fd, 'titleRu'),
     bodyUz: s(fd, 'bodyUz'),
-    bodyCy: cyOr(fd, 'bodyCy', 'bodyUz'),
     bodyRu: s(fd, 'bodyRu'),
   };
   if (!/^[\p{L}\d][\p{L}\d.\-]{0,19}$/u.test(data.number)) libBack('rules', 'rule-number', `&edit=${id || 'new'}`);
@@ -529,7 +506,6 @@ export async function savePlan(fd: FormData) {
     priceUzs: n(fd, 'priceUzs') ?? 0,
     durationDays: n(fd, 'durationDays') ?? 0,
     labelUz: s(fd, 'labelUz'),
-    labelCy: cyOr(fd, 'labelCy', 'labelUz'),
     labelRu: s(fd, 'labelRu'),
     isFeatured: b(fd, 'isFeatured'),
     isActive: b(fd, 'isActive'),
@@ -735,7 +711,7 @@ export async function applyCampaignPreset(fd: FormData) {
   const c = await db.campaign.create({
     data: {
       name: p.name, type: p.type, discountPct: p.discountPct, durationHours: p.durationHours, startsAt: p.startsAt, endsAt: p.endsAt,
-      bannerUz: p.bannerUz ?? '', bannerCy: latinToCyrillic(p.bannerUz ?? ''), bannerRu: p.bannerRu ?? '', isActive: false,
+      bannerUz: p.bannerUz ?? '', bannerRu: p.bannerRu ?? '', isActive: false,
     },
   });
   revalidatePath('/admin/campaigns');
@@ -757,7 +733,6 @@ export async function saveCampaign(prev: CampaignFormState, fd: FormData): Promi
     endsAt: d(fd, 'endsAt'),
     isActive: b(fd, 'isActive'),
     bannerUz: s(fd, 'bannerUz').slice(0, 140),
-    bannerCy: cyOr(fd, 'bannerCy', 'bannerUz').slice(0, 140),
     bannerRu: s(fd, 'bannerRu').slice(0, 140),
     planSlugs: fd.getAll('planSlugs').map(String),
   };
@@ -813,7 +788,7 @@ export async function campaignAction(fd: FormData) {
 // ─── Message templates ───────────────────────────────────────────────────────
 
 const CHANNELS: MessageChannel[] = ['SMS', 'EMAIL', 'PUSH'];
-const TEMPLATE_LANGS = ['uz', 'uz-Cyrl', 'ru'];
+const TEMPLATE_LANGS = ['uz', 'ru'];
 
 function parseTemplateTarget(fd: FormData) {
   const key = s(fd, 'key') as TemplateKey;

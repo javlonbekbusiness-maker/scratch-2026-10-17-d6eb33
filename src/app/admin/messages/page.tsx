@@ -4,7 +4,6 @@ import { getCurrentUser, requireAdmin } from '@/lib/session';
 import { loadTemplate } from '@/lib/notify';
 import { smsSegments } from '@/lib/sms-segments';
 import { DEFAULT_TEMPLATES, TEMPLATE_INFO, TEMPLATE_KEYS, TEMPLATE_VARS, type TemplateKey } from '@/lib/template-defaults';
-import { latinToCyrillic } from '@/lib/translit';
 import { formatDate } from '@/lib/format';
 import { resetMessageTemplate, testSendTemplate } from '../actions';
 import { Badge, PageHeader } from '../ui';
@@ -16,7 +15,6 @@ export const dynamic = 'force-dynamic';
 const CHANNELS = ['SMS', 'EMAIL', 'PUSH'] as const;
 const LANGS = [
   { id: 'uz', label: 'UZ' },
-  { id: 'uz-Cyrl', label: 'ЎЗ' },
   { id: 'ru', label: 'RU' },
 ];
 
@@ -34,9 +32,7 @@ const TONE = { ok: 'bg-mint-500/10 text-mint-700', warn: 'bg-amber-100 text-ambe
 
 function defaultFor(key: TemplateKey, channel: (typeof CHANNELS)[number], lang: string) {
   const d = DEFAULT_TEMPLATES[key][lang === 'ru' ? 'ru' : 'uz'];
-  const body = channel === 'SMS' ? d.sms : channel === 'EMAIL' ? d.email : d.push;
-  const conv = lang === 'uz-Cyrl' && channel !== 'SMS' ? latinToCyrillic : (x: string) => x;
-  return { body: conv(body), subject: conv(d.emailSubject) };
+  return { body: channel === 'SMS' ? d.sms : channel === 'EMAIL' ? d.email : d.push, subject: d.emailSubject };
 }
 
 export default async function MessagesAdmin({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {

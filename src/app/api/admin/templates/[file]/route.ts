@@ -4,21 +4,21 @@ import { PROMO_CSV_COLUMNS, QUESTION_CSV_COLUMNS, USER_CSV_COLUMNS } from '@/lib
 
 const QUESTION_EXAMPLE = {
   external_id: 'B-001', category: 'B', ticket: '1', topic: 'signs',
-  text_uz: '[PLACEHOLDER] Savol matni', text_cy: '', text_ru: '[PLACEHOLDER] Текст вопроса', image_url: '/placeholders/intersection.svg',
-  answer1_uz: 'Javob 1', answer1_cy: '', answer1_ru: 'Ответ 1',
-  answer2_uz: 'Javob 2', answer2_cy: '', answer2_ru: 'Ответ 2',
-  answer3_uz: 'Javob 3', answer3_cy: '', answer3_ru: 'Ответ 3',
-  correct: '2', explanation_uz: 'Izoh', explanation_cy: '', explanation_ru: 'Объяснение', rule_ref: '10.1', difficulty: '1',
+  text_uz: '[PLACEHOLDER] Savol matni', text_ru: '[PLACEHOLDER] Текст вопроса', image_url: '/placeholders/intersection.svg',
+  answer1_uz: 'Javob 1', answer1_ru: 'Ответ 1',
+  answer2_uz: 'Javob 2', answer2_ru: 'Ответ 2',
+  answer3_uz: 'Javob 3', answer3_ru: 'Ответ 3',
+  correct: '2', explanation_uz: 'Izoh', explanation_ru: 'Объяснение', rule_ref: '10.1', difficulty: '1',
 };
 
 const JSON_EXAMPLE = [
   {
     externalId: 'B-001', category: 'B', ticket: 1, topic: 'signs',
-    text: { uz: '[PLACEHOLDER] Savol matni', cy: '', ru: '[PLACEHOLDER] Текст вопроса' },
+    text: { uz: '[PLACEHOLDER] Savol matni', ru: '[PLACEHOLDER] Текст вопроса' },
     imageUrl: '/placeholders/intersection.svg',
-    answers: [{ uz: 'Javob 1', cy: '', ru: 'Ответ 1' }, { uz: 'Javob 2', cy: '', ru: 'Ответ 2' }, { uz: 'Javob 3', cy: '', ru: 'Ответ 3' }],
+    answers: [{ uz: 'Javob 1', ru: 'Ответ 1' }, { uz: 'Javob 2', ru: 'Ответ 2' }, { uz: 'Javob 3', ru: 'Ответ 3' }],
     correct: 2,
-    explanation: { uz: 'Izoh', cy: '', ru: 'Объяснение' },
+    explanation: { uz: 'Izoh', ru: 'Объяснение' },
     ruleRef: '10.1', difficulty: 1,
   },
 ];

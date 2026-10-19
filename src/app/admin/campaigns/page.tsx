@@ -138,7 +138,7 @@ export default async function CampaignsAdmin({ searchParams }: { searchParams: P
                 ? {
                     id: editing.id, name: editing.name, type: editing.type === 'PARTNER' ? 'SEASONAL' : editing.type, discountPct: String(editing.discountPct),
                     durationHours: editing.durationHours != null ? String(editing.durationHours) : '', startsAt: toTashkentInput(editing.startsAt), endsAt: toTashkentInput(editing.endsAt),
-                    bannerUz: editing.bannerUz, bannerCy: editing.bannerCy, bannerRu: editing.bannerRu, planSlugs: editing.planSlugs, isActive: editing.isActive,
+                    bannerUz: editing.bannerUz, bannerRu: editing.bannerRu, planSlugs: editing.planSlugs, isActive: editing.isActive,
                   }
                 : { type: 'SEASONAL' }
             }

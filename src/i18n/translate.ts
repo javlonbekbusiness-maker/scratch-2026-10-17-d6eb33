@@ -1,10 +1,9 @@
 import type { Locale } from './config';
 import type { Messages } from './messages/uz';
 import uz from './messages/uz';
-import uzCyrl from './messages/uz-Cyrl';
 import ru from './messages/ru';
 
-export const MESSAGES: Record<Locale, Messages> = { uz, 'uz-Cyrl': uzCyrl, ru };
+export const MESSAGES: Record<Locale, Messages> = { uz, ru };
 
 type Leaves<T, P extends string = ''> = {
   [K in keyof T & string]: T[K] extends string ? `${P}${K}` : Leaves<T[K], `${P}${K}.`>;

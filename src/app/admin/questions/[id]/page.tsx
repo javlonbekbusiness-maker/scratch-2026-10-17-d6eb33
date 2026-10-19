@@ -32,15 +32,14 @@ export default async function EditQuestion({ params, searchParams }: { params: P
   const correctIdx = q ? q.answers.findIndex((a) => a.isCorrect) : 0;
 
   const L3 = ({ name, label, rows = 1 }: { name: 'text' | 'explanation'; label: string; rows?: number }) => (
-    <div className="grid gap-3 md:grid-cols-3">
-      {(['Uz', 'Cy', 'Ru'] as const).map((sfx) => {
+    <div className="grid gap-3 md:grid-cols-2">
+      {(['Uz', 'Ru'] as const).map((sfx) => {
         const key = `${name}${sfx}` as const;
         const val = (q?.[key as keyof typeof q] as string | undefined) ?? '';
-        const hint = sfx === 'Cy' ? 'Leave empty to auto-transliterate from Latin' : undefined;
-        const lbl = `${label} — ${sfx === 'Uz' ? "O'zbek (lotin)" : sfx === 'Cy' ? 'Ўзбек (кирилл)' : 'Русский'}`;
+        const lbl = `${label} — ${sfx === 'Uz' ? "O'zbek" : 'Русский'}`;
         return (
-          <Field key={key} label={lbl} hint={hint}>
-            {rows > 1 ? <textarea name={key} defaultValue={val} rows={rows} className="input py-2 text-sm" required={sfx !== 'Cy' && name === 'text'} /> : <input name={key} defaultValue={val} className={inputSm} required={sfx !== 'Cy'} />}
+          <Field key={key} label={lbl}>
+            {rows > 1 ? <textarea name={key} defaultValue={val} rows={rows} className="input py-2 text-sm" required={name === 'text'} /> : <input name={key} defaultValue={val} className={inputSm} required />}
           </Field>
         );
       })}
@@ -54,14 +53,6 @@ export default async function EditQuestion({ params, searchParams }: { params: P
       <form action={saveQuestion} className="space-y-6">
         <QuestionFormChecks />
         <input type="hidden" name="id" value={q?.id ?? ''} />
-        {/* Previous Uzbek text lets the server refresh auto-generated Cyrillic when the Uzbek changes. */}
-        {q && (
-          <>
-            <input type="hidden" name="textUzPrev" value={q.textUz} />
-            <input type="hidden" name="explanationUzPrev" value={q.explanationUz} />
-            {q.answers.map((a, i) => <input key={a.id} type="hidden" name={`a${i}_uzPrev`} value={a.textUz} />)}
-          </>
-        )}
         <section className="card grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-6">
           <Field label="Category">
             <select name="categoryId" defaultValue={q?.categoryId} className={inputSm} required>
@@ -100,12 +91,11 @@ export default async function EditQuestion({ params, searchParams }: { params: P
         <section className="card space-y-3 p-5">
           <h2 className="font-bold">Answers <span className="text-sm font-normal muted">(3–5; leave unused rows empty, select the correct one)</span></h2>
           {answers.map((a, i) => (
-            <div key={i} className="grid items-center gap-2 md:grid-cols-[auto_1fr_1fr_1fr]">
+            <div key={i} className="grid items-center gap-2 md:grid-cols-[auto_1fr_1fr]">
               <label className="flex items-center gap-2 text-sm font-semibold">
                 <input type="radio" name="correct" value={i} defaultChecked={i === correctIdx} className="h-5 w-5 accent-mint-600" /> {i + 1}
               </label>
-              <input name={`a${i}_uz`} defaultValue={a?.textUz ?? ''} placeholder="O'zbek (lotin)" className={inputSm} />
-              <input name={`a${i}_cy`} defaultValue={a?.textCy ?? ''} placeholder="Кирилл (auto if empty)" className={inputSm} />
+              <input name={`a${i}_uz`} defaultValue={a?.textUz ?? ''} placeholder="O'zbek" className={inputSm} />
               <input name={`a${i}_ru`} defaultValue={a?.textRu ?? ''} placeholder="Русский" className={inputSm} />
             </div>
           ))}

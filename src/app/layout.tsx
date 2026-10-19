@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
     manifest: '/manifest.webmanifest',
     icons: { icon: '/icons/icon.svg', apple: '/icons/icon.svg' },
     openGraph: { type: 'website', siteName: t('common.appName'), title: t('landing.heroTitle'), description: t('landing.heroSubtitle') },
-    alternates: { languages: { uz: '/', ru: '/', 'uz-Cyrl': '/' } },
+    alternates: { languages: { uz: '/', ru: '/' } },
   };
 }
 

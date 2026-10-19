@@ -118,10 +118,8 @@ model Category {
   slug      String  @unique
   code      String
   nameUz    String
-  nameCy    String
   nameRu    String
   descUz    String  @default("")
-  descCy    String  @default("")
   descRu    String  @default("")
   sortOrder Int     @default(0)
   isActive  Boolean @default(true)
@@ -137,7 +135,6 @@ model Topic {
   id        String @id @default(cuid())
   slug      String @unique
   nameUz    String
-  nameCy    String
   nameRu    String
   icon      String @default("📘")
   sortOrder Int    @default(0)
@@ -155,11 +152,9 @@ model Question {
   ticketNumber  Int?
   sortOrder     Int      @default(0)
   textUz        String
-  textCy        String
   textRu        String
   imageUrl      String?
   explanationUz String   @default("")
-  explanationCy String   @default("")
   explanationRu String   @default("")
   ruleRef       String?
   difficulty    Int      @default(1)
@@ -182,7 +177,6 @@ model Answer {
   questionId String
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
   textUz     String
-  textCy     String
   textRu     String
   isCorrect  Boolean  @default(false)
   sortOrder  Int      @default(0)
@@ -224,10 +218,8 @@ model RoadSign {
   code      String
   group     String
   nameUz    String
-  nameCy    String
   nameRu    String
   descUz    String @default("")
-  descCy    String @default("")
   descRu    String @default("")
   imageUrl  String
   sortOrder Int    @default(0)
@@ -238,10 +230,8 @@ model RuleArticle {
   number  String @unique
   chapter String @default("")
   titleUz String
-  titleCy String
   titleRu String
   bodyUz  String
-  bodyCy  String
   bodyRu  String
 }
 
@@ -335,7 +325,6 @@ model Plan {
   untilPass    Boolean @default(false)
   priceUzs     Int
   labelUz      String
-  labelCy      String
   labelRu      String
   isFeatured   Boolean @default(false)
   isActive     Boolean @default(true)
@@ -455,7 +444,6 @@ model Campaign {
   endsAt        DateTime?
   isActive      Boolean      @default(false)
   bannerUz      String       @default("")
-  bannerCy      String       @default("")
   bannerRu      String       @default("")
   planSlugs     String[]
   createdAt     DateTime     @default(now())
