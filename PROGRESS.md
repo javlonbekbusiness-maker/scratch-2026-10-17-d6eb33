@@ -41,6 +41,20 @@ _Last updated: 2026-10-18 (stage 12: daily limit of two full tests; not committe
 17. Access control: a regular user gets 404 on `/admin` and on the admin export API.
 18. Library search works in Latin, Cyrillic and Russian, for both signs and rule articles. Leaderboard, privacy, terms, offline page, sitemap, robots, manifest and service worker all return 200.
 
+## Redesign — stage 3: test and result screens (✅ tested)
+
+- **Test screen:** full screen (app bars and the desktop sidebar padding are hidden).
+  - Compact header: exit (the test can be resumed later), title, timer chip, "i / n" button that opens the navigator sheet, bookmark.
+  - Slim progress bar.
+  - One question per screen with big answer cards (A/B/C letter badges, at least 60 px tall); correct and wrong states carry a ✓/✕ icon and screen-reader text, not just colour.
+  - Feedback panel with explanation, rule reference and the AI explainer; notes.
+  - Bottom bar: back, next and finish, respecting the safe area.
+  - Finishing with unanswered questions opens our own confirm sheet instead of the browser's `confirm()`.
+  - All existing behaviour is kept: answer and finish APIs, timer auto-submit, daily-limit message, keyboard shortcuts.
+- **Result screen:** pass/fail/practice chip with icon, score ring, time / correct / mistakes tiles, pass mark, daily-limit status, retry / share / card / certificate / home. Mistakes list with your answer (✕) vs the correct one (✓), explanation and rule; images lazy-loaded.
+- **Bug fixed:** a hydration mismatch. The notifications sheet formatted dates in the browser, so a user with a dated notification (for example a welcome offer) made React rebuild the page, which also reset the theme. Texts are now formatted on the server. The `<html>` class is no longer rendered by React (the font variable moved to `<body>`), and `ThemeSync` re-applies the saved theme as a safety net.
+- **Tests:** `layout.e2e.ts` now fails on any page error (hydration included) and checks dark-by-default plus a remembered light choice. Lint, type check, unit 16/16, DB 13/13, e2e 22/22.
+
 ## Redesign — stage 2: home (✅ tested)
 
 - **Hero card:**

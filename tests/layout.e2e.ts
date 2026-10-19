@@ -29,8 +29,11 @@ after(async () => {
   await cleanup();
 });
 
+const pageErrors: string[] = [];
+
 async function open(path: string, width: number, signedIn: boolean) {
   const p = await browser.newPage();
+  p.on('pageerror', (e) => pageErrors.push(`${path} @${width}px: ${String((e as Error).message ?? e).slice(0, 140)}`));
   await p.setViewport({ width, height: 800, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
   const cookies = [{ name: 'lang', value: 'uz', url: BASE }];
   if (signedIn) cookies.push({ name: 'yhq_session', value: token, url: BASE });
@@ -55,6 +58,21 @@ test('no horizontal overflow at 360, 390 and 430 px', async () => {
     }
   }
   assert.deepEqual(problems, []);
+  assert.deepEqual(pageErrors, [], 'no client errors (e.g. hydration mismatches) on any page');
+});
+
+test('theme: dark by default, a stored light choice survives load and hydration', async () => {
+  const ctx = await browser.createBrowserContext();
+  const p = await ctx.newPage();
+  p.on('pageerror', (e) => pageErrors.push(`theme: ${String((e as Error).message ?? e).slice(0, 140)}`));
+  await p.setCookie({ name: 'yhq_session', value: token, url: BASE }, { name: 'lang', value: 'uz', url: BASE });
+  await p.goto(BASE + '/dashboard', { waitUntil: 'networkidle0' });
+  assert.equal(await p.evaluate(() => document.documentElement.classList.contains('dark')), true, 'dark by default');
+  await p.evaluate(() => localStorage.setItem('theme', 'light'));
+  await p.goto(BASE + '/stats', { waitUntil: 'networkidle0' });
+  await new Promise((r) => setTimeout(r, 500));
+  assert.equal(await p.evaluate(() => document.documentElement.classList.contains('dark')), false, 'light stays light');
+  await ctx.close();
 });
 
 test('tab bar: 4 items, each at least 48px tall and wide, and hidden in a running test', async () => {

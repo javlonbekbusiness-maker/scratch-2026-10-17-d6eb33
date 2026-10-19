@@ -28,14 +28,19 @@ function useChrome() {
   return { path, inTest, hideTabs: inTest || path.startsWith('/results/') };
 }
 
-export function TopBar({ initial, streak, notes }: { initial: string; streak: number; notes: ShellNotification[] }) {
-  const { t, locale } = useT();
+/** Outer frame: leaves room for the desktop sidebar, except inside a running test (full screen). */
+export function ShellFrame({ children }: { children: React.ReactNode }) {
+  const { inTest } = useChrome();
+  return <div className={`min-h-dvh ${inTest ? '' : 'lg:pl-64'}`}>{children}</div>;
+}
+
+export type TopBarNote = { id: string; kind: ShellNotification['kind']; href: string; text: string };
+
+export function TopBar({ initial, streak, notes }: { initial: string; streak: number; notes: TopBarNote[] }) {
+  const { t } = useT();
   const { inTest } = useChrome();
   const [sheet, setSheet] = useState<'search' | 'notes' | null>(null);
   if (inTest) return null;
-  const fmt = (iso?: string) => (iso ? new Date(iso).toLocaleDateString(locale === 'ru' ? 'ru-RU' : 'uz-UZ', { day: 'numeric', month: 'long' }) : '');
-  const noteText = (n: ShellNotification) =>
-    n.kind === 'reviews' ? t('shell.notifReviews', { n: n.n ?? 0 }) : n.kind === 'offer' ? t('shell.notifOffer', { p: n.pct ?? 0 }) : t('shell.notifExpiry', { date: fmt(n.date) });
   const noteIcon: Record<ShellNotification['kind'], IconName> = { reviews: 'mistakes', offer: 'gift', expiry: 'card' };
   const iconBtn = 'relative grid h-12 w-12 place-items-center rounded-2xl border border-line bg-surface text-ink pressable hover:border-brand-500/40';
 
@@ -84,7 +89,7 @@ export function TopBar({ initial, streak, notes }: { initial: string; streak: nu
               <li key={n.id}>
                 <Link href={n.href} onClick={() => setSheet(null)} className="flex min-h-[56px] items-center gap-3 py-2 hover:text-brand-fg">
                   <Icon name={noteIcon[n.kind]} size={20} className="text-muted" />
-                  <span className="flex-1 font-medium">{noteText(n)}</span>
+                  <span className="flex-1 font-medium">{n.text}</span>
                   <Icon name="chevronRight" size={18} className="text-muted" />
                 </Link>
               </li>
