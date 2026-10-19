@@ -132,6 +132,24 @@ export function Field({ label, hint, error, htmlFor, children }: { label: string
   );
 }
 
+/** On/off toggle: a real checkbox (works without JS, submits with forms) drawn as a switch. */
+export function Switch({ name, label, hint, defaultChecked }: { name: string; label: string; hint?: string; defaultChecked?: boolean }) {
+  return (
+    <label className="flex min-h-[56px] cursor-pointer items-center justify-between gap-3 rounded-2xl bg-raised px-4 py-2">
+      <span className="min-w-0">
+        <span className="block text-sm font-medium text-ink">{label}</span>
+        {hint && <span className="block text-small text-muted">{hint}</span>}
+      </span>
+      <input type="checkbox" role="switch" name={name} defaultChecked={defaultChecked} className="peer sr-only" />
+      <span
+        aria-hidden
+        className="relative h-7 w-12 shrink-0 rounded-full bg-line transition peer-checked:bg-brand-600 peer-focus-visible:ring-2 peer-focus-visible:ring-brand-500 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-surface
+          after:absolute after:left-1 after:top-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition peer-checked:after:translate-x-5"
+      />
+    </label>
+  );
+}
+
 /** Settings-style row inside a card list. */
 export function ListRow({ icon, title, subtitle, href, trailing }: { icon?: IconName; title: string; subtitle?: string; href?: string; trailing?: React.ReactNode }) {
   const inner = (

@@ -82,4 +82,10 @@ test('visitors get the public header, not the app tabs; app tabs require sign-in
     assert.equal(r.status, 307, tab);
     assert.match(r.headers.get('location') ?? '', /\/login/);
   }
+  // A forged session passes the middleware's cookie check; the page itself must still answer with a
+  // real server redirect, even where content streams behind a skeleton.
+  for (const path of ['/stats', '/dashboard', '/profile', '/tests']) {
+    const r = await page(path, 'forged-token');
+    assert.ok([307, 308].includes(r.status), `${path} with a forged session: got ${r.status}`);
+  }
 });

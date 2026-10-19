@@ -4,9 +4,12 @@ import { useActionState } from 'react';
 import { useT } from '@/i18n/client';
 import type { MessageKey } from '@/i18n/translate';
 import { updateProfile } from '@/app/actions';
+import { Field, Switch } from '@/components/ui/Primitives';
+import { Icon } from '@/components/ui/Icon';
 
 type U = { name: string; email: string; categoryId: string; remindSms: boolean; remindEmail: boolean; remindPush: boolean; leaderboardOptIn: boolean };
 
+/** Personal details, category, optional password and reminders. Same action and validation as before. */
 export function ProfileForm({ user, categories }: { user: U; categories: { id: string; label: string }[] }) {
   const { t } = useT();
   const [state, action, pending] = useActionState(updateProfile, null);
@@ -19,38 +22,31 @@ export function ProfileForm({ user, categories }: { user: U; categories: { id: s
   return (
     <form action={action} className="mt-4 space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label htmlFor="p-name" className="label">{t('auth.name')}</label>
-          <input id="p-name" name="name" defaultValue={user.name} required maxLength={60} className="input" />
-        </div>
-        <div>
-          <label htmlFor="p-email" className="label">{t('auth.email')}</label>
-          <input id="p-email" name="email" type="email" defaultValue={user.email} className="input" />
-        </div>
+        <Field label={t('auth.name')} htmlFor="p-name">
+          <input id="p-name" name="name" defaultValue={user.name} required maxLength={60} autoComplete="name" className="input" />
+        </Field>
+        <Field label={t('auth.email')} htmlFor="p-email">
+          <input id="p-email" name="email" type="email" defaultValue={user.email} autoComplete="email" className="input" />
+        </Field>
       </div>
-      <div>
-        <label htmlFor="p-cat" className="label">{t('auth.category')}</label>
+      <Field label={t('auth.category')} htmlFor="p-cat">
         <select id="p-cat" name="categoryId" defaultValue={user.categoryId} className="input">
           {categories.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
         </select>
-      </div>
-      <div>
-        <label htmlFor="p-pass" className="label">{t('profile.setPassword')}</label>
+      </Field>
+      <Field label={t('profile.setPassword')} htmlFor="p-pass" hint={t('auth.passwordShort')}>
         <input id="p-pass" name="password" type="password" minLength={8} autoComplete="new-password" className="input" />
-      </div>
+      </Field>
       <fieldset className="space-y-2">
         <legend className="label">{t('profile.reminders')}</legend>
         {toggles.map(([name, label]) => (
-          <label key={name} className="flex min-h-[44px] cursor-pointer items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 dark:bg-slate-800">
-            <span className="text-sm">{label}</span>
-            <input type="checkbox" name={name} defaultChecked={user[name]} className="h-5 w-5 accent-brand-600" />
-          </label>
+          <Switch key={name} name={name} label={label} defaultChecked={user[name]} />
         ))}
       </fieldset>
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <button disabled={pending} className="btn-primary">{pending ? t('common.loading') : t('common.save')}</button>
-        {state?.ok && <span role="status" className="text-sm text-mint-700">{t('common.saved')}</span>}
-        {state?.error && <span role="alert" className="text-sm text-red-600">{t(state.error as MessageKey)}</span>}
+        {state?.ok && <span role="status" className="flex items-center gap-1 text-sm font-medium text-accent-fg"><Icon name="check" size={16} /> {t('common.saved')}</span>}
+        {state?.error && <span role="alert" className="text-sm font-medium text-danger">{t(state.error as MessageKey)}</span>}
       </div>
     </form>
   );

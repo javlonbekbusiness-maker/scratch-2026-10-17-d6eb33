@@ -41,6 +41,14 @@ _Last updated: 2026-10-18 (stage 12: daily limit of two full tests; not committe
 17. Access control: a regular user gets 404 on `/admin` and on the admin export API.
 18. Library search works in Latin, Cyrillic and Russian, for both signs and rule articles. Leaderboard, privacy, terms, offline page, sitemap, robots, manifest and service worker all return 200.
 
+## Redesign — stage 5: Profil, Sozlamalar, Saqlangan, Statistika (✅ tested)
+
+- **Profil (rebuilt):** account header (avatar, name, phone, member since, settings button), subscription card ("I passed" kept), referral link with a copy button, rows to Saqlangan with bookmark and note counts, test history with status icons, payments. The personal form, bookmarks/notes and sign-out now live only in Sozlamalar / Saqlangan (no duplicates).
+- **Settings form:** shared `Field` and the new `Switch` (a real checkbox with `role="switch"`); same server action and validation.
+- **Statistika:** the sign-in check runs first, then the stats stream behind a same-shape skeleton (`Suspense`).
+- **New guard:** `nav.e2e.ts` checks that a forged session gets a server 307 on `/stats`, `/dashboard`, `/profile` and `/tests`.
+- **Tests:** lint, type check, unit 16/16, DB 13/13, e2e 22/22; screenshots checked with no page errors.
+
 ## Redesign — stage 4: tests hub and lists (✅ tested)
 
 - **`/tests` hub, rebuilt from the shared cards:**

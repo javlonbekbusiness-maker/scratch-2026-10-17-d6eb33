@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
+import type { User } from '@prisma/client';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { getT } from '@/i18n/server';
 import { pick } from '@/i18n/config';
 import { db } from '@/lib/db';
@@ -10,15 +12,40 @@ import { startTestAction } from '@/app/actions';
 import { ProgressRing } from '@/components/ProgressRing';
 import { Heatmap } from '@/components/Heatmap';
 import { Icon } from '@/components/ui/Icon';
-import { EmptyState, ProgressBar, SectionHeader, StatChip, ButtonLink } from '@/components/ui/Primitives';
+import { EmptyState, ProgressBar, SectionHeader, StatChip, ButtonLink, Skeleton } from '@/components/ui/Primitives';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getT();
   return { title: t('shell.stats'), robots: { index: false } };
 }
 
+/**
+ * Sign-in is checked before anything streams (so invalid sessions still get a real redirect);
+ * the statistics then stream in behind a skeleton of the same shape.
+ */
 export default async function StatsPage() {
   const user = await requireUser();
+  return (
+    <Suspense fallback={<StatsSkeleton />}>
+      <StatsContent user={user} />
+    </Suspense>
+  );
+}
+
+function StatsSkeleton() {
+  return (
+    <div className="page space-y-4" aria-busy="true">
+      <Skeleton className="h-8 w-40" />
+      <Skeleton className="h-[220px] w-full rounded-card" />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Skeleton className="h-64 rounded-card" />
+        <Skeleton className="h-64 rounded-card" />
+      </div>
+    </div>
+  );
+}
+
+async function StatsContent({ user }: { user: User }) {
   const { t, locale } = await getT();
   const [stats, topics, recent] = await Promise.all([
     userStats(user.id, user.categoryId),
