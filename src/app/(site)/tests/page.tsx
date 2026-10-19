@@ -58,9 +58,9 @@ export default async function TestsPage({ searchParams }: { searchParams: Promis
           )}
           {sp.invalid && <p role="alert" className="mt-2 text-sm text-red-600">{t('limit.invalid', { n: FULL_TEST_QUESTIONS })}</p>}
         </div>
-        <form action={setCategory} className="flex items-center gap-2">
+        <form action={setCategory} className="flex w-full items-center gap-2 sm:w-auto">
           <label htmlFor="cat" className="text-sm font-medium muted">{t('modes.category')}</label>
-          <select id="cat" name="categoryId" defaultValue={categoryId} className="input h-11 min-h-0 w-auto py-0 pr-8">
+          <select id="cat" name="categoryId" defaultValue={categoryId} className="input h-12 min-h-0 min-w-0 flex-1 py-0 pr-8 sm:flex-none">
             {categories.map((c) => (
               <option key={c.id} value={c.id}>{c.code} — {pick(c, 'name', locale)}</option>
             ))}

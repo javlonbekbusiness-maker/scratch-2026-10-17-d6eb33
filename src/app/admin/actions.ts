@@ -404,7 +404,7 @@ export async function saveSign(fd: FormData) {
   let uploaded: string | null = null;
   try {
     uploaded = await saveUpload(fd.get('image') as File | null);
-  } catch (e) {
+  } catch {
     libBack('signs', 'bad-image', `&edit=${id || 'new'}`);
   }
   const imageUrl = uploaded ?? s(fd, 'imageUrl');

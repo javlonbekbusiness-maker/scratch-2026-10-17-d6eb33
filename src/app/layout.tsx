@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { Inter } from 'next/font/google';
 import './globals.css';
 import { getT } from '@/i18n/server';
 import { I18nProvider } from '@/i18n/client';
@@ -21,19 +22,22 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#1f5beb' },
-    { media: '(prefers-color-scheme: dark)', color: '#020617' },
+    { media: '(prefers-color-scheme: light)', color: '#0a1020' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a1020' },
   ],
   width: 'device-width',
   initialScale: 1,
 };
 
-const themeScript = `try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`;
+// Dark is the default; only an explicit "light" choice removes it. Runs before first paint, so no flash.
+const themeScript = `try{if(localStorage.getItem('theme')==='light')document.documentElement.classList.remove('dark')}catch(e){}`;
+
+const sans = Inter({ subsets: ['latin', 'latin-ext', 'cyrillic'], variable: '--font-sans', display: 'swap' });
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { locale, dict } = await getT();
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} className={`dark ${sans.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

@@ -2,18 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Progress ring fill (pure CSS so it also works when JS timers are throttled). */
+@keyframes ring-fill {
+  from { stroke-dashoffset: var(--ring-from); }
+  to { stroke-dashoffset: var(--ring-to); }
+}
+
+/* Design tokens as "r g b" triplets (values documented in src/styles/tokens.ts). Light on :root, dark on .dark. */
 @layer base {
+  :root {
+    --c-canvas: 243 245 250;
+    --c-surface: 255 255 255;
+    --c-raised: 247 249 253;
+    --c-line: 226 231 241;
+    --c-ink: 14 23 48;
+    --c-muted: 94 106 134;
+    --c-brand-fg: 26 72 208;
+    --c-accent-fg: 7 122 85;
+    --c-success: 10 143 98;
+    --c-danger: 196 38 26;
+    --c-warning: 180 83 9;
+    color-scheme: light;
+  }
+  .dark {
+    --c-canvas: 10 16 32;
+    --c-surface: 18 26 46;
+    --c-raised: 26 36 64;
+    --c-line: 38 49 79;
+    --c-ink: 238 242 250;
+    --c-muted: 154 166 194;
+    --c-brand-fg: 126 166 255;
+    --c-accent-fg: 95 224 174;
+    --c-success: 58 204 149;
+    --c-danger: 248 113 113;
+    --c-warning: 251 191 36;
+    color-scheme: dark;
+  }
+
   html {
     -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+    @apply bg-canvas text-body text-ink antialiased;
   }
   :focus-visible {
-    @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-white dark:ring-offset-slate-950;
+    @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-canvas;
   }
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   }
 }
 
@@ -21,54 +57,76 @@
   .container-app {
     @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
   }
+  /* Content column inside the signed-in AppShell. */
+  .page {
+    @apply mx-auto w-full max-w-[1120px] px-4 pb-8 pt-4 sm:px-6 lg:pt-8;
+  }
   .card {
-    @apply rounded-3xl border border-slate-200/70 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900;
+    @apply rounded-card border border-line bg-surface shadow-card dark:shadow-none;
+  }
+  .card-raised {
+    @apply rounded-tile bg-raised;
+  }
+  .pressable {
+    @apply transition duration-150 ease-out active:scale-[.97] motion-reduce:active:scale-100;
   }
   .btn {
-    @apply inline-flex min-h-[48px] items-center justify-center gap-2 rounded-2xl px-5 text-base font-semibold transition
-      active:scale-[.98] disabled:pointer-events-none disabled:opacity-50;
-  }
-  .btn-cta {
-    @apply btn bg-cta-500 text-white shadow-lg shadow-cta-500/25 hover:bg-cta-600;
+    @apply pressable inline-flex min-h-[48px] items-center justify-center gap-2 rounded-control px-5 text-[15px] font-semibold
+      disabled:pointer-events-none disabled:opacity-50;
   }
   .btn-primary {
-    @apply btn bg-brand-600 text-white hover:bg-brand-700;
+    @apply btn bg-brand-600 text-white shadow-glow hover:bg-brand-700;
+  }
+  /* Kept for existing markup: the strongest action on a screen, same as primary. */
+  .btn-cta {
+    @apply btn-primary;
+  }
+  .btn-success {
+    @apply btn bg-accent text-accent-on hover:brightness-95;
+  }
+  .btn-danger {
+    @apply btn bg-danger text-white hover:brightness-95 dark:text-canvas;
   }
   .btn-secondary {
-    @apply btn border border-slate-200 bg-white text-slate-800 hover:bg-slate-50
-      dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800;
+    @apply btn border border-line bg-raised text-ink hover:border-brand-500/40;
   }
   .btn-ghost {
-    @apply btn text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800;
+    @apply btn text-muted hover:bg-raised hover:text-ink;
   }
   .btn-sm {
-    @apply min-h-[36px] rounded-xl px-3 text-sm;
+    @apply min-h-[40px] rounded-xl px-3 text-sm;
   }
   .input {
-    @apply block min-h-[48px] w-full rounded-2xl border border-slate-300 bg-white px-4 text-base text-slate-900
-      placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30
-      dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100;
+    @apply block min-h-[48px] w-full rounded-control border border-line bg-raised px-4 text-base text-ink
+      placeholder:text-muted focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30;
   }
   .label {
-    @apply mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300;
+    @apply mb-1.5 block text-sm font-medium text-ink;
   }
   .chip {
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold;
   }
   .muted {
-    @apply text-slate-500 dark:text-slate-400;
+    @apply text-muted;
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
   }
   .h-section {
-    @apply text-2xl font-bold tracking-tight sm:text-3xl;
+    @apply text-h1 tracking-tight sm:text-[28px] sm:leading-9;
+  }
+  .skeleton {
+    @apply rounded-xl bg-[length:200%_100%] motion-safe:animate-shimmer;
+    background-image: linear-gradient(90deg, rgb(var(--c-raised)) 0%, rgb(var(--c-line)) 50%, rgb(var(--c-raised)) 100%);
   }
   /* Admin tables */
   .tbl {
     @apply w-full text-left text-sm;
   }
   .tbl th {
-    @apply border-b border-slate-200 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-800;
+    @apply border-b border-line px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted;
   }
   .tbl td {
-    @apply border-b border-slate-100 px-3 py-2 align-top dark:border-slate-800/60;
+    @apply border-b border-line/60 px-3 py-2 align-top;
   }
 }

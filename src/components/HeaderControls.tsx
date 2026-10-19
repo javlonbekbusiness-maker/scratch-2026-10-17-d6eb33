@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { LOCALES, LOCALE_LABELS, LOCALE_SHORT, type Locale } from '@/i18n/config';
 import { useT } from '@/i18n/client';
 import { setLocale } from '@/app/actions';
+import { Icon } from '@/components/ui/Icon';
 
 export function LangSwitcher() {
   const { locale, t } = useT();
@@ -17,7 +18,7 @@ export function LangSwitcher() {
         value={locale}
         disabled={pending}
         onChange={(e) => start(async () => { await setLocale(e.target.value as Locale); router.refresh(); })}
-        className="h-10 cursor-pointer appearance-none rounded-xl border border-slate-200 bg-white pl-3 pr-7 text-sm font-semibold dark:border-slate-700 dark:bg-slate-900"
+        className="h-12 cursor-pointer appearance-none rounded-2xl border border-line bg-raised pl-3 pr-8 text-sm font-semibold text-ink"
         aria-label={t('common.language')}
       >
         {LOCALES.map((l) => (
@@ -33,7 +34,7 @@ export function LangSwitcher() {
 
 export function ThemeToggle() {
   const { t } = useT();
-  const [dark, setDark] = useState(false);
+  const [dark, setDark] = useState(true);
   useEffect(() => setDark(document.documentElement.classList.contains('dark')), []);
   const toggle = () => {
     const next = !dark;
@@ -45,11 +46,11 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
-      className="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-white text-lg dark:border-slate-700 dark:bg-slate-900"
+      className="pressable grid h-12 w-12 place-items-center rounded-2xl border border-line bg-raised text-ink hover:border-brand-500/40"
       aria-label={dark ? t('common.lightMode') : t('common.darkMode')}
       title={dark ? t('common.lightMode') : t('common.darkMode')}
     >
-      {dark ? '☀️' : '🌙'}
+      <Icon name={dark ? 'sun' : 'moon'} size={20} />
     </button>
   );
 }

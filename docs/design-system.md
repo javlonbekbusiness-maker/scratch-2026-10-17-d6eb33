@@ -1,6 +1,11 @@
 # YHQ Test design system — proposal (stage 0)
 
-Status: **proposal, awaiting approval.** Nothing below is implemented yet.
+Status: **approved; stage 1 implemented** (tokens, font, components, shell and navigation, Statistika/Saqlangan/Sozlamalar).
+
+Where things live:
+- Token values: `src/styles/tokens.ts` → CSS variables in `src/app/globals.css` → Tailwind names in `tailwind.config.js`. Unit tests check AA contrast and that the CSS matches the token file.
+- Components: `src/components/ui/` (Icon, Cards: ActionCard/WideCard/IconTile, Primitives: Button/ButtonLink/Badge/StatChip/ProgressBar/SectionHeader/EmptyState/Skeleton/Field/ListRow, Sheet), `src/components/ProgressRing.tsx`, shell in `src/components/shell/`.
+- Light-mode red was darkened to `#C4261A` (the contrast test caught `#D92D20` at 4.43:1 on the page background).
 
 Goal: a modern, card-based mobile app look (dark navy, big rounded cards, bottom tab bar, compact top bar) that is our own — our name, our logo, our icons, our colours — and works equally well on desktop.
 

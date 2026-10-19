@@ -226,7 +226,8 @@ export async function commitUsers(rows: UserRow[]) {
       create: { phone: r.phone, name: r.name || null, email: r.email || null, categoryId, referralCode: randomBytes(5).toString('hex').toUpperCase(), onboarded: !!r.name },
       update: { name: r.name || undefined, categoryId },
     });
-    exists ? updated++ : created++;
+    if (exists) updated++;
+    else created++;
     if (r.grant_days) await grantDays(u.id, r.grant_days, 'ADMIN');
   }
   return { created, updated };

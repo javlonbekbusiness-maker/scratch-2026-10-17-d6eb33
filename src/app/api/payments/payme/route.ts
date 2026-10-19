@@ -8,6 +8,7 @@ import { failPayment, fulfillPayment } from '@/lib/payments';
  * Minimal implementation of the required methods; run Payme's sandbox test suite
  * against it before going live (it checks states and timings strictly).
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Payme params vary per method; each handler reads only the fields it needs
 type Rpc = { id: number; method: string; params: Record<string, any> };
 
 const err = (id: number | null, code: number, message: string) =>

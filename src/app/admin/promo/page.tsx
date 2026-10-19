@@ -67,7 +67,7 @@ export default async function PromoAdmin({ searchParams }: { searchParams: Promi
         title="Promo codes"
         desc="Codes are redeemed only after a successful payment; a failed or abandoned checkout releases them."
         actions={<>
-          <a href="/api/admin/export/promo" className="btn-secondary btn-sm">⬇ Export all (CSV)</a>
+          <a href="/api/admin/export/promo" download className="btn-secondary btn-sm">⬇ Export all (CSV)</a>
           <a href="#new" className="btn-primary btn-sm">+ New code</a>
         </>}
       />

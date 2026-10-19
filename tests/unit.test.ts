@@ -3,6 +3,35 @@ import assert from 'node:assert/strict';
 import { formatPhone, isValidPhone, maskLocalDigits, normalizePhone } from '../src/lib/phone';
 import { parseCsv, toCsv } from '../src/lib/csv';
 import { LOCALES, pick, toLocale } from '../src/i18n/config';
+import { THEMES, contrast } from '../src/styles/tokens';
+import { readFileSync } from 'node:fs';
+
+test('design tokens: text colours meet WCAG AA (4.5:1) in both themes', () => {
+  for (const [name, t] of Object.entries(THEMES)) {
+    for (const bg of ['canvas', 'surface', 'raised'] as const) {
+      for (const fg of ['ink', 'muted', 'brandFg', 'accentFg', 'danger', 'warning'] as const) {
+        const r = contrast(t[fg], t[bg]);
+        assert.ok(r >= 4.5, `${name}: ${fg} on ${bg} is ${r.toFixed(2)}:1`);
+      }
+    }
+  }
+  assert.ok(contrast('#FFFFFF', '#1F5BEB') >= 4.5, 'white on brand button');
+  assert.ok(contrast('#052E1F', '#3ACC95') >= 4.5, 'dark text on accent');
+});
+
+test('design tokens: globals.css variables match tokens.ts exactly', () => {
+  const css = readFileSync(new URL('../src/app/globals.css', import.meta.url), 'utf8');
+  const block = (sel: string) => css.slice(css.indexOf(`${sel} {`), css.indexOf('}', css.indexOf(`${sel} {`)));
+  const kebab = (k: string) => k.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
+  const triplet = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(' ');
+  for (const [name, sel] of [['light', ':root'], ['dark', '.dark']] as const) {
+    const b = block(sel);
+    for (const [k, hex] of Object.entries(THEMES[name])) {
+      const m = new RegExp(`--c-${kebab(k)}:\\s*([\\d ]+);`).exec(b);
+      assert.equal(m?.[1], triplet(hex), `${name} ${k}`);
+    }
+  }
+});
 import { formatDuration, formatUzs } from '../src/lib/format';
 import { smsSegments } from '../src/lib/sms';
 import { flatten, makeT, MESSAGES } from '../src/i18n/translate';

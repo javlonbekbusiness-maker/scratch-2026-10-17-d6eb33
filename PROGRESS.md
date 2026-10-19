@@ -41,6 +41,25 @@ _Last updated: 2026-10-18 (stage 12: daily limit of two full tests; not committe
 17. Access control: a regular user gets 404 on `/admin` and on the admin export API.
 18. Library search works in Latin, Cyrillic and Russian, for both signs and rule articles. Leaderboard, privacy, terms, offline page, sitemap, robots, manifest and service worker all return 200.
 
+## Redesign — stage 1: design system and app shell (✅ tested)
+
+- **Plan:** `docs/design-system.md` (approved). Baseline Lighthouse mobile: performance 74–82, accessibility 94–97.
+- **Tokens:** dark navy theme by default, light theme on toggle, remembered and applied before first paint. CSS variables plus Tailwind names; the neutral `slate` scale is retuned to navy so existing pages already match; the old orange CTA is retired in favour of brand blue. Inter is self-hosted via `next/font` (Latin, Latin Extended, Cyrillic) with tabular numbers.
+- **Components:** `src/components/ui/` and `ProgressRing` (CSS ring fill plus count-up, respects reduced motion).
+- **Shell:**
+  - Phones: sticky top bar (avatar, streak, search sheet, notifications sheet) and a 4-tab bottom bar (Bosh sahifa, Statistika, Saqlangan, Sozlamalar). The bar is hidden in a running test and on the result screen, and respects the iPhone safe area.
+  - Desktop (≥ 1024 px): left sidebar and a centred 1120 px column.
+  - Visitors keep the public header and footer.
+- **New routes:**
+  - `/stats`: readiness, chips, topic accuracy, weak topics, heatmap, recent tests
+  - `/saved`: bookmarks and notes
+  - `/settings`: language, theme, profile form, links, sign-out
+- **Fixes along the way:**
+  - `/tests` scrolled sideways on phones.
+  - A production `npm start` on localhost was redirected to HTTPS.
+- **Tooling:** ESLint 9 with `next/core-web-vitals` is now set up (`npm run lint`, clean); `puppeteer-core` uses the installed Chrome for layout tests.
+- **Tests:** unit 16/16 (adds a token contrast test and a CSS-to-token sync test); e2e 20/20, including the new `nav.e2e.ts` (tabs, active state, every link resolves) and `layout.e2e.ts` (no overflow at 360/390/430 px, 48 px tabs, no tab bar in a test).
+
 ## Stage 14: Uzbek Cyrillic removed (✅ tested, not committed)
 
 - **Languages:** Uzbek Latin (default) and Russian only. `uz-Cyrl` is gone from the locale list, types, switcher, message files, admin template languages and hreflang. The transliteration code and `scripts/gen-cyrillic.ts` are deleted.

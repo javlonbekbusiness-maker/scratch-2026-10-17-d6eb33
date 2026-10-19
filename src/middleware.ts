@@ -1,11 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-const PROTECTED = ['/dashboard', '/tests', '/test/', '/results', '/profile', '/onboarding', '/checkout', '/admin'];
+const PROTECTED = ['/dashboard', '/tests', '/test/', '/results', '/profile', '/onboarding', '/checkout', '/admin', '/stats', '/saved', '/settings'];
+const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 
 export function middleware(req: NextRequest) {
   const url = req.nextUrl;
 
-  if (process.env.NODE_ENV === 'production' && req.headers.get('x-forwarded-proto') === 'http') {
+  // Behind a TLS proxy plain HTTP is redirected; a local `npm start` (localhost) stays usable.
+  if (process.env.NODE_ENV === 'production' && req.headers.get('x-forwarded-proto') === 'http' && !LOCAL_HOSTS.has(url.hostname)) {
     url.protocol = 'https:';
     return NextResponse.redirect(url, 308);
   }

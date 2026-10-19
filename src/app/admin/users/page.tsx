@@ -47,7 +47,7 @@ export default async function UsersAdmin({ searchParams }: { searchParams: Promi
       <PageHeader
         title="Users"
         desc="Personal data: handle according to the privacy policy. Export only what you need."
-        actions={<a href="/api/admin/export/users" className="btn-secondary btn-sm">⬇ Export users (CSV)</a>}
+        actions={<a href="/api/admin/export/users" download className="btn-secondary btn-sm">⬇ Export users (CSV)</a>}
       />
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
         <Stat label="Users" value={allUsers} />
