@@ -79,6 +79,62 @@ export function ActionCard({
   );
 }
 
+/** Card for a ticket or topic: big label, progress toward mastery, accuracy, optional demo/lock badge. */
+export function ProgressCard({
+  lead,
+  title,
+  subtitle,
+  progress,
+  progressLabel,
+  accuracy,
+  accuracyLabel,
+  badge,
+  locked,
+  lockedLabel,
+  ...target
+}: {
+  lead: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  progress: { value: number; max: number };
+  progressLabel: string;
+  accuracy: number | null;
+  accuracyLabel: string;
+  badge?: string;
+  locked?: boolean;
+  lockedLabel?: string;
+} & CardTarget) {
+  const pct = progress.max ? Math.round((100 * progress.value) / progress.max) : 0;
+  return (
+    <Frame target={target as CardTarget} className="flex-col gap-3 p-4" label={locked && lockedLabel ? `${title} — ${lockedLabel}` : undefined}>
+      <span className="flex items-start justify-between gap-2">
+        <span className="grid h-12 min-w-[48px] place-items-center rounded-2xl bg-raised px-2 text-h2 text-ink" aria-hidden>{lead}</span>
+        {locked ? (
+          <span className="grid h-8 w-8 place-items-center rounded-full bg-raised text-muted"><Icon name="lock" size={16} /></span>
+        ) : badge ? (
+          <span className="rounded-full bg-success/15 px-2 py-0.5 text-micro font-semibold uppercase text-accent-fg">{badge}</span>
+        ) : null}
+      </span>
+      <span className="block min-w-0">
+        <span className="block truncate text-title text-ink">{title}</span>
+        {subtitle && <span className="block text-small text-muted">{subtitle}</span>}
+      </span>
+      <span className="mt-auto block w-full">
+        <span className="mb-1.5 flex justify-between text-small">
+          <span className="text-muted">{progressLabel}</span>
+          <span className="num font-semibold text-ink">{progress.value}/{progress.max}</span>
+        </span>
+        <span className="block h-2 overflow-hidden rounded-full bg-raised" role="progressbar" aria-label={`${title}: ${progressLabel}`} aria-valuemin={0} aria-valuemax={progress.max} aria-valuenow={progress.value}>
+          <span className="block h-full rounded-full bg-brand-600 transition-[width] duration-700" style={{ width: `${pct}%` }} />
+        </span>
+        <span className="mt-2 block text-small text-muted">
+          {accuracyLabel}: <span className={`num font-semibold ${accuracy === null ? '' : accuracy >= 85 ? 'text-accent-fg' : accuracy >= 60 ? 'text-ink' : 'text-warning'}`}>{accuracy === null ? '—' : `${accuracy}%`}</span>
+        </span>
+      </span>
+    </Frame>
+  );
+}
+
 /** Full-width row card: icon left, text, trailing slot (chevron by default). */
 export function WideCard({
   icon,

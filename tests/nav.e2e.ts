@@ -59,6 +59,21 @@ test('every link on the tab pages reaches a working route', async () => {
   assert.deepEqual(broken, [], `broken links: ${JSON.stringify(broken)}`);
 });
 
+test('home: all quick actions present; the duel is shown as "Tez orada" and is not a link', async () => {
+  const u = await newUser({ subscribed: true });
+  const html = await (await page('/dashboard', u.token)).text();
+  for (const href of ['/tests/tickets', '/tests/topics', '/tests/tricky', '/library', '/leaderboard']) assert.match(html, new RegExp(`href="${href}"`), href);
+  for (const label of ['Biletlar', 'Mavzulashtirilgan testlar', 'Qopqonli savollar', 'Imtihon', "Yo&#x27;l qoidalari|Yo'l qoidalari", 'Xatolarim', 'Reyting', '1v1 duel', 'Davom etish', 'Kunlik maqsad']) {
+    assert.match(html, new RegExp(label), label);
+  }
+  const label = html.indexOf('1v1 duel');
+  const start = html.lastIndexOf('aria-disabled="true"', label);
+  assert.ok(start > 0, 'duel card is disabled');
+  const card = html.slice(start, label);
+  assert.doesNotMatch(card, /<a\b|Reyting/, 'duel card is a plain element, not a link');
+  assert.match(html, /Tez orada/);
+});
+
 test('visitors get the public header, not the app tabs; app tabs require sign-in', async () => {
   const html = await (await page('/pricing')).text();
   assert.doesNotMatch(html, /href="\/stats"/);

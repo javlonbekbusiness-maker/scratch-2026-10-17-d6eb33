@@ -19,6 +19,7 @@ enum TestMode {
   MISTAKES
   MARATHON
   ADAPTIVE
+  TRICKY
 }
 
 enum PaymentStatus {

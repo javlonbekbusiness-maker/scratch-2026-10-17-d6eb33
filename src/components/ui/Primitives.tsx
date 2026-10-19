@@ -69,12 +69,19 @@ export function StatChip({ icon, value, label, tone = 'neutral' }: { icon: IconN
   );
 }
 
-export function ProgressBar({ value, max = 100, tone = 'brand', label, className = '' }: { value: number; max?: number; tone?: 'brand' | 'accent' | 'warning' | 'danger'; label: string; className?: string }) {
+export function ProgressBar({
+  value,
+  max = 100,
+  tone = 'brand',
+  label,
+  className = '',
+  onBrand = false,
+}: { value: number; max?: number; tone?: 'brand' | 'accent' | 'warning' | 'danger'; label: string; className?: string; onBrand?: boolean }) {
   const pct = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)) : 0;
   const fill = { brand: 'bg-brand-600', accent: 'bg-accent', warning: 'bg-warning', danger: 'bg-danger' }[tone];
   return (
     <div
-      className={`h-2 overflow-hidden rounded-full bg-raised ${className}`}
+      className={`h-2 overflow-hidden rounded-full ${onBrand ? 'bg-white/20' : 'bg-raised'} ${className}`}
       role="progressbar"
       aria-label={label}
       aria-valuemin={0}

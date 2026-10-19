@@ -41,6 +41,25 @@ _Last updated: 2026-10-18 (stage 12: daily limit of two full tests; not committe
 17. Access control: a regular user gets 404 on `/admin` and on the admin export API.
 18. Library search works in Latin, Cyrillic and Russian, for both signs and rule articles. Leaderboard, privacy, terms, offline page, sitemap, robots, manifest and service worker all return 200.
 
+## Redesign — stage 2: home (✅ tested)
+
+- **Hero card:**
+  - Readiness ring.
+  - "Davom etish": resumes the newest unfinished test that is still valid (not timed out, not fully answered, and full tests only while today's limit allows); otherwise starts Smart Practice (adaptive; free users see the paywall as before).
+  - Daily goal bar: 20 answers per Tashkent day.
+- **Quick actions (2 columns on phones, 3 on wider screens):**
+  - Biletlar → `/tests/tickets`; Mavzulashtirilgan testlar → `/tests/topics`; Qopqonli savollar → `/tests/tricky`
+  - Imtihon: shows today's remaining full tests, the paywall for free users, and the limit message when used up
+  - Yo'l qoidalari → `/library`
+  - Xatolarim: badge with the number due for review
+- **Wide cards:** Reyting, and 1v1 duel shown as "Tez orada" (not a link).
+- **Promo banner:** only for non-subscribers with an active welcome or seasonal campaign; countdown to the server end time; our own SVG; links to `/pricing`. The old top strip is gone for signed-in users; visitors still see it.
+- **New pages:**
+  - `/tests/tickets` and `/tests/topics`: progress cards with mastered/total and accuracy, demo and lock badges.
+  - `/tests/tricky`: trap questions, made of admin-flagged ones (`Question.isTricky`) plus questions with at least 3 real answers and at least a 35% miss rate. An honest empty state when there's no data.
+- **Database (additive):** `TestMode.TRICKY` (practice mode, subscription required like the other premium modes, outside the daily full-test limit).
+- **Tests:** `tests/home.db.test.ts` (trap selection, TRICKY gating, resume rules, daily goal); home checks in `nav.e2e.ts`. Lint, type check, unit 16/16, DB 13/13, e2e 21/21.
+
 ## Redesign — stage 1: design system and app shell (✅ tested)
 
 - **Plan:** `docs/design-system.md` (approved). Baseline Lighthouse mobile: performance 74–82, accessibility 94–97.

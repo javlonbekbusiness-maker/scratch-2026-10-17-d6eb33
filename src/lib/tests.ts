@@ -12,6 +12,7 @@ import {
 import { getAccess } from './access';
 import { userStats } from './stats';
 import { pickAdaptive } from './adaptive';
+import { getTrickyQuestions } from './tricky';
 
 export function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -116,6 +117,11 @@ export async function startTest(user: User, opts: StartOpts): Promise<StartResul
         db.question.findMany({ where: base, select: { id: true, topicId: true } }),
       ]);
       questionIds = pickAdaptive(all, stats.topics, PRACTICE_SIZE);
+      break;
+    }
+    case 'TRICKY': {
+      if (!active) return { ok: false, error: 'locked' };
+      questionIds = shuffle((await getTrickyQuestions(categoryId)).ids).slice(0, PRACTICE_SIZE);
       break;
     }
   }

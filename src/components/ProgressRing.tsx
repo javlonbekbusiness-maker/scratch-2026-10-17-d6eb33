@@ -14,6 +14,7 @@ export function ProgressRing({
   label,
   sub,
   tone = 'brand',
+  onBrand = false,
 }: {
   value: number;
   size?: number;
@@ -21,6 +22,8 @@ export function ProgressRing({
   label?: string;
   sub?: string;
   tone?: 'brand' | 'mint' | 'cta' | 'red';
+  /** On a brand-blue surface: white text, translucent track, green fill. */
+  onBrand?: boolean;
 }) {
   const target = Math.max(0, Math.min(100, value));
   const [shown, setShown] = useState(target);
@@ -43,11 +46,12 @@ export function ProgressRing({
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const offset = c - (target / 100) * c;
-  const color = { brand: 'stroke-brand-600', mint: 'stroke-accent', cta: 'stroke-warning', red: 'stroke-danger' }[tone];
+  const color = onBrand ? 'stroke-accent' : { brand: 'stroke-brand-600', mint: 'stroke-accent', cta: 'stroke-warning', red: 'stroke-danger' }[tone];
+  const track = onBrand ? 'stroke-white/20' : 'stroke-raised';
   return (
     <div className="relative inline-grid place-items-center" style={{ width: size, height: size }} role="img" aria-label={`${sub ?? ''} ${label ?? `${Math.round(target)}%`}`.trim()}>
       <svg width={size} height={size} className="-rotate-90" aria-hidden>
-        <circle cx={size / 2} cy={size / 2} r={r} strokeWidth={stroke} className="fill-none stroke-raised" />
+        <circle cx={size / 2} cy={size / 2} r={r} strokeWidth={stroke} className={`fill-none ${track}`} />
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -61,10 +65,10 @@ export function ProgressRing({
         />
       </svg>
       <div className="absolute text-center" aria-hidden>
-        <div className="num font-extrabold leading-none text-ink" style={{ fontSize: size / 4.4 }}>
+        <div className={`num font-extrabold leading-none ${onBrand ? 'text-white' : 'text-ink'}`} style={{ fontSize: size / 4.4 }}>
           {label ?? `${Math.round(shown)}%`}
         </div>
-        {sub && <div className="mt-1 text-xs text-muted">{sub}</div>}
+        {sub && <div className={`mt-1 text-xs ${onBrand ? 'text-white/80' : 'text-muted'}`}>{sub}</div>}
       </div>
     </div>
   );
