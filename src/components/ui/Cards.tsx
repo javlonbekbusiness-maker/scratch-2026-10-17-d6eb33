@@ -58,11 +58,18 @@ export function ActionCard({
   subtitle,
   badge,
   tone = 'brand',
+  locked,
+  lockedLabel,
   ...target
-}: { icon: IconName; title: string; subtitle?: string; badge?: string | number | null; tone?: Tone } & CardTarget) {
+}: { icon: IconName; title: string; subtitle?: string; badge?: string | number | null; tone?: Tone; locked?: boolean; lockedLabel?: string } & CardTarget) {
   return (
-    <Frame target={target as CardTarget} className="min-h-[132px] flex-col items-start gap-3 p-4 sm:p-5">
+    <Frame target={target as CardTarget} className="min-h-[132px] flex-col items-start gap-3 p-4 sm:p-5" label={locked && lockedLabel ? `${title} — ${lockedLabel}` : undefined}>
       <IconTile icon={icon} tone={tone} />
+      {locked && (
+        <span className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-raised text-muted" aria-hidden>
+          <Icon name="lock" size={16} />
+        </span>
+      )}
       <span className="mt-auto block">
         <span className="block text-title leading-snug text-ink">{title}</span>
         {subtitle && <span className="mt-0.5 block text-small text-muted">{subtitle}</span>}

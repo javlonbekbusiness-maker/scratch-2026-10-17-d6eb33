@@ -41,6 +41,18 @@ _Last updated: 2026-10-18 (stage 12: daily limit of two full tests; not committe
 17. Access control: a regular user gets 404 on `/admin` and on the admin export API.
 18. Library search works in Latin, Cyrillic and Russian, for both signs and rule articles. Leaderboard, privacy, terms, offline page, sitemap, robots, manifest and service worker all return 200.
 
+## Redesign — stage 4: tests hub and lists (✅ tested)
+
+- **`/tests` hub, rebuilt from the shared cards:**
+  - Category picker card (stacked on phones).
+  - Mode cards: Imtihon with today's remaining full tests and a disabled "Limit" state, Aqlli mashq, Qopqonli savollar, Xatolarim with review badge, Marafon. Locked modes show a lock and open the paywall.
+  - Wide cards to `/tests/tickets` and `/tests/topics` with "mastered / total" summaries.
+  - Status banners for empty, limit and invalid states.
+- **Paywall:** token-styled, bottom sheet on phones and dialog on desktop, icon checklist, focused call-to-action.
+- **`ActionCard`:** gained a `locked` state.
+- **Lesson learned:** a route-level `loading.tsx` makes Next stream pages, so `requireUser()` redirects become 200 responses with a client-side redirect instead of a server 307. The auth e2e tests caught it, and the file was removed. Skeletons must go inside pages (`Suspense` after the sign-in check), never as a `loading.tsx` above protected pages.
+- **Tests:** lint, type check, unit 16/16, DB 13/13, e2e 22/22; screenshots checked for free and subscribed users with no page errors.
+
 ## Redesign — stage 3: test and result screens (✅ tested)
 
 - **Test screen:** full screen (app bars and the desktop sidebar padding are hidden).

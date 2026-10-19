@@ -96,6 +96,12 @@ const uz = {
   lists: {
     mastered: "O'zlashtirildi",
   },
+  tests: {
+    modes: 'Mashq rejimlari',
+    lists: "Biletlar va mavzular",
+    masteredOf: "{n} / {total} savol o'zlashtirildi",
+    limitChip: 'Limit',
+  },
   tricky: {
     intro: "Ko'pchilik adashadigan va admin belgilagan savollar.",
     how: "Kamida {n} marta javob berilgan va {p}% dan ko'p xato qilingan savollar avtomatik qo'shiladi.",
