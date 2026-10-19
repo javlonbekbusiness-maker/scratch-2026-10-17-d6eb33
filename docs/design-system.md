@@ -1,6 +1,6 @@
 # YHQ Test design system — proposal (stage 0)
 
-Status: **approved; stage 1 implemented** (tokens, font, components, shell and navigation, Statistika/Saqlangan/Sozlamalar).
+Status: **implemented, stages 1–7 complete** (see PROGRESS.md for per-stage details and the after-measurement at the end of this file).
 
 Where things live:
 - Token values: `src/styles/tokens.ts` → CSS variables in `src/app/globals.css` → Tailwind names in `tailwind.config.js`. Unit tests check AA contrast and that the CSS matches the token file.
@@ -133,5 +133,19 @@ Admin pages keep their layout (internal tool) but pick up the tokens automatical
 | `/profile` | 76 | 96 | 100 | 54* | 2.8 s | 0.001 | 760 ms |
 
 \* These pages are deliberately `noindex`, which Lighthouse counts against SEO.
+
+## 7. After (stage 7), same tool, settings, pages and machine
+
+| Page | Perf | A11y | Best pr. | SEO | LCP | CLS | TBT |
+|---|---|---|---|---|---|---|---|
+| `/` | 97 (+16) | 100 (+4) | 100 | 100 (+8) | 2.4 s | 0 | 90 ms |
+| `/login` | 93 (+12) | 100 (+4) | 100 | 63* | 2.7 s | 0.011 | 190 ms |
+| `/pricing` | 94 (+13) | 100 (+6) | 100 | 100 (+9) | 2.4 s | 0 | 210 ms |
+| `/library` | 95 (+13) | 100 (+3) | 100 | 100 (+8) | 2.7 s | 0 | 80 ms |
+| `/dashboard` | 95 (+21) | 100 (+4) | 100 | 63* | 2.7 s | 0 | 110 ms |
+| `/tests` | 96 (+15) | 100 (+4) | 100 | 100 (+9) | 2.4 s | 0 | 150 ms |
+| `/profile` | 95 (+19) | 100 (+4) | 100 | 63* | 2.5 s | 0 | 160 ms |
+
+Total blocking time fell from 500–990 ms to 80–210 ms. \* Deliberately `noindex` pages. Single runs on a development laptop against a local production build; expect a few points of run-to-run variance.
 
 Found while measuring: in production mode the middleware redirects every plain-HTTP request to HTTPS, including `localhost`, so `npm start` cannot be opened locally. Proposed fix in stage 1: skip the redirect for `localhost` / `127.0.0.1` (real deployments behind a TLS proxy are unaffected).

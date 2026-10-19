@@ -24,7 +24,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
   return (
     <div className="container-app py-10">
       <div className="text-center">
-        <h1 className="text-3xl font-extrabold sm:text-4xl">{t('pricing.title')}</h1>
+        <h1 className="text-h1 sm:text-[32px] sm:leading-10">{t('pricing.title')}</h1>
         <p className="mt-2 muted">{t('pricing.subtitle')}</p>
         {access?.active && (
           <p className="chip mx-auto mt-4 bg-success/15 py-2 text-sm text-accent-fg">
@@ -48,7 +48,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
       ) : (
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {plans.map((p) => (
-            <PlanCard key={p.id} plan={p} t={t} href={`/login?next=${encodeURIComponent(`/pricing?plan=${p.slug}`)}`} />
+            <PlanCard key={p.id} plan={p} t={t} headingLevel={2} href={`/login?next=${encodeURIComponent(`/pricing?plan=${p.slug}`)}`} />
           ))}
         </div>
       )}

@@ -41,6 +41,18 @@ _Last updated: 2026-10-18 (stage 12: daily limit of two full tests; not committe
 17. Access control: a regular user gets 404 on `/admin` and on the admin export API.
 18. Library search works in Latin, Cyrillic and Russian, for both signs and rule articles. Leaderboard, privacy, terms, offline page, sitemap, robots, manifest and service worker all return 200.
 
+## Redesign — stage 7: measurement and wrap-up (✅)
+
+- **Lighthouse mobile** (production build, same pages as the baseline): performance 74–82 → **93–97**, accessibility 94–97 → **100** on all 7 pages, best practices 100, SEO 100 on indexable pages (63 on the deliberately noindex ones, previously 54). Total blocking time 500–990 ms → 80–210 ms. Full table in `docs/design-system.md`.
+- **Fixes from the audit:** a low-contrast count on the library tabs, and the plan-card heading level on `/pricing` (`PlanCard` takes `headingLevel`).
+- **Marked "Tez orada" / not built:**
+  - 1v1 duel (card shown, not a link)
+  - search covers signs and rules only (not questions)
+  - the daily goal is a fixed 20 answers (no setting yet)
+  - no real testimonials section (the placeholder was removed)
+  - admin pages keep their own layout (they use the tokens but were not redesigned)
+- **Final checks:** lint clean, type check clean, unit 16/16, DB 13/13, e2e 22/22.
+
 ## Redesign — stage 6: public pages (✅ tested)
 
 - **Public header and footer:** tokens and our icons; the header is for visitors only; compact language picker on phones; the logo never wraps. The offer strip uses our amber style and icon.

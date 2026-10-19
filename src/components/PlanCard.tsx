@@ -4,8 +4,10 @@ import type { TFn } from '@/i18n/translate';
 import { formatUzs } from '@/lib/format';
 import { Icon } from './ui/Icon';
 
-export function PlanCard({ plan, t, href, cta, active }: { plan: PlanView; t: TFn; href?: string; cta?: React.ReactNode; active?: boolean }) {
+/** `headingLevel` keeps the page outline correct: 2 directly under a page title, 3 inside a section. */
+export function PlanCard({ plan, t, href, cta, active, headingLevel = 3 }: { plan: PlanView; t: TFn; href?: string; cta?: React.ReactNode; active?: boolean; headingLevel?: 2 | 3 }) {
   const perDay = Math.round(plan.finalUzs / plan.durationDays);
+  const Heading = headingLevel === 2 ? 'h2' : 'h3';
   return (
     <div
       className={`card relative flex flex-col p-5 transition hover:border-brand-500/40 ${
@@ -15,7 +17,7 @@ export function PlanCard({ plan, t, href, cta, active }: { plan: PlanView; t: TF
       {plan.featured && (
         <span className="chip absolute -top-3 left-5 bg-brand-600 text-white"><Icon name="sparkles" size={14} /> {t('pricing.bestValue')}</span>
       )}
-      <h3 className="text-title">{plan.label}</h3>
+      <Heading className="text-title">{plan.label}</Heading>
       {plan.untilPass && <p className="text-small text-muted">{t('pricing.untilPassNote')}</p>}
       <div className="mt-3 flex items-baseline gap-2">
         <span className="num text-display">{formatUzs(plan.finalUzs)}</span>

@@ -49,7 +49,7 @@ export default async function LibraryPage({ searchParams }: { searchParams: Prom
             aria-selected={tab === k}
             className={`inline-flex min-h-[44px] items-center gap-1.5 rounded-xl px-4 text-sm font-semibold transition ${tab === k ? 'bg-brand-600 text-white' : 'text-muted hover:text-ink'}`}
           >
-            {t(`library.${k}`)} <span className="num opacity-75">({k === 'signs' ? signs.length : rules.length})</span>
+            {t(`library.${k}`)} <span className="num">({k === 'signs' ? signs.length : rules.length})</span>
           </Link>
         ))}
       </div>
