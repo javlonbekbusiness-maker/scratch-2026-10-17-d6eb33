@@ -330,6 +330,17 @@ const uz = {
     title: "Internet aloqasi yo'q",
     text: "Aloqa tiklangach sahifa avtomatik yangilanadi. Saqlangan sahifalar oflayn ham ochiladi.",
   },
+  notFound: {
+    title: 'Sahifa topilmadi',
+    text: "Bunday sahifa yo'q yoki uni ko'rish uchun ruxsatingiz yo'q.",
+    home: 'Bosh sahifa',
+  },
+  limit: {
+    remaining: "Bugun qolgan to'liq testlar: {n} / {max}",
+    reached: "Bugungi limit tugadi: kuniga {max} ta to'liq test topshirish mumkin. Keyingi urinish Toshkent vaqti bilan 00:00 da ochiladi.",
+    invalid: "Bu test yaroqsiz: to'liq test aynan {n} ta savoldan iborat bo'lishi kerak.",
+    backToTests: 'Testlarga qaytish',
+  },
 };
 
 export default uz;

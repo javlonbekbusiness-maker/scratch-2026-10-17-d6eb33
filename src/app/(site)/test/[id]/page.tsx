@@ -1,12 +1,17 @@
+import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import { db } from '@/lib/db';
 import { requireUser } from '@/lib/session';
 import { finishSession, isPracticeMode } from '@/lib/tests';
+import { getDailyStatus } from '@/lib/daily-limit';
 import { getT } from '@/i18n/server';
 import { pick } from '@/i18n/config';
 import { TestRunner, type RunnerQuestion } from './TestRunner';
 
-export const metadata = { robots: { index: false } };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getT();
+  return { title: t('nav.tests'), robots: { index: false } };
+}
 
 export default async function TestPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -16,9 +21,11 @@ export default async function TestPage({ params }: { params: Promise<{ id: strin
   if (!s || s.userId !== user.id) notFound();
   if (s.finishedAt) redirect(`/results/${s.id}`);
   if (s.timeLimitSec && Date.now() - s.startedAt.getTime() > (s.timeLimitSec + 10) * 1000) {
-    await finishSession(s.id);
-    redirect(`/results/${s.id}`);
+    const r = await finishSession(s.id);
+    redirect(r.ok ? `/results/${s.id}` : `/tests?${r.error === 'daily_limit' ? 'limit' : 'invalid'}=1`);
   }
+  // A full test that can no longer be submitted today isn't worth continuing.
+  if (s.mode === 'EXAM' && (await getDailyStatus(db, user.id)).remaining === 0) redirect('/tests?limit=1');
 
   const practice = isPracticeMode(s.mode);
   const [questions, bookmarks, notes] = await Promise.all([

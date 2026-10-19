@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { TestMode } from '@prisma/client';
 import { db } from '@/lib/db';
@@ -5,14 +6,18 @@ import { requireUser } from '@/lib/session';
 import { getAccess } from '@/lib/access';
 import { dueCount } from '@/lib/srs';
 import { defaultExamTemplate } from '@/lib/tests';
+import { FULL_TEST_QUESTIONS, getDailyStatus } from '@/lib/daily-limit';
 import { getT } from '@/i18n/server';
 import { pick } from '@/i18n/config';
 import { startTestAction, setCategory } from '@/app/actions';
 import { Paywall } from '@/components/Paywall';
 
-export const metadata = { title: 'Tests' };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getT();
+  return { title: t('nav.tests') };
+}
 
-export default async function TestsPage({ searchParams }: { searchParams: Promise<{ locked?: string; empty?: string }> }) {
+export default async function TestsPage({ searchParams }: { searchParams: Promise<{ locked?: string; empty?: string; limit?: string; invalid?: string }> }) {
   const user = await requireUser();
   const sp = await searchParams;
   const { t, locale } = await getT();
@@ -28,13 +33,14 @@ export default async function TestsPage({ searchParams }: { searchParams: Promis
     db.reviewItem.count({ where: { userId: user.id } }),
     defaultExamTemplate(categoryId),
   ]);
+  const daily = await getDailyStatus(db, user.id);
   const locked = !access.active;
   const tCount = new Map(ticketCounts.map((r) => [r.ticketNumber, r._count]));
   const topicCount = new Map(topicCounts.map((r) => [r.topicId, r._count]));
   const lockHref = '/tests?locked=1';
 
   const modes: { mode: TestMode; icon: string; title: string; desc: string; needsSub: boolean; badge?: string }[] = [
-    { mode: 'EXAM', icon: '⏱️', title: t('modes.exam'), desc: t('modes.examDesc', { n: exam.questionCount, m: Math.round(exam.timeLimitSec / 60), p: exam.passPercent }), needsSub: true },
+    { mode: 'EXAM', icon: '⏱️', title: t('modes.exam'), desc: t('modes.examDesc', { n: FULL_TEST_QUESTIONS, m: Math.round(exam.timeLimitSec / 60), p: exam.passPercent }), needsSub: true },
     { mode: 'ADAPTIVE', icon: '🧠', title: t('modes.adaptive'), desc: t('modes.adaptiveDesc'), needsSub: true },
     { mode: 'MISTAKES', icon: '🔁', title: t('modes.mistakes'), desc: reviewTotal ? t('dashboard.dueReviews', { n: due || reviewTotal }) : t('modes.noMistakes'), needsSub: false, badge: due ? String(due) : undefined },
     { mode: 'MARATHON', icon: '🏁', title: t('modes.marathon'), desc: t('modes.marathonDesc'), needsSub: true },
@@ -47,6 +53,10 @@ export default async function TestsPage({ searchParams }: { searchParams: Promis
         <div>
           <h1 className="text-3xl font-extrabold">{t('modes.chooseMode')}</h1>
           {sp.empty && <p role="status" className="mt-2 text-sm text-cta-700">{t('modes.noQuestions')}</p>}
+          {(sp.limit || daily.remaining === 0) && (
+            <p role="status" className="mt-2 rounded-xl bg-cta-500/10 px-3 py-2 text-sm font-medium text-cta-700 dark:text-cta-300">{t('limit.reached', { max: daily.limit })}</p>
+          )}
+          {sp.invalid && <p role="alert" className="mt-2 text-sm text-red-600">{t('limit.invalid', { n: FULL_TEST_QUESTIONS })}</p>}
         </div>
         <form action={setCategory} className="flex items-center gap-2">
           <label htmlFor="cat" className="text-sm font-medium muted">{t('modes.category')}</label>
@@ -70,9 +80,17 @@ export default async function TestsPage({ searchParams }: { searchParams: Promis
               </div>
               <h2 className="mt-4 text-lg font-bold">{m.title}</h2>
               <p className="mt-1 text-sm muted">{m.desc}</p>
+              {m.mode === 'EXAM' && !isLocked && (
+                <p className={`mt-2 text-xs font-semibold ${daily.remaining ? 'text-brand-700 dark:text-brand-300' : 'text-cta-700 dark:text-cta-300'}`}>
+                  {t('limit.remaining', { n: daily.remaining, max: daily.limit })}
+                </p>
+              )}
             </>
           );
           const cls = 'card block h-full p-5 text-left transition hover:-translate-y-0.5 hover:shadow-md';
+          if (m.mode === 'EXAM' && !isLocked && daily.remaining === 0) {
+            return <div key={m.mode} aria-disabled="true" className="card block h-full p-5 opacity-60">{inner}</div>;
+          }
           return isLocked ? (
             <Link key={m.mode} href={lockHref} scroll={false} className={cls}>{inner}</Link>
           ) : (

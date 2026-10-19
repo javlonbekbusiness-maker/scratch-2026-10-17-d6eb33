@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { db } from '@/lib/db';
 import { requireUser } from '@/lib/session';
@@ -5,6 +6,7 @@ import { getAccess } from '@/lib/access';
 import { userStats } from '@/lib/stats';
 import { dueCount } from '@/lib/srs';
 import { defaultExamTemplate } from '@/lib/tests';
+import { FULL_TEST_QUESTIONS, getDailyStatus } from '@/lib/daily-limit';
 import { getT } from '@/i18n/server';
 import { pick } from '@/i18n/config';
 import { formatDate, formatDuration } from '@/lib/format';
@@ -12,18 +14,22 @@ import { startTestAction } from '@/app/actions';
 import { ProgressRing } from '@/components/ProgressRing';
 import { Heatmap } from '@/components/Heatmap';
 
-export const metadata = { title: 'Dashboard', robots: { index: false } };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getT();
+  return { title: t('nav.dashboard'), robots: { index: false } };
+}
 
 export default async function Dashboard() {
   const user = await requireUser();
   const { t, locale } = await getT();
-  const [stats, access, due, topics, recent, exam] = await Promise.all([
+  const [stats, access, due, topics, recent, exam, daily] = await Promise.all([
     userStats(user.id, user.categoryId),
     getAccess(user.id),
     dueCount(user.id),
     db.topic.findMany(),
     db.testSession.findMany({ where: { userId: user.id, finishedAt: { not: null } }, orderBy: { finishedAt: 'desc' }, take: 5 }),
     user.categoryId ? defaultExamTemplate(user.categoryId) : null,
+    getDailyStatus(db, user.id),
   ]);
   const topicName = new Map(topics.map((tp) => [tp.id, { name: pick(tp, 'name', locale), icon: tp.icon, slug: tp.slug }]));
   const modeLabel = (m: string, n: number | null) => (m === 'TICKET' ? t('modes.ticketN', { n: n ?? '' }) : t(`modes.${m.toLowerCase()}` as 'modes.exam'));
@@ -65,12 +71,17 @@ export default async function Dashboard() {
             {access.active ? (
               <form action={startTestAction}>
                 <input type="hidden" name="mode" value="EXAM" />
-                <button className="btn-cta w-full">⏱ {t('dashboard.startExam')}</button>
+                <button className="btn-cta w-full" disabled={daily.remaining === 0}>⏱ {t('dashboard.startExam')}</button>
               </form>
             ) : (
               <Link href="/tests" className="btn-cta w-full">{t('dashboard.practice')} →</Link>
             )}
-            {exam && <p className="text-center text-xs muted">{t('modes.examDesc', { n: exam.questionCount, m: Math.round(exam.timeLimitSec / 60), p: exam.passPercent })}</p>}
+            {exam && <p className="text-center text-xs muted">{t('modes.examDesc', { n: FULL_TEST_QUESTIONS, m: Math.round(exam.timeLimitSec / 60), p: exam.passPercent })}</p>}
+            {access.active && (
+              <p role="status" className={`text-center text-xs font-semibold ${daily.remaining ? 'text-brand-700 dark:text-brand-300' : 'text-cta-700 dark:text-cta-300'}`}>
+                {daily.remaining ? t('limit.remaining', { n: daily.remaining, max: daily.limit }) : t('limit.reached', { max: daily.limit })}
+              </p>
+            )}
           </div>
         </section>
 

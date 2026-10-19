@@ -41,6 +41,7 @@ export function TestRunner(props: {
   const [error, setError] = useState<string | null>(null);
   const [finishing, setFinishing] = useState(false);
   const [left, setLeft] = useState<number | null>(null);
+  const [blocked, setBlocked] = useState<string | null>(null);
   const finishedRef = useRef(false);
 
   const q = qs[idx];
@@ -54,8 +55,17 @@ export function TestRunner(props: {
       finishedRef.current = true;
       setFinishing(true);
       try {
-        await fetch('/api/tests/finish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: props.sessionId }) });
-        router.replace(`/results/${props.sessionId}`);
+        const r = await fetch('/api/tests/finish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: props.sessionId }) });
+        if (r.ok) return router.replace(`/results/${props.sessionId}`);
+        const j = await r.json().catch(() => ({}));
+        setFinishing(false);
+        if (r.status === 429 || r.status === 422) {
+          // Final answer from the server (daily limit / invalid test): don't offer a retry.
+          setBlocked(j.message ?? t('common.error'));
+          return;
+        }
+        finishedRef.current = false;
+        setError(j.message ?? t('common.error'));
       } catch {
         finishedRef.current = false;
         setFinishing(false);
@@ -124,6 +134,17 @@ export function TestRunner(props: {
 
   const r = q.result;
   const revealed = props.practice && r?.correct !== undefined;
+
+  if (blocked)
+    return (
+      <div className="container-app max-w-xl py-16">
+        <div className="card p-6 text-center" role="alert">
+          <p className="text-4xl" aria-hidden>⏳</p>
+          <p className="mt-3 font-semibold">{blocked}</p>
+          <a href="/tests" className="btn-primary mt-5 inline-flex">{t('limit.backToTests')}</a>
+        </div>
+      </div>
+    );
 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-3xl flex-col px-4 pb-28 pt-4 sm:px-6">

@@ -1,8 +1,10 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { db } from '@/lib/db';
 import { requireUser } from '@/lib/session';
 import { finishSession } from '@/lib/tests';
+import { getDailyStatus } from '@/lib/daily-limit';
 import { getT } from '@/i18n/server';
 import { pick } from '@/i18n/config';
 import { formatDuration } from '@/lib/format';
@@ -10,7 +12,10 @@ import { startTestAction } from '@/app/actions';
 import { ProgressRing } from '@/components/ProgressRing';
 import { ShareButton } from './ShareButton';
 
-export const metadata = { robots: { index: false } };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getT();
+  return { title: t('result.title'), robots: { index: false } };
+}
 
 export default async function ResultPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -21,8 +26,11 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
   if (!s.finishedAt) {
     const expired = s.timeLimitSec && Date.now() - s.startedAt.getTime() > s.timeLimitSec * 1000;
     if (!expired) redirect(`/test/${s.id}`);
-    s = await finishSession(s.id);
+    const r = await finishSession(s.id);
+    if (!r.ok) redirect(`/tests?${r.error === 'daily_limit' ? 'limit' : 'invalid'}=1`);
+    s = r.session;
   }
+  const daily = s.mode === 'EXAM' ? await getDailyStatus(db, user.id) : null;
 
   const [answers, questions] = await Promise.all([
     db.sessionAnswer.findMany({ where: { sessionId: s.id } }),
@@ -60,14 +68,19 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
           </div>
         </dl>
         {s.passPercent && graded && <p className="mt-3 text-xs muted">{t('result.passMark', { p: s.passPercent })}</p>}
+        {daily && (
+          <p role="status" className={`mt-3 text-sm font-medium ${daily.remaining ? 'muted' : 'text-cta-700 dark:text-cta-400'}`}>
+            {daily.remaining ? t('limit.remaining', { n: daily.remaining, max: daily.limit }) : t('limit.reached', { max: daily.limit })}
+          </p>
+        )}
 
         <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <form action={startTestAction}>
+          {daily?.remaining !== 0 && <form action={startTestAction}>
             <input type="hidden" name="mode" value={s.mode} />
             {s.ticketNumber && <input type="hidden" name="ticket" value={s.ticketNumber} />}
             {s.topicId && <TopicSlug topicId={s.topicId} />}
             <button className="btn-primary">↻ {t('result.retry')}</button>
-          </form>
+          </form>}
           <ShareButton
             text={t('result.shareText', { p: s.score })}
             imageUrl={`/api/og/result/${s.id}`}

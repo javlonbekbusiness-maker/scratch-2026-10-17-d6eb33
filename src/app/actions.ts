@@ -39,6 +39,7 @@ export async function startTestAction(formData: FormData) {
   const r = await startTest(user, { mode, ticket, topic });
   if (r.ok) redirect(`/test/${r.sessionId}`);
   if (r.error === 'locked') redirect(`/tests?locked=1`);
+  if (r.error === 'limit') redirect(`/tests?limit=1`);
   if (r.error === 'category') redirect('/onboarding');
   redirect(`/tests?empty=1`);
 }

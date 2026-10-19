@@ -1,5 +1,14 @@
-import type { TestMode, User } from '@prisma/client';
+import type { PrismaClient, TestMode, TestSession, User } from '@prisma/client';
 import { db } from './db';
+import {
+  DAILY_FULL_TEST_LIMIT,
+  FULL_TEST_QUESTIONS,
+  countFullTestsToday,
+  dailyStatus,
+  getDailyStatus,
+  lockUserForLimit,
+  type DailyStatus,
+} from './daily-limit';
 import { getAccess } from './access';
 import { userStats } from './stats';
 import { pickAdaptive } from './adaptive';
@@ -26,7 +35,7 @@ export async function defaultExamTemplate(categoryId: string) {
 }
 
 type StartOpts = { mode: TestMode; ticket?: number; topic?: string };
-export type StartResult = { ok: true; sessionId: string } | { ok: false; error: 'locked' | 'empty' | 'category' };
+export type StartResult = { ok: true; sessionId: string } | { ok: false; error: 'locked' | 'empty' | 'category' | 'limit' };
 
 const PRACTICE_SIZE = 20;
 
@@ -53,6 +62,8 @@ export async function startTest(user: User, opts: StartOpts): Promise<StartResul
     }
     case 'EXAM': {
       if (!active) return { ok: false, error: 'locked' };
+      // Friendly early stop; the binding check happens again when the test is finished.
+      if ((await countFullTestsToday(db, user.id)) >= DAILY_FULL_TEST_LIMIT) return { ok: false, error: 'limit' };
       const tpl = await defaultExamTemplate(categoryId);
       timeLimitSec = tpl.timeLimitSec;
       passPercent = tpl.passPercent;
@@ -62,11 +73,13 @@ export async function startTest(user: User, opts: StartOpts): Promise<StartResul
         const qs = await db.question.findMany({ where: { ...base, topic: { slug } }, select: { id: true } });
         picked.push(...shuffle(qs.map((q) => q.id)).slice(0, count));
       }
-      if (picked.length < tpl.questionCount) {
+      // A full test is always exactly FULL_TEST_QUESTIONS questions, whatever the template says.
+      if (picked.length < FULL_TEST_QUESTIONS) {
         const rest = await db.question.findMany({ where: { ...base, id: { notIn: picked } }, select: { id: true } });
-        picked.push(...shuffle(rest.map((q) => q.id)).slice(0, tpl.questionCount - picked.length));
+        picked.push(...shuffle(rest.map((q) => q.id)).slice(0, FULL_TEST_QUESTIONS - picked.length));
       }
-      questionIds = shuffle(picked).slice(0, tpl.questionCount);
+      questionIds = shuffle(picked).slice(0, FULL_TEST_QUESTIONS);
+      if (questionIds.length !== FULL_TEST_QUESTIONS) return { ok: false, error: 'empty' };
       break;
     }
     case 'TOPIC': {
@@ -125,23 +138,58 @@ export async function startTest(user: User, opts: StartOpts): Promise<StartResul
   return { ok: true, sessionId: s.id };
 }
 
-/** Grades a session from its stored answers. Safe to call more than once. */
-export async function finishSession(sessionId: string) {
-  const s = await db.testSession.findUniqueOrThrow({ where: { id: sessionId }, include: { answers: true } });
-  if (s.finishedAt) return s;
-  const correctQ = s.answers.filter((a) => a.isCorrect).length;
-  const score = s.totalQ ? Math.round((1000 * correctQ) / s.totalQ) / 10 : 0;
-  const elapsed = Math.round((Date.now() - s.startedAt.getTime()) / 1000);
-  const timeSpentSec = s.timeLimitSec ? Math.min(elapsed, s.timeLimitSec) : elapsed;
-  const graded = s.mode === 'EXAM' || s.mode === 'TICKET';
-  const [updated] = await db.$transaction([
-    db.testSession.update({
-      where: { id: sessionId },
-      data: { finishedAt: new Date(), correctQ, score, timeSpentSec, passed: graded ? score >= (s.passPercent ?? 90) : null },
-    }),
-    db.user.update({ where: { id: s.userId }, data: { lastActiveAt: new Date() } }),
-  ]);
-  return updated;
+export type FinishResult =
+  | { ok: true; session: TestSession; daily: DailyStatus | null }
+  | { ok: false; error: 'daily_limit'; daily: DailyStatus }
+  | { ok: false; error: 'invalid_test' };
+
+/**
+ * Grades a session from its stored answers (never from client input) and saves the result.
+ * Idempotent: finishing an already finished session returns it without counting again.
+ * For full tests the daily-limit check and the save run in one transaction under a per-user
+ * lock, so retries and concurrent requests can't exceed the limit, and if saving fails
+ * nothing is counted. `client` and `now` exist for tests.
+ */
+export async function finishSession(
+  sessionId: string,
+  opts: { client?: PrismaClient; now?: Date } = {},
+): Promise<FinishResult> {
+  const client = opts.client ?? db;
+  const now = opts.now ?? new Date();
+  const { userId } = await client.testSession.findUniqueOrThrow({ where: { id: sessionId }, select: { userId: true } });
+
+  return client.$transaction(async (tx) => {
+    await lockUserForLimit(tx, userId);
+    const s = await tx.testSession.findUniqueOrThrow({ where: { id: sessionId }, include: { answers: true } });
+    const full = s.mode === 'EXAM';
+    if (s.finishedAt) return { ok: true, session: s, daily: full ? await getDailyStatus(tx, userId, now) : null };
+
+    let used = 0;
+    if (full) {
+      const ids = new Set(s.questionIds);
+      if (s.totalQ !== FULL_TEST_QUESTIONS || s.questionIds.length !== FULL_TEST_QUESTIONS || ids.size !== FULL_TEST_QUESTIONS) {
+        return { ok: false, error: 'invalid_test' };
+      }
+      used = await countFullTestsToday(tx, userId, now);
+      if (used >= DAILY_FULL_TEST_LIMIT) return { ok: false, error: 'daily_limit', daily: dailyStatus(used, now) };
+    }
+
+    // Only answers to this session's own questions can score (the answer API already enforces this).
+    const inSession = new Set(s.questionIds);
+    const correctQ = s.answers.filter((a) => a.isCorrect && inSession.has(a.questionId)).length;
+    const score = s.totalQ ? Math.round((1000 * correctQ) / s.totalQ) / 10 : 0;
+    const elapsed = Math.round((now.getTime() - s.startedAt.getTime()) / 1000);
+    const timeSpentSec = s.timeLimitSec ? Math.min(elapsed, s.timeLimitSec) : elapsed;
+    const graded = full || s.mode === 'TICKET';
+    const saved = await tx.testSession.updateMany({
+      where: { id: sessionId, finishedAt: null },
+      data: { finishedAt: now, correctQ, score, timeSpentSec, passed: graded ? score >= (s.passPercent ?? 90) : null },
+    });
+    if (saved.count !== 1) throw new Error('Test session changed while it was being finished');
+    await tx.user.update({ where: { id: userId }, data: { lastActiveAt: now } });
+    const session = await tx.testSession.findUniqueOrThrow({ where: { id: sessionId } });
+    return { ok: true, session, daily: full ? dailyStatus(used + 1, now) : null };
+  });
 }
 
 export function isPracticeMode(mode: TestMode) {
