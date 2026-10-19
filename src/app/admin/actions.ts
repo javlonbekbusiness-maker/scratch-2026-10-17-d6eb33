@@ -92,6 +92,7 @@ export async function saveQuestion(fd: FormData) {
     ruleRef: s(fd, 'ruleRef') || null,
     difficulty: n(fd, 'difficulty') ?? 1,
     isActive: b(fd, 'isActive'),
+    isTricky: b(fd, 'isTricky'),
   };
   const answerRows = answers.map((a, idx) => ({ textUz: a.uz, textRu: a.ru, isCorrect: a.i === correct, sortOrder: idx }));
 

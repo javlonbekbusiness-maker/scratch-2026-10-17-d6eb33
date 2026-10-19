@@ -104,6 +104,7 @@ export default async function EditQuestion({ params, searchParams }: { params: P
         <section className="card space-y-4 p-5">
           <L3 name="explanation" label="Explanation" rows={3} />
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="isActive" defaultChecked={q?.isActive ?? true} className="h-5 w-5" /> Active (visible to users)</label>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="isTricky" defaultChecked={q?.isTricky ?? false} className="h-5 w-5" /> Trap question (always included in &ldquo;Qopqonli savollar&rdquo;, alongside the most-missed questions)</label>
         </section>
 
         <div className="flex gap-2">

@@ -159,6 +159,8 @@ model Question {
   ruleRef       String?
   difficulty    Int      @default(1)
   isActive      Boolean  @default(true)
+  /// Flagged by an admin as a "trap" question (Qopqonli savollar), in addition to the data-driven ones.
+  isTricky      Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
