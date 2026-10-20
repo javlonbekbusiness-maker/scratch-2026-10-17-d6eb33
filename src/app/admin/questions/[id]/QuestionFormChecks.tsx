@@ -20,7 +20,7 @@ export function QuestionFormChecks() {
       const val = (name: string) => ((form.elements.namedItem(name) as HTMLInputElement | null)?.value ?? '').trim();
       const problems: string[] = [];
       const filled = [0, 1, 2, 3, 4].filter((i) => val(`a${i}_uz`) || val(`a${i}_ru`));
-      if (filled.length < 3 || filled.length > 5) problems.push('Fill in 3 to 5 answers.');
+      if (filled.length < 2 || filled.length > 5) problems.push('Fill in 2 to 5 answers.');
       if (filled.some((i) => !val(`a${i}_uz`) || !val(`a${i}_ru`))) problems.push('Every answer needs Uzbek and Russian text.');
       const correct = (form.querySelector('input[name=correct]:checked') as HTMLInputElement | null)?.value;
       if (correct === undefined || !filled.includes(Number(correct))) problems.push('Select the correct answer (it must be one of the filled rows).');

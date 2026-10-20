@@ -63,8 +63,11 @@ test('no licence category is asked for anywhere', async () => {
   assert.doesNotMatch(onboarding, /name="categoryId"|toifa/i);
 });
 
-test('tickets: started from the list, unchanged after new questions are added', async () => {
-  await assignNewTickets(); // settle leftovers so the counts below are exact
+test('tickets: started from the list, unchanged after new questions are added', async (t) => {
+  // Keep real questions that are waiting for a ticket out of this test's throwaway ticket.
+  const waiting = (await db.question.findMany({ where: { isActive: true, ticketNumber: null }, select: { id: true } })).map((q) => q.id);
+  await db.question.updateMany({ where: { id: { in: waiting } }, data: { isActive: false } });
+  t.after(() => db.question.updateMany({ where: { id: { in: waiting } }, data: { isActive: true } }));
   const total = await db.ticket.count();
   assert.ok(total >= 2, 'demo seed has tickets');
   const n = Math.min(2, total);

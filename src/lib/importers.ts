@@ -35,7 +35,7 @@ const questionSchema = z
     topic: z.string().trim().optional().default(''),
     text: l3,
     imageUrl: z.union([z.literal(''), z.string().trim().regex(/^(https:\/\/|\/)[^\s]+$/, 'image_url must be https:// or /path')]).optional(),
-    answers: z.array(l3).min(3, 'need 3–5 answers').max(5, 'need 3–5 answers'),
+    answers: z.array(l3).min(2, 'need 2–5 answers').max(5, 'need 2–5 answers'),
     correct: z.coerce.number().int().min(1, 'correct must be 1–5'),
     explanation: z.object({ uz: z.string().trim().default(''), ru: z.string().trim().default('') }),
     ruleRef: z.string().trim().max(40).optional().default(''),

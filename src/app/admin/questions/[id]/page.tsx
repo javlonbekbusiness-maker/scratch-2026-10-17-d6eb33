@@ -8,7 +8,7 @@ import { QuestionFormChecks } from './QuestionFormChecks';
 
 const ERRORS: Record<string, string> = {
   text: 'Question text in Uzbek and Russian is required.',
-  answers: 'Fill in 3 to 5 answers.',
+  answers: 'Fill in 2 to 5 answers.',
   'answer-langs': 'Every answer needs Uzbek and Russian text.',
   correct: 'Select the correct answer (it must be one of the filled rows).',
   category: 'That category no longer exists. Pick another or leave it empty.',
@@ -90,7 +90,7 @@ export default async function EditQuestion({ params, searchParams }: { params: P
         </section>
 
         <section className="card space-y-3 p-5">
-          <h2 className="font-bold">Answers <span className="text-sm font-normal muted">(3–5; leave unused rows empty, select the correct one)</span></h2>
+          <h2 className="font-bold">Answers <span className="text-sm font-normal muted">(2–5; leave unused rows empty, select the correct one)</span></h2>
           {answers.map((a, i) => (
             <div key={i} className="grid items-center gap-2 md:grid-cols-[auto_1fr_1fr]">
               <label className="flex items-center gap-2 text-sm font-semibold">

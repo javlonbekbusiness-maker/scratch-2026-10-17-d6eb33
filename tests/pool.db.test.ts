@@ -46,8 +46,12 @@ async function makeQuestions(count: number) {
 const snapshot = async () =>
   new Map((await db.question.findMany({ where: { ticketNumber: { not: null } }, select: { id: true, ticketNumber: true, sortOrder: true } })).map((q) => [q.id, `${q.ticketNumber}:${q.sortOrder}`]));
 
-test('tickets: re-running generation changes nothing; new questions only form new tickets', async () => {
-  await assignNewTickets(); // settle anything left over from earlier runs
+test('tickets: re-running generation changes nothing; new questions only form new tickets', async (t) => {
+  // Real questions still waiting for a ticket must not be dealt together with this test's throwaway
+  // questions (they would end up in a half-empty ticket after cleanup), so set them aside meanwhile.
+  const waiting = (await db.question.findMany({ where: { isActive: true, ticketNumber: null }, select: { id: true } })).map((q) => q.id);
+  await db.question.updateMany({ where: { id: { in: waiting } }, data: { isActive: false } });
+  t.after(() => db.question.updateMany({ where: { id: { in: waiting } }, data: { isActive: true } }));
   const before = await snapshot();
   const maxBefore = (await db.ticket.aggregate({ _max: { number: true } }))._max.number ?? 0;
 

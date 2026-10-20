@@ -64,7 +64,7 @@ export async function saveQuestion(fd: FormData) {
     .filter((a) => a.uz || a.ru);
   const correct = Number(s(fd, 'correct'));
   if (!s(fd, 'textUz') || !s(fd, 'textRu')) back('text');
-  if (answers.length < 3 || answers.length > 5) back('answers');
+  if (answers.length < 2 || answers.length > 5) back('answers');
   if (answers.some((a) => !a.uz || !a.ru)) back('answer-langs');
   if (!answers.some((a) => a.i === correct)) back('correct');
   // Category is optional (one shared pool); when given it must exist.

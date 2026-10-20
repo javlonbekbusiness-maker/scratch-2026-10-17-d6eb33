@@ -1,0 +1,181 @@
+[
+  {
+    "externalId": "UQ-001", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Agar tuproq yo'lda bevosita chorraha oldida to'shamali (qoplamali) yo'l qismi bo'lsa, bu uni kesib o'tayotgan asosiy yo'l bilan teng huquqli qiladimi?", "ru": "Если на грунтовой дороге непосредственно перед перекрёстком есть участок с покрытием, делает ли это её равнозначной пересекаемой главной дороге?" },
+    "answers": [ { "uz": "Yo'q", "ru": "Нет" }, { "uz": "Ha", "ru": "Да" } ],
+    "correct": 1,
+    "explanation": { "uz": "Qoidalarga ko'ra, ikkinchi darajali yo'lning bevosita chorrahaga tutash qismining qoplamali bo'lishi uni asosiy yo'l bilan teng huquqli qilmaydi.", "ru": "По Правилам покрытие примыкающей второстепенной дороги на перекрёстке не делает её равнозначной главной дороге." }
+  },
+  {
+    "externalId": "UQ-002", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Kim «Yo'l harakati qatnashchisi» hisoblanadi?", "ru": "Кто считается «участником дорожного движения»?" },
+    "answers": [
+      { "uz": "Yo'l harakati jarayonida transport vositasining haydovchisi, yo'lovchisi yoki piyoda tariqasida bevosita ishtirok etayotgan shaxs", "ru": "Лицо, непосредственно участвующее в процессе дорожного движения в качестве водителя транспортного средства, пассажира или пешехода" },
+      { "uz": "Yo'lda bo'lgan va unda ish bajarmayotgan har qanday shaxs", "ru": "Любое лицо, находящееся на дороге и не выполняющее на ней работ" },
+      { "uz": "Biror bir transport vositasini boshqarayotgan shaxs", "ru": "Лицо, управляющее каким-либо транспортным средством" }
+    ],
+    "correct": 1,
+    "explanation": { "uz": "Yo'l harakati ishtirokchisi — haydovchi, yo'lovchi yoki piyoda sifatida harakatda bevosita qatnashayotgan shaxs.", "ru": "Участник дорожного движения — лицо, непосредственно участвующее в движении как водитель, пассажир или пешеход." }
+  },
+  {
+    "externalId": "UQ-003", "topic": "ch-01", "ruleRef": "8-bob",
+    "text": { "uz": "Majburiy to'xtagan haydovchi qanday choralar ko'rishi kerak?", "ru": "Какие меры должен принять водитель при вынужденной остановке?" },
+    "answers": [
+      { "uz": "Yaqinni yorituvchi faralar yoki tumanga qarshi faralarni yoqishi kerak", "ru": "Включить ближний свет фар или противотуманные фары" },
+      { "uz": "Yurgizgich kapotini ko'tarib qo'yishi kerak", "ru": "Поднять капот двигателя" },
+      { "uz": "Avariya yorug'lik ishoralarini yoqish, agar u ishlamasa, avariya sababli to'xtash belgisini aholi punktlarida transport vositasidan 15 metrdan, ulardan tashqarida esa 30 metrdan kam bo'lmagan masofada o'rnatishi kerak", "ru": "Включить аварийную световую сигнализацию, а при её неисправности выставить знак аварийной остановки не ближе 15 м от транспортного средства в населённых пунктах и 30 м — вне населённых пунктов" }
+    ],
+    "correct": 3,
+    "explanation": { "uz": "Avariya sababli to'xtash belgisi aholi punktlarida transport vositasidan kamida 15 metr, aholi punktlaridan tashqarida kamida 30 metr masofada o'rnatiladi.", "ru": "Знак аварийной остановки выставляется не ближе 15 м от транспортного средства в населённых пунктах и 30 м — вне их." }
+  },
+  {
+    "externalId": "UQ-004", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Belgilangan yo'nalishli transport vositalariga qaysilar kiradi?", "ru": "Что относится к маршрутным транспортным средствам?" },
+    "answers": [
+      { "uz": "Avtobus va yo'nalishli taksilar", "ru": "Автобусы и маршрутные такси" },
+      { "uz": "Tramvay va trolleybuslar", "ru": "Трамваи и троллейбусы" },
+      { "uz": "Belgilangan yo'nalish bo'yicha harakatlanadigan avtobus, trolleybus, tramvay va yo'nalishli taksilar", "ru": "Автобусы, троллейбусы, трамваи и маршрутные такси, движущиеся по установленному маршруту" }
+    ],
+    "correct": 3,
+    "explanation": { "uz": "Yo'nalishli transport vositasi — belgilangan yo'nalishi va bekatlari bo'lgan umumiy foydalanishdagi transport: trolleybus, tramvay, avtobus, yo'nalishli taksi.", "ru": "Маршрутное транспортное средство — транспорт общего пользования с установленным маршрутом и остановками: троллейбус, трамвай, автобус, маршрутное такси." }
+  },
+  {
+    "externalId": "UQ-005", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Ruxsat etilgan to'liq vazn nima?", "ru": "Что такое разрешённая максимальная масса?" },
+    "answers": [
+      { "uz": "Transport vositasining yuk ko'tarishi", "ru": "Грузоподъёмность транспортного средства" },
+      { "uz": "Transport vositasining haqiqiy vazni", "ru": "Фактическая масса транспортного средства" },
+      { "uz": "Jihozlangan transport vositasining ishlab chiqargan korxona tomonidan belgilangan yuk, haydovchi va yo'lovchilari bilan birgalikdagi eng yuqori vazni (o'lchovi)", "ru": "Наибольшая масса снаряжённого транспортного средства с грузом, водителем и пассажирами, установленная заводом-изготовителем" },
+      { "uz": "Transport vositasida tashiladigan yukning ishlab chiqargan korxona yo'l qo'ygan texnik tavsifnomasi sifatida belgilanadigan vazni", "ru": "Масса перевозимого груза, допускаемая технической характеристикой завода-изготовителя" }
+    ],
+    "correct": 3,
+    "explanation": { "uz": "Ruxsat etilgan to'liq vazn — ishlab chiqaruvchi belgilagan, yuk, haydovchi va yo'lovchilar bilan birgalikdagi eng yuqori vazn.", "ru": "Разрешённая максимальная масса — установленная изготовителем наибольшая масса вместе с грузом, водителем и пассажирами." }
+  },
+  {
+    "externalId": "UQ-006", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Yonilg'i quyish joyidan yo'lga chiqish chorraha hisoblanadimi?", "ru": "Считается ли перекрёстком выезд с автозаправочной станции на дорогу?" },
+    "answers": [ { "uz": "Hisoblanmaydi", "ru": "Не считается" }, { "uz": "Hisoblanadi", "ru": "Считается" } ],
+    "correct": 1,
+    "explanation": { "uz": "Yonilg'i quyish shoxobchasi yondosh hudud hisoblanadi, yondosh hududlardan chiqish joylari esa chorraha hisoblanmaydi.", "ru": "АЗС относится к прилегающей территории, а выезды с прилегающих территорий не считаются перекрёстками." }
+  },
+  {
+    "externalId": "UQ-007", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Qaysi yo'l asosiy yo'l hisoblanadi?", "ru": "Какая дорога считается главной?" },
+    "answers": [
+      { "uz": "Tuproqli yoki shag'alli yo'lga nisbatan qoplamali yo'l yoki tegishli belgilar bilan belgilangan yo'l", "ru": "Дорога с покрытием по отношению к грунтовой или гравийной дороге либо дорога, обозначенная соответствующими знаками" },
+      { "uz": "Uch tomonlama chorrahada tutashib kelgan yo'lga nisbatan har ikki tomonga davom etuvchi yo'l", "ru": "На Т-образном перекрёстке — дорога, продолжающаяся в обе стороны, по отношению к примыкающей" },
+      { "uz": "Har bir yo'nalishda harakatlanish uchun bir tasmali yo'lga nisbatan ko'p tasmali qatnov qismi bo'lgan yo'l", "ru": "Дорога с несколькими полосами в каждом направлении по отношению к дороге с одной полосой" }
+    ],
+    "correct": 1,
+    "explanation": { "uz": "Asosiy yo'l — tuproqli yoki shag'alli yo'lga nisbatan qattiq qoplamali yo'l, 2.1, 2.3.1–2.3.3 yoki 5.1 belgilari bilan belgilangan yo'l yoxud yondosh hududdan chiqadigan yo'lga nisbatan har qanday yo'l. Tasmalar soni yoki chorraha shakli buni belgilamaydi.", "ru": "Главная дорога — дорога с твёрдым покрытием по отношению к грунтовой или гравийной, дорога со знаками 2.1, 2.3.1–2.3.3 или 5.1 либо любая дорога по отношению к выезду с прилегающей территории. Число полос и форма перекрёстка этого не определяют." }
+  },
+  {
+    "externalId": "UQ-008", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "«Yetarli ko'rinmaslik» deganda nima tushuniladi?", "ru": "Что понимается под «недостаточной видимостью»?" },
+    "answers": [
+      { "uz": "Oqshomdan tonggacha bo'lgan vaqt", "ru": "Время от вечера до утра" },
+      { "uz": "Ko'rinish 150 metrdan kam bo'lgan holat", "ru": "Видимость менее 150 метров" },
+      { "uz": "Tuman tushganda, yomg'ir, qor yog'ayotganda va hokazo sharoitlarda, shuningdek, kunning g'ira-shira vaqtida yo'lning ko'rinishi 300 metrdan kam bo'lishi", "ru": "Видимость дороги менее 300 метров в туман, дождь, снегопад и т. п., а также в сумерки" },
+      { "uz": "Yomg'ir, qor yog'ishi, oqshom", "ru": "Дождь, снегопад, вечер" }
+    ],
+    "correct": 3,
+    "explanation": { "uz": "Yetarlicha ko'rinmaslik — yomg'ir, qor, tuman va shunga o'xshash sharoitlarda yoki g'ira-shira vaqtda yo'lning ko'rinish masofasi 300 metrdan kam bo'lishi.", "ru": "Недостаточная видимость — видимость дороги менее 300 метров из-за погодных условий или в сумерки." }
+  },
+  {
+    "externalId": "UQ-010", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "«Quvib o'tish» atamasi nimani bildiradi?", "ru": "Что означает термин «обгон»?" },
+    "answers": [
+      { "uz": "Egallagan harakatlanish bo'lagidan chiqib, oldinda harakatlanayotgan transport vositasidan o'zib ketish", "ru": "Опережение движущегося впереди транспортного средства с выездом из занимаемой полосы" },
+      { "uz": "Bir va bir necha transport vositalaridan o'zib ketish", "ru": "Опережение одного или нескольких транспортных средств" },
+      { "uz": "Bir yoki bir nechta transport vositalarini qarama-qarshi yo'nalishda harakatlanish uchun mo'ljallangan tasmaga chiqib, so'ngra ilgari egallagan qatoriga qaytib o'tish bilan bog'liq bo'lgan o'zib ketish", "ru": "Опережение одного или нескольких транспортных средств с выездом на полосу встречного движения и последующим возвращением на ранее занимаемую полосу" }
+    ],
+    "correct": 3,
+    "explanation": { "uz": "Quvib o'tishning belgisi — qarama-qarshi harakat tasmasiga chiqib, keyin o'z qatoriga qaytish. Qarama-qarshi tasmaga chiqmasdan o'zib ketish quvib o'tish emas.", "ru": "Признак обгона — выезд на встречную полосу и возвращение в свою. Опережение без выезда на встречную полосу обгоном не является." }
+  },
+  {
+    "externalId": "UQ-011", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Yo'l-transport hodisasi — bu ...", "ru": "Дорожно-транспортное происшествие — это ..." },
+    "answers": [
+      { "uz": "Yo'l harakati qatnashchilarining yo'l-transport hodisalari va ularning oqibatlaridan himoyalanganlik darajasini aks ettiruvchi yo'l harakati holati", "ru": "Состояние дорожного движения, отражающее степень защищённости его участников от ДТП и их последствий" },
+      { "uz": "Transport vositasining yo'lda harakatlanishi jarayonida ro'y bergan, fuqarolarning halok bo'lishiga yoki sog'lig'iga zarar yetishiga, transport vositalari, inshootlar, yuklarning shikastlanishi yoxud boshqa moddiy zarar yetishiga sabab bo'lgan hodisa", "ru": "Происшествие в процессе движения транспортного средства по дороге, в результате которого погибли или пострадали люди, повреждены транспортные средства, сооружения, грузы или причинён иной материальный ущерб" }
+    ],
+    "correct": 2,
+    "explanation": { "uz": "Birinchi javob «yo'l harakati xavfsizligi» tushunchasiga tegishli. YTH — harakat jarayonida transport ishtirokida sodir bo'lgan va zarar yetkazgan hodisa.", "ru": "Первый ответ — определение «безопасности дорожного движения». ДТП — происшествие с участием транспорта в процессе движения, повлёкшее ущерб." }
+  },
+  {
+    "externalId": "UQ-012", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Piyodalar o'tish joyi — bu ...", "ru": "Пешеходный переход — это ..." },
+    "answers": [
+      { "uz": "Yo'l qatnov qismining piyodalar kesib o'tishi uchun mo'ljallangan, 5.16.1, 5.16.2 yo'l belgilari va 1.14.1–1.14.4 yo'l chiziqlari bilan ajratilgan bo'lagi", "ru": "Участок проезжей части, предназначенный для перехода пешеходов и обозначенный знаками 5.16.1, 5.16.2 и разметкой 1.14.1–1.14.4" },
+      { "uz": "Yo'lning piyodalar harakatlanishi uchun mo'ljallangan va transport vositalari harakati taqiqlangan qismi", "ru": "Часть дороги для движения пешеходов, на которой запрещено движение транспортных средств" },
+      { "uz": "Qatnov qismiga tutashgan yoki undan maysazor, ariq, maxsus to'siqlar bilan ajratilgan va piyodalarning harakatlanishi uchun mo'ljallangan yo'l qismi", "ru": "Часть дороги, прилегающая к проезжей части или отделённая от неё газоном, канавой, ограждениями, предназначенная для движения пешеходов" }
+    ],
+    "correct": 1,
+    "explanation": { "uz": "Piyodalar o'tish joyi 5.16.1, 5.16.2, 5.48 belgilari va 1.14.1–1.14.4 yoki 1.29.1–1.29.3 chiziqlari bilan belgilanadi. Uchinchi javob — trotuar ta'rifi.", "ru": "Пешеходный переход обозначается знаками 5.16.1, 5.16.2, 5.48 и разметкой 1.14.1–1.14.4 или 1.29.1–1.29.3. Третий ответ — определение тротуара." }
+  },
+  {
+    "externalId": "UQ-014", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Piyodalar yo'lkasi — bu ...", "ru": "Пешеходная дорожка — это ..." },
+    "answers": [
+      { "uz": "Qatnov qismiga tutashgan yoki undan maysazor, ariq, maxsus to'siqlar bilan ajratilgan va piyodalarning harakatlanishi uchun mo'ljallangan yo'l qismi", "ru": "Часть дороги, прилегающая к проезжей части или отделённая от неё газоном, канавой, ограждениями, предназначенная для движения пешеходов" },
+      { "uz": "Yo'lning piyodalar harakatlanishi uchun mo'ljallangan va transport vositalari harakati taqiqlangan qismi", "ru": "Часть дороги для движения пешеходов, на которой запрещено движение транспортных средств" },
+      { "uz": "Yo'l qatnov qismining piyodalar kesib o'tishi uchun mo'ljallangan, 5.16.1, 5.16.2 yo'l belgilari va 1.14.1–1.14.3 yo'l chiziqlari bilan ajratilgan bo'lagi", "ru": "Участок проезжей части для перехода пешеходов, обозначенный знаками 5.16.1, 5.16.2 и разметкой 1.14.1–1.14.3" }
+    ],
+    "correct": 2,
+    "explanation": { "uz": "Piyodalar yo'lkasi — piyodalar uchun qurilgan, belgi bilan belgilangan va transport harakati taqiqlangan yo'l. Birinchi javob — trotuar, uchinchisi — piyodalar o'tish joyi.", "ru": "Пешеходная дорожка — дорога для пешеходов, обозначенная знаком, где движение транспорта запрещено. Первый ответ — тротуар, третий — пешеходный переход." }
+  },
+  {
+    "externalId": "UQ-016", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Chorraha — bu ...", "ru": "Перекрёсток — это ..." },
+    "answers": [
+      { "uz": "Yo'llarning o'zaro bir sathda kesishadigan, tutashadigan va ayriladigan joyi", "ru": "Место пересечения, примыкания и разветвления дорог на одном уровне" },
+      { "uz": "Bevosita yo'lga tutashgan va transport vositalari o'tib ketishi uchun mo'ljallanmagan hudud (hovlilar, turar joy dahalari, avtomobil to'xtab turish joylari, yonilg'i quyish shoxobchalari, korxona va shunga o'xshashlar)", "ru": "Территория, непосредственно прилегающая к дороге и не предназначенная для сквозного движения (дворы, жилые массивы, парковки, АЗС, предприятия и т. п.)" },
+      { "uz": "Yo'lning relssiz transport vositalari harakati uchun mo'ljallangan qismi", "ru": "Часть дороги, предназначенная для движения безрельсовых транспортных средств" }
+    ],
+    "correct": 1,
+    "explanation": { "uz": "Chorraha — yo'llar bir sathda kesishadigan, tutashadigan yoki ayriladigan joy. Ikkinchi javob — yondosh hudud, uchinchisi — qatnov qismi ta'rifi.", "ru": "Перекрёсток — место пересечения, примыкания или разветвления дорог на одном уровне. Второй ответ — прилегающая территория, третий — проезжая часть." }
+  },
+  {
+    "externalId": "UQ-017", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Avtomobillarning bir qator bo'lib harakatlanishi uchun yetarlicha keng bo'lgan, yo'l chiziqlari bilan belgilangan yoki belgilanmagan yo'l qatnov qismining har qanday bo'ylama bo'lagi nima deb ataladi?", "ru": "Как называется любая продольная полоса проезжей части, достаточной ширины для движения автомобилей в один ряд, обозначенная или не обозначенная разметкой?" },
+    "answers": [
+      { "uz": "Qatnov qismi", "ru": "Проезжая часть" },
+      { "uz": "Yo'l yoqasi", "ru": "Обочина" },
+      { "uz": "Harakatlanish tasmasi", "ru": "Полоса движения" },
+      { "uz": "Yondosh hudud", "ru": "Прилегающая территория" }
+    ],
+    "correct": 3,
+    "explanation": { "uz": "Bu harakatlanish tasmasining ta'rifi: bir qator bo'lib harakatlanish uchun yetarli kenglikdagi bo'ylama tasma, chiziqlar bilan belgilangan yoki belgilanmagan bo'lishi mumkin.", "ru": "Это определение полосы движения: продольная полоса шириной для движения в один ряд, с разметкой или без." }
+  },
+  {
+    "externalId": "UQ-018", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Yo'l harakati xavfsizligini ta'minlash — bu ...", "ru": "Обеспечение безопасности дорожного движения — это ..." },
+    "answers": [
+      { "uz": "Yo'llarda harakatni boshqarish bo'yicha huquqiy, tashkiliy-texnikaviy tadbirlar va boshqaruv harakatlari majmui", "ru": "Совокупность правовых, организационно-технических мероприятий и управленческих действий по регулированию движения на дорогах" },
+      { "uz": "Yo'l-transport hodisalarining kelib chiqish sabablarini oldini olishga, ularning og'ir oqibatlarini kamaytirishga qaratilgan faoliyat", "ru": "Деятельность, направленная на предупреждение причин возникновения ДТП и снижение тяжести их последствий" }
+    ],
+    "correct": 2,
+    "explanation": { "uz": "Birinchi javob «yo'l harakatini tashkil etish» tushunchasiga yaqin. Xavfsizlikni ta'minlash — YTH sabablarining oldini olish va oqibatlarini kamaytirish faoliyati.", "ru": "Первый ответ ближе к «организации дорожного движения». Обеспечение безопасности — деятельность по предупреждению причин ДТП и снижению тяжести их последствий." }
+  },
+  {
+    "externalId": "UQ-019", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Quyidagi izoh qaysi atamaga tegishli? Texnik nuqson, tashilayotgan yuk, haydovchi va yo'lovchining holati, yo'ldagi biror to'siq tufayli xavf yuzaga kelganda yoxud ob-havo sharoitiga bog'liq holda transport vositasi harakatini to'xtatish.", "ru": "К какому термину относится определение: остановка транспортного средства из-за технической неисправности, перевозимого груза, состояния водителя или пассажира, преграды на дороге, угрозы опасности или погодных условий?" },
+    "answers": [
+      { "uz": "Yo'l harakati xavfsizligini ta'minlash", "ru": "Обеспечение безопасности дорожного движения" },
+      { "uz": "Yo'l-transport hodisasi", "ru": "Дорожно-транспортное происшествие" },
+      { "uz": "Majburiy to'xtash", "ru": "Вынужденная остановка" }
+    ],
+    "correct": 3,
+    "explanation": { "uz": "Bu majburiy to'xtashning ta'rifi. Qoidalarga ko'ra bunday to'xtash oxirgi zarur chora bo'lib, qoidabuzarlik hisoblanmaydi.", "ru": "Это определение вынужденной остановки. По Правилам это крайняя необходимость, и нарушением она не считается." }
+  },
+  {
+    "externalId": "UQ-020", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "«Imtiyoz» atamasiga tegishli tarifni ko'rsating", "ru": "Укажите определение термина «приоритет (преимущество)»" },
+    "answers": [
+      { "uz": "Yo'l harakati qatnashchilariga nisbatan imtiyozi bo'lgan boshqa yo'l harakati qatnashchisining harakat yo'nalishi yoki tezligini o'zgartirishga majbur etishi mumkin bo'lgan hollarda harakatni davom ettirmasligini yoki boshlamasligini, biror-bir manyovr bajarishi mumkin emasligini bildiruvchi talab", "ru": "Требование, означающее, что участник движения не должен начинать или продолжать движение и выполнять манёвр, если это может вынудить другого участника, имеющего преимущество, изменить направление или скорость движения" },
+      { "uz": "Mo'ljallangan yo'nalishda boshqa yo'l harakati qatnashchilariga nisbatan oldin harakatlanish huquqi", "ru": "Право на первоочередное движение в намеченном направлении по отношению к другим участникам движения" }
+    ],
+    "correct": 2,
+    "explanation": { "uz": "Imtiyoz — mo'ljallangan yo'nalishda boshqalarga nisbatan oldin harakatlanish huquqi. Birinchi javob «yo'l berish» talabining ta'rifi.", "ru": "Приоритет — право на первоочередное движение в намеченном направлении. Первый ответ — определение требования «уступить дорогу»." }
+  }
+]

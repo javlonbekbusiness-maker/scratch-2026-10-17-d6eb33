@@ -163,7 +163,7 @@ test('no horizontal overflow at 375 px (list and detail, free and subscriber)', 
   assert.deepEqual(problems, []);
 });
 
-test('server response time for /tests/topics (1200+ questions)', async () => {
+test('server response time for /tests/topics (run npm run db:seed-bulk first to measure with 1200+ questions)', async () => {
   await page('/tests/topics', paid.token); // warm up (dev compile)
   const ms: number[] = [];
   for (let i = 0; i < 5; i++) {

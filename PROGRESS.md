@@ -654,3 +654,23 @@ Details are in `docs/topics.md`.
 | `npm test` | ✅ 20/20 (new: search normalisation, topic status) |
 | `npm run test:db` | ✅ 20/20 (new `tests/topics.db.test.ts`: free sample fixed and server-side, setting 0 locks, subscriber variants, hidden/empty topics) |
 | `npm run test:e2e` | ✅ 32/32 after replacing the superseded server-side topic search test (new `tests/topics.e2e.ts`: list and groups, search incl. Russian, collapse and filters, free label + sample + paywall + API 402, subscriber without locks, no overflow and 48 px targets at 375 px, response time) |
+
+## Umumiy qoidalar questions added; placeholder data removed (✅ tested)
+
+**Questions**
+- Added 17 questions to "Umumiy qoidalar" (`ch-01`) from screenshots the user sent: `prisma/content/umumiy-qoidalar.json`, IDs `UQ-001`–`UQ-020`.
+- The three picture questions (9, 13, 15) were left out, because the pictures belong to the other app.
+- Every correct answer was checked against the official definitions (point 6, and the chapter 8 rule on the warning triangle) on lex.uz. Russian texts follow the official Russian definitions.
+- Explanations are our own wording. Obvious typos from the screenshots were fixed.
+- Imported with `npm run questions:import -- <file>`, which uses the normal importer and then deals new tickets. Ten of the questions formed ticket 5; the other 7 wait for a ticket.
+
+**App changes**
+- Questions may now have 2–5 answers (was 3–5), for Ha / Yo'q questions. This applies to the importer, the admin form and its client-side check.
+
+**Data**
+- Removed the 1,250 `[TEST]` placeholder questions and the 40 bench users (`npm run db:seed-bulk -- --remove`).
+- The 40 demo questions are kept.
+
+**Test fix**
+- The ticket tests (`tests/pool.db.test.ts`, `tests/pool.e2e.ts`) set aside real questions that are waiting for a ticket while they run.
+- Before this fix, one run dealt 6 real questions into throwaway tickets 6–7. They were returned to the waiting pool and the empty tickets were deleted.
