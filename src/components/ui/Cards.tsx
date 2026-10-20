@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { Icon, type IconName } from './Icon';
 
-export type Tone = 'brand' | 'accent' | 'warning' | 'danger' | 'violet';
+export const TONES = ['brand', 'accent', 'warning', 'danger', 'violet', 'sky', 'slate'] as const;
+export type Tone = (typeof TONES)[number];
+export const toTone = (v: string | null | undefined): Tone => ((TONES as readonly string[]).includes(v ?? '') ? (v as Tone) : 'brand');
 
 /** Icon tile colours per tone (tinted tile, coloured glyph); readable in both themes. */
 const TILE: Record<Tone, string> = {
@@ -10,6 +12,8 @@ const TILE: Record<Tone, string> = {
   warning: 'bg-warning/15 text-warning',
   danger: 'bg-danger/10 text-danger',
   violet: 'bg-violet-500/10 text-violet-600 dark:bg-violet-400/15 dark:text-violet-300',
+  sky: 'bg-sky-500/10 text-sky-700 dark:bg-sky-400/15 dark:text-sky-300',
+  slate: 'bg-slate-500/10 text-slate-600 dark:bg-slate-400/15 dark:text-slate-300',
 };
 
 export function IconTile({ icon, tone = 'brand', size = 'md' }: { icon: IconName; tone?: Tone; size?: 'sm' | 'md' }) {

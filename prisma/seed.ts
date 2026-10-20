@@ -10,6 +10,7 @@ import { randomBytes } from 'node:crypto';
 import { PrismaClient, type MessageChannel } from '@prisma/client';
 import { DEFAULT_TEMPLATES, TEMPLATE_KEYS } from '../src/lib/template-defaults';
 import { assignNewTickets } from '../src/lib/tickets';
+import { RULE_GROUPS, RULE_TOPICS } from './rule-topics';
 
 const db = new PrismaClient();
 const SAMPLE_NOTE_UZ = ' (Namuna — rasmiy matn bilan almashtiring.)';
@@ -26,16 +27,17 @@ const CATEGORIES: { code: string; nameUz: string; nameRu: string; descUz: string
   { code: 'CE', nameUz: 'C + tirkama', nameRu: 'C + прицеп', descUz: 'C toifasi tirkama bilan', descRu: 'Категория C с прицепом' },
 ];
 
-const TOPICS = [
-  { slug: 'signs', icon: '🚸', nameUz: "Yo'l belgilari", nameRu: 'Дорожные знаки' },
-  { slug: 'priority', icon: '↔️', nameUz: 'Ustunlik va chorrahalar', nameRu: 'Приоритет и перекрёстки' },
-  { slug: 'speed', icon: '⚡', nameUz: 'Tezlik va masofa', nameRu: 'Скорость и дистанция' },
-  { slug: 'parking', icon: '🅿️', nameUz: "To'xtash va to'xtab turish", nameRu: 'Остановка и стоянка' },
-  { slug: 'overtaking', icon: '🚗', nameUz: "Quvib o'tish", nameRu: 'Обгон' },
-  { slug: 'pedestrians', icon: '🚶', nameUz: 'Piyodalar', nameRu: 'Пешеходы' },
-  { slug: 'safety', icon: '🛡️', nameUz: 'Xavfsizlik va birinchi yordam', nameRu: 'Безопасность и первая помощь' },
-  { slug: 'lights', icon: '🚦', nameUz: 'Svetoforlar', nameRu: 'Светофоры' },
-];
+/** Official apostrophe forms (ʻ ʼ) are shown as the plain ' used across the app. */
+const plain = (s: string) => s.replace(/[ʻʼ‘’]/g, "'");
+
+/** Demo questions placed in a more specific official topic than their original demo topic. */
+const TOPIC_OVERRIDE: Record<string, string> = {
+  '/signs/stop.svg': 'signs-2',
+  '/signs/yield.svg': 'signs-2',
+  '/signs/priority-road.svg': 'signs-2',
+  '/signs/children.svg': 'signs-1',
+  '/signs/one-way.svg': 'signs-5',
+};
 
 const PLANS = [
   { slug: 'week', durationDays: 7, priceUzs: 29000, labelUz: '1 hafta', labelRu: '1 неделя', sortOrder: 1 },
@@ -214,10 +216,26 @@ async function main() {
     catIds[c.code] = row.id;
   }
 
+  // Topic groups and topics from the official rules (prisma/rule-topics.ts). Rows that already have a
+  // group were set up (and possibly edited) in admin, so they are left alone; older rows without a group
+  // (the 8 demo topics) are brought onto the official heading once.
+  const groupIds: Record<string, string> = {};
+  for (const [i, g] of RULE_GROUPS.entries()) {
+    const row = await db.topicGroup.upsert({ where: { slug: g.slug }, create: { slug: g.slug, nameUz: plain(g.nameUz), nameRu: g.nameRu, tone: g.tone, sortOrder: i }, update: {} });
+    groupIds[g.slug] = row.id;
+  }
   const topicIds: Record<string, string> = {};
-  for (const [i, t] of TOPICS.entries()) {
-    const data = { nameUz: t.nameUz, nameRu: t.nameRu, icon: t.icon, sortOrder: i };
-    const row = await db.topic.upsert({ where: { slug: t.slug }, create: { slug: t.slug, ...data }, update: data });
+  for (const [i, t] of RULE_TOPICS.entries()) {
+    const data = {
+      nameUz: plain(t.nameUz), nameRu: t.nameRu, descUz: plain(t.descUz), descRu: t.descRu,
+      icon: t.icon, ruleRef: t.ref, libraryHref: t.library, groupId: groupIds[t.group], sortOrder: (i + 1) * 10,
+    };
+    const existing = await db.topic.findUnique({ where: { slug: t.slug } });
+    const row = !existing
+      ? await db.topic.create({ data: { slug: t.slug, ...data } })
+      : existing.groupId
+        ? existing
+        : await db.topic.update({ where: { id: existing.id }, data });
     topicIds[t.slug] = row.id;
   }
 
@@ -245,7 +263,7 @@ async function main() {
     const externalId = `SAMPLE-B-${String(qi + 1).padStart(3, '0')}`;
     const data = {
       categoryId: catIds.B,
-      topicId: topicIds[topic],
+      topicId: topicIds[(img && TOPIC_OVERRIDE[img]) || (text[0].startsWith('YTH') ? 'ch-03' : topic)],
       ticketNumber: Math.floor(pos / 10) + 1,
       sortOrder: pos % 10,
       textUz: text[0],

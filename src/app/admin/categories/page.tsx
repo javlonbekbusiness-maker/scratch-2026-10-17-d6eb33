@@ -1,6 +1,6 @@
 import { requireAdmin } from '@/lib/session';
 import { db } from '@/lib/db';
-import { deleteCategory, deleteTopic, saveCategory, saveTopic } from '../actions';
+import { deleteCategory, saveCategory } from '../actions';
 import { Badge, PageHeader, inputSm } from '../ui';
 import { ConfirmButton } from '../ConfirmButton';
 
@@ -14,26 +14,13 @@ const MESSAGES: Record<string, [string, boolean]> = {
   'cat-name': ['Uzbek and Russian names are required (max 60 characters).', false],
   'cat-exists': ['A category with this code already exists.', false],
   'cat-in-use': ['This category still has questions or users; deactivate it instead.', false],
-  'topic-created': ['Topic created.', true],
-  'topic-saved': ['Topic saved.', true],
-  'topic-deleted': ['Topic deleted.', true],
-  'topic-name': ['Uzbek and Russian names are required (max 60 characters).', false],
-  'topic-slug': ['Slug: 2–31 lowercase letters, digits or hyphens.', false],
-  'topic-exists': ['A topic with this slug already exists.', false],
-  'topic-in-use': ['This topic still has questions; move them to another topic first.', false],
-  'topic-in-mix': ['An exam template topic mix uses this topic; edit the template first.', false],
   'bad-order': ['Order must be a whole number.', false],
 };
 
 export default async function CategoriesAdmin({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   await requireAdmin();
   const sp = await searchParams;
-  const [cats, topics, topicCounts] = await Promise.all([
-    db.category.findMany({ orderBy: { sortOrder: 'asc' }, include: { _count: { select: { questions: true, users: true, tickets: true } } } }),
-    db.topic.findMany({ orderBy: { sortOrder: 'asc' } }),
-    db.question.groupBy({ by: ['topicId'], _count: true }),
-  ]);
-  const qByTopic = new Map(topicCounts.map((r) => [r.topicId, r._count]));
+  const cats = await db.category.findMany({ orderBy: { sortOrder: 'asc' }, include: { _count: { select: { questions: true, users: true, tickets: true } } } });
   const msg = sp.msg ? MESSAGES[sp.msg] : undefined;
 
   const F = ({ label, children }: { label: string; children: React.ReactNode }) => (
@@ -56,7 +43,7 @@ export default async function CategoriesAdmin({ searchParams }: { searchParams: 
 
   return (
     <>
-      <PageHeader title="Categories & topics" desc="Inactive categories are hidden from sign-up and the category switcher. Topic slugs are fixed once created (templates and imports refer to them)." />
+      <PageHeader title="Licence categories" desc="Optional metadata on questions (users are never asked for a category)." />
       {msg && <p role="status" className={`mb-4 rounded-xl px-3 py-2 text-sm ${msg[1] ? 'bg-mint-500/10 text-mint-700' : 'bg-red-500/10 text-red-700'}`}>{msg[0]}</p>}
 
       <h2 className="mb-3 text-lg font-bold">Licence categories</h2>
@@ -86,37 +73,7 @@ export default async function CategoriesAdmin({ searchParams }: { searchParams: 
         </form>
       </div>
 
-      <h2 className="mb-1 mt-8 text-lg font-bold">Topics</h2>
-      <p className="mb-3 text-xs muted">Columns: slug · icon · name (O&apos;zbek) · name (Русский) · order</p>
-      <div className="space-y-2">
-        {topics.map((t) => (
-          <div key={t.id} className="card flex flex-wrap items-center gap-2 p-3">
-            <form action={saveTopic} className="flex flex-1 flex-wrap items-center gap-2">
-              <input type="hidden" name="id" value={t.id} />
-              <span className="w-28 font-mono text-xs">{t.slug}</span>
-              <input name="icon" defaultValue={t.icon} maxLength={8} className={`${inputSm} w-16 text-center`} aria-label="Icon" />
-              <input name="nameUz" required defaultValue={t.nameUz} className={`${inputSm} w-48`} aria-label="Name Uzbek" />
-              <input name="nameRu" required defaultValue={t.nameRu} className={`${inputSm} w-48`} aria-label="Name Russian" />
-              <input name="sortOrder" type="number" defaultValue={t.sortOrder} className={`${inputSm} w-20`} aria-label="Order" />
-              <span className="text-xs muted">{qByTopic.get(t.id) ?? 0} questions</span>
-              <button className="btn-primary btn-sm">Save</button>
-            </form>
-            {!qByTopic.get(t.id) && (
-              <form action={deleteTopic}>
-                <input type="hidden" name="id" value={t.id} />
-                <ConfirmButton message={`Delete topic ${t.slug}?`} className="btn-ghost btn-sm text-red-600">Delete</ConfirmButton>
-              </form>
-            )}
-          </div>
-        ))}
-        <form action={saveTopic} className="card flex flex-wrap items-center gap-2 border-dashed p-3">
-          <input name="slug" required placeholder="slug (e.g. railway)" className={`${inputSm} w-40 font-mono`} aria-label="Slug" />
-          <input name="icon" placeholder="🚆" maxLength={8} className={`${inputSm} w-16 text-center`} aria-label="Icon" />
-          <input name="nameUz" required placeholder="Name (uz)" className={`${inputSm} w-48`} aria-label="Name Uzbek" />
-          <input name="nameRu" required placeholder="Name (ru)" className={`${inputSm} w-48`} aria-label="Name Russian" />
-          <button className="btn-secondary btn-sm">+ Add topic</button>
-        </form>
-      </div>
+      <p className="mt-8 text-sm muted">Topics and topic groups are managed in <a href="/admin/topics" className="text-brand-600 underline">Admin → Topics</a>.</p>
     </>
   );
 }

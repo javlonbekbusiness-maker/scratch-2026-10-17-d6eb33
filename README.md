@@ -109,7 +109,7 @@ Notes:
 | Data | Details |
 |---|---|
 | Categories | A, B, C, D, BE, CE (optional metadata only; users are never asked for a category) |
-| Topics | 8: signs, priority, speed, parking, overtaking, pedestrians, safety, lights |
+| Topics | 40, following the chapters and annex sections of the Traffic Rules (Resolution No. 172, 12.04.2022), in 7 groups; see `docs/topics.md` |
 | Questions | 40 **sample** questions in one shared pool, in 4 tickets of 10; tickets 1–2 are the free demo. Sample images are in `public/signs/` and `public/placeholders/`. |
 | Plans | 1 week 29 000, 1 month 79 000, 3 months 179 000 ("Best value"), until-pass 249 000 so'm |
 | Exam templates | 20 questions, 25 min, 90% (the first default EXAM template is used for everyone). **Placeholder values; see below.** |

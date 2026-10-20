@@ -7,6 +7,8 @@ export const DEFAULT_SETTINGS = {
   supportPhone: '+998 71 200 00 00',
   supportEmail: 'support@example.uz',
   telegram: '@yhqtest_support',
+  /** Free users can try this many questions of every topic (0 = topics are subscriber-only). */
+  freeTopicQuestions: 3,
 };
 export type Settings = typeof DEFAULT_SETTINGS;
 

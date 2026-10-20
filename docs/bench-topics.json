@@ -1,0 +1,101 @@
+{
+  "dataset": {
+    "questions": 1290,
+    "tickets": 129,
+    "topics": 40,
+    "totalAnswers": 14769,
+    "benchUserAnswers": 3000
+  },
+  "results": [
+    {
+      "query": "tickets list: page of 40 + counts",
+      "median": 5.44,
+      "p95": 7.18
+    },
+    {
+      "query": "ticket start: questions of one ticket",
+      "median": 1.05,
+      "p95": 2.35
+    },
+    {
+      "query": "topics list: search + page + counts",
+      "median": 4.3,
+      "p95": 6.2
+    },
+    {
+      "query": "topics page: groups + topics + counts + progress",
+      "median": 26.68,
+      "p95": 35.39
+    },
+    {
+      "query": "topic detail: count + mistakes",
+      "median": 5.3,
+      "p95": 8.97
+    },
+    {
+      "query": "topic free sample (first 3)",
+      "median": 3.16,
+      "p95": 5.51
+    },
+    {
+      "query": "progress per ticket (user)",
+      "median": 28.19,
+      "p95": 31.9
+    },
+    {
+      "query": "progress per topic (user)",
+      "median": 14.11,
+      "p95": 16.32
+    },
+    {
+      "query": "exam: pool + recent + pick 20",
+      "median": 11.34,
+      "p95": 14.59
+    },
+    {
+      "query": "marathon: pool + mastered",
+      "median": 15.03,
+      "p95": 16.41
+    },
+    {
+      "query": "smart practice: stats + pool + pick",
+      "median": 29.64,
+      "p95": 61.26
+    },
+    {
+      "query": "mistakes: due review items",
+      "median": 5.54,
+      "p95": 6.16
+    },
+    {
+      "query": "mistakes: due count",
+      "median": 1.34,
+      "p95": 2.45
+    },
+    {
+      "query": "trap questions (all users)",
+      "median": 14.32,
+      "p95": 16.16
+    },
+    {
+      "query": "statistics: userStats",
+      "median": 30.81,
+      "p95": 58.66
+    },
+    {
+      "query": "home counts",
+      "median": 2.16,
+      "p95": 3.77
+    },
+    {
+      "query": "bookmarks page",
+      "median": 4.93,
+      "p95": 7.09
+    },
+    {
+      "query": "leaderboard (7 days)",
+      "median": 6.64,
+      "p95": 9.8
+    }
+  ]
+}

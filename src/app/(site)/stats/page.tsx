@@ -11,7 +11,7 @@ import { formatDuration } from '@/lib/format';
 import { startTestAction } from '@/app/actions';
 import { ProgressRing } from '@/components/ProgressRing';
 import { Heatmap } from '@/components/Heatmap';
-import { Icon } from '@/components/ui/Icon';
+import { Icon, isIconName } from '@/components/ui/Icon';
 import { EmptyState, ProgressBar, SectionHeader, StatChip, ButtonLink, Skeleton } from '@/components/ui/Primitives';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -95,7 +95,7 @@ async function StatsContent({ user }: { user: User }) {
               return (
                 <li key={s.topicId}>
                   <div className="mb-1.5 flex justify-between gap-2 text-sm">
-                    <span className="truncate">{tp?.icon} {tp?.name}</span>
+                    <span className="min-w-0">{tp?.name}</span>
                     <span className="num font-semibold">{s.accuracy}% <span className="font-normal text-muted">· {s.total}</span></span>
                   </div>
                   <ProgressBar value={s.accuracy} label={tp?.name ?? ''} tone={s.accuracy >= 85 ? 'accent' : s.accuracy >= 60 ? 'brand' : 'warning'} />
@@ -119,7 +119,7 @@ async function StatsContent({ user }: { user: User }) {
                       <input type="hidden" name="mode" value="TOPIC" />
                       <input type="hidden" name="topic" value={tp.slug} />
                       <button className="pressable flex min-h-[56px] w-full items-center gap-3 rounded-2xl border border-line bg-raised px-4 text-left hover:border-brand-500/40">
-                        <span aria-hidden>{tp.icon}</span>
+                        <Icon name={isIconName(tp.icon) ? tp.icon : 'book'} size={20} className="text-muted" />
                         <span className="flex-1 font-semibold">{tp.name}</span>
                         <span className="num chip bg-danger/10 text-danger">{s.accuracy}%</span>
                         <Icon name="play" size={18} className="text-brand-fg" />

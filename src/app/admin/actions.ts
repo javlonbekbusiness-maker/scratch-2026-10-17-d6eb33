@@ -240,42 +240,107 @@ export async function deleteCategory(fd: FormData) {
   catBack('cat-deleted', templates ? `&t=${templates}` : '');
 }
 
+// ─── Topics & topic groups (Admin → Topics) ──────────────────────────────────
+
+const topicsBack = (msg: string, extra = '') => redirect(`/admin/topics?msg=${msg}${extra}`);
+const ICON_RE = /^[a-zA-Z]{2,20}$/;
+const LIBRARY_RE = /^\/library(\?[\w=&%-]*)?(#[\w-]*)?$/;
+
 export async function saveTopic(fd: FormData) {
   await requireAdmin();
   const id = s(fd, 'id');
   const data = {
     nameUz: s(fd, 'nameUz'),
     nameRu: s(fd, 'nameRu'),
-    icon: s(fd, 'icon').slice(0, 8) || '📘',
+    descUz: s(fd, 'descUz').slice(0, 300),
+    descRu: s(fd, 'descRu').slice(0, 300),
+    icon: s(fd, 'icon') || 'book',
+    ruleRef: s(fd, 'ruleRef').slice(0, 40) || null,
+    libraryHref: s(fd, 'libraryHref') || null,
+    groupId: s(fd, 'groupId') || null,
     sortOrder: n(fd, 'sortOrder') ?? 0,
+    isActive: b(fd, 'isActive'),
   };
-  if (!data.nameUz || !data.nameRu || data.nameUz.length > 60 || data.nameRu.length > 60) catBack('topic-name');
-  if (!Number.isInteger(data.sortOrder)) catBack('bad-order');
+  const anchor = id ? `#t-${id}` : '#new-topic';
+  if (!data.nameUz || !data.nameRu || data.nameUz.length > 200 || data.nameRu.length > 200) topicsBack('topic-name', anchor);
+  if (!Number.isInteger(data.sortOrder)) topicsBack('bad-order', anchor);
+  if (!ICON_RE.test(data.icon)) topicsBack('topic-icon', anchor);
+  if (data.libraryHref && !LIBRARY_RE.test(data.libraryHref)) topicsBack('topic-library', anchor);
+  if (data.groupId && !(await db.topicGroup.findUnique({ where: { id: data.groupId } }))) topicsBack('group-missing', anchor);
   if (id) {
     // Slugs are referenced by exam-template topic mixes and imports, so they can't be renamed.
     await db.topic.update({ where: { id }, data });
   } else {
     const slug = s(fd, 'slug').toLowerCase();
-    if (!/^[a-z0-9][a-z0-9-]{1,30}$/.test(slug)) catBack('topic-slug');
-    if (await db.topic.findUnique({ where: { slug } })) catBack('topic-exists');
+    if (!/^[a-z0-9][a-z0-9-]{1,30}$/.test(slug)) topicsBack('topic-slug', anchor);
+    if (await db.topic.findUnique({ where: { slug } })) topicsBack('topic-exists', anchor);
     await db.topic.create({ data: { ...data, slug } });
   }
   revalidatePath('/', 'layout');
-  catBack(id ? 'topic-saved' : 'topic-created');
+  topicsBack(id ? 'topic-saved' : 'topic-created', anchor);
+}
+
+/** Moves a topic one place up or down within its group (swaps sort orders, then renumbers by 10). */
+export async function moveTopic(fd: FormData) {
+  await requireAdmin();
+  const t = await db.topic.findUnique({ where: { id: s(fd, 'id') } });
+  if (!t) topicsBack('topic-saved');
+  const siblings = await db.topic.findMany({ where: { groupId: t!.groupId }, orderBy: [{ sortOrder: 'asc' }, { nameUz: 'asc' }], select: { id: true } });
+  const i = siblings.findIndex((x) => x.id === t!.id);
+  const j = s(fd, 'dir') === 'up' ? i - 1 : i + 1;
+  if (j >= 0 && j < siblings.length) [siblings[i], siblings[j]] = [siblings[j], siblings[i]];
+  await db.$transaction(siblings.map((x, k) => db.topic.update({ where: { id: x.id }, data: { sortOrder: (k + 1) * 10 } })));
+  revalidatePath('/', 'layout');
+  topicsBack('topic-moved', `#t-${t!.id}`);
 }
 
 export async function deleteTopic(fd: FormData) {
   await requireAdmin();
   const id = s(fd, 'id');
   const topic = await db.topic.findUnique({ where: { id } });
-  if (!topic) catBack('topic-deleted');
+  if (!topic) topicsBack('topic-deleted');
   const questions = await db.question.count({ where: { topicId: id } });
-  if (questions) catBack('topic-in-use', `&q=${questions}`);
+  if (questions) topicsBack('topic-in-use', `&q=${questions}`);
   const usedIn = (await db.examTemplate.findMany()).filter((t) => Object.keys((t.topicMix ?? {}) as object).includes(topic!.slug));
-  if (usedIn.length) catBack('topic-in-mix', `&t=${usedIn.length}`);
+  if (usedIn.length) topicsBack('topic-in-mix', `&t=${usedIn.length}`);
   await db.topic.delete({ where: { id } });
   revalidatePath('/', 'layout');
-  catBack('topic-deleted');
+  topicsBack('topic-deleted');
+}
+
+export async function saveTopicGroup(fd: FormData) {
+  await requireAdmin();
+  const id = s(fd, 'id');
+  const data = {
+    nameUz: s(fd, 'nameUz'),
+    nameRu: s(fd, 'nameRu'),
+    tone: s(fd, 'tone'),
+    sortOrder: n(fd, 'sortOrder') ?? 0,
+    isActive: b(fd, 'isActive'),
+  };
+  if (!data.nameUz || !data.nameRu || data.nameUz.length > 80 || data.nameRu.length > 80) topicsBack('group-name');
+  if (!['brand', 'accent', 'warning', 'danger', 'violet', 'sky', 'slate'].includes(data.tone)) topicsBack('group-tone');
+  if (!Number.isInteger(data.sortOrder)) topicsBack('bad-order');
+  if (id) {
+    await db.topicGroup.update({ where: { id }, data });
+  } else {
+    const slug = s(fd, 'slug').toLowerCase();
+    if (!/^[a-z0-9][a-z0-9-]{1,30}$/.test(slug)) topicsBack('topic-slug');
+    if (await db.topicGroup.findUnique({ where: { slug } })) topicsBack('group-exists');
+    await db.topicGroup.create({ data: { ...data, slug } });
+  }
+  revalidatePath('/', 'layout');
+  topicsBack(id ? 'group-saved' : 'group-created');
+}
+
+/** Deletes an empty group (topics must be moved to another group first). */
+export async function deleteTopicGroup(fd: FormData) {
+  await requireAdmin();
+  const id = s(fd, 'id');
+  if (await db.topic.count({ where: { groupId: id } })) topicsBack('group-in-use');
+  await db.topicGroup.delete({ where: { id } }).catch(() => null);
+  revalidatePath('/', 'layout');
+  topicsBack('group-deleted');
 }
 
 // ─── Exam / ticket templates ─────────────────────────────────────────────────
@@ -852,7 +917,10 @@ export async function saveSettings(fd: FormData) {
   if (!/^\+?[\d\s()-]{7,20}$/.test(supportPhone)) back('bad-phone');
   if (!z.string().email().safeParse(supportEmail).success) back('bad-email');
   if (telegram && !/^@?[A-Za-z0-9_]{5,32}$/.test(telegram)) back('bad-telegram');
+  const freeTopic = n(fd, 'freeTopicQuestions') ?? -1;
+  if (!Number.isInteger(freeTopic) || freeTopic < 0 || freeTopic > 20) back('bad-free');
   const entries: [string, string | number][] = [
+    ['freeTopicQuestions', freeTopic],
     ['referralFriendPct', friendPct],
     ['referralRewardDays', rewardDays],
     ['supportPhone', supportPhone],

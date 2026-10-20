@@ -1,14 +1,14 @@
 /**
- * Performance test dataset: 1200+ PLACEHOLDER questions in the shared pool, extra test topics,
+ * Performance test dataset: 1200+ PLACEHOLDER questions spread over the official topics (about 40),
  * and benchmark users with realistic answer history. Never use in production.
  *
- *   npm run db:seed-bulk               # add 1250 questions (BULK-0001…) + 30 test topics + 40 bench users
+ *   npm run db:seed-bulk               # add 1250 questions (BULK-0001…) + 40 bench users
  *   npm run db:seed-bulk -- --count 2000
  *   npm run db:seed-bulk -- --remove   # delete everything this script created
  *
- * Everything is marked: questions have externalId "BULK-…" and text starting "[TEST]", topics have
- * slug "test-topic-…", users are named "[BENCH]" with phones +99899100xxxx. Removal deletes exactly
- * those rows (their answers/sessions cascade) and tickets left empty by the removal.
+ * Everything is marked: questions have externalId "BULK-…" and text starting "[TEST]", users are named
+ * "[BENCH]" with phones +99899100xxxx. Removal deletes exactly those rows (their answers/sessions cascade),
+ * tickets left empty by the removal, and "test-topic-…" topics left by older versions of this script.
  */
 import { randomUUID } from 'node:crypto';
 import { PrismaClient } from '@prisma/client';
@@ -17,7 +17,6 @@ import { assignNewTickets } from '../src/lib/tickets';
 const db = new PrismaClient();
 const args = process.argv.slice(2);
 const COUNT = Number(args[args.indexOf('--count') + 1]) || 1250;
-const TEST_TOPICS = 30;
 const BENCH_USERS = 40;
 const HEAVY_ANSWERS = 3000;
 const LIGHT_ANSWERS = 300;
@@ -52,15 +51,9 @@ async function add() {
     return;
   }
   const t0 = Date.now();
-  for (let i = 1; i <= TEST_TOPICS; i++) {
-    const n = String(i).padStart(2, '0');
-    await db.topic.upsert({
-      where: { slug: `test-topic-${n}` },
-      create: { slug: `test-topic-${n}`, nameUz: `[TEST] Mavzu ${n}`, nameRu: `[TEST] Тема ${n}`, icon: '🧪', sortOrder: 100 + i },
-      update: {},
-    });
-  }
-  const topicIds = (await db.topic.findMany({ select: { id: true } })).map((t) => t.id);
+  // Spread over the topics users can see (official chapters/sections), so per-topic pages are realistic.
+  const topicIds = (await db.topic.findMany({ where: { isActive: true, groupId: { not: null } }, select: { id: true }, orderBy: { sortOrder: 'asc' } })).map((t) => t.id);
+  if (!topicIds.length) throw new Error('No topics with a group. Run npm run db:seed first.');
 
   const qRows = Array.from({ length: COUNT }, (_, i) => {
     const n = String(i + 1).padStart(4, '0');

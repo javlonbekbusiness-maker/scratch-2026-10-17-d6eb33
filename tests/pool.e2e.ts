@@ -2,6 +2,7 @@
  * Shared question pool end to end (real browser via puppeteer-core, against `npm run dev`):
  * no category is asked anywhere, tickets stay stable when questions are added, and exams started
  * from the /tests page get 20 unique, topic-balanced questions that avoid the previous exam.
+ * (The topics page itself is tested in tests/topics.e2e.ts.)
  * Works with the demo seed alone; `npm run db:seed-bulk` makes the pool 1200+.
  */
 import { test, before, after } from 'node:test';
@@ -121,14 +122,4 @@ test('exam from /tests: 20 unique, spread over topics, avoids the questions of t
   await p.close();
 });
 
-test('topics: search and pagination', async () => {
-  const total = await db.topic.count({ where: { questions: { some: { isActive: true } } } });
-  const html = await (await page('/tests/topics', user.token)).text();
-  assert.match(html, /role="search"/);
-  if (total > 24) assert.match(html, /href="\/tests\/topics\?page=2"/);
-  const none = await (await page('/tests/topics?q=zzzz-no-such-topic', user.token)).text();
-  assert.match(none, /Hech narsa topilmadi/);
-  const one = await db.topic.findFirstOrThrow({ where: { questions: { some: { isActive: true } } }, orderBy: { sortOrder: 'asc' } });
-  const found = await (await page(`/tests/topics?q=${encodeURIComponent(one.nameUz.slice(0, 6))}`, user.token)).text();
-  assert.match(found, new RegExp(`value="${one.slug}"`), 'search finds the topic');
-});
+// Topic search, groups and filters are covered in tests/topics.e2e.ts.

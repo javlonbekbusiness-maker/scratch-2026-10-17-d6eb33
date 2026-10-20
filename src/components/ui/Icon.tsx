@@ -44,7 +44,32 @@ const PATHS = {
   send: 'M21 3 10 14M21 3l-7 18-4-7-7-4z',
   car: 'M5 16h14M6 16l1.5-5.5A2 2 0 0 1 9.4 9h5.2a2 2 0 0 1 1.9 1.5L18 16M4 16v3h3v-3M17 16v3h3v-3M7.5 13.5h.01M16.5 13.5h.01',
   menu: 'M4 7h16M4 12h16M4 17h16',
+  // Topic icons
+  traffic: 'M8 2h8v17H8zM12 19v3M10.5 6.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0M10.5 10.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0M10.5 14.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0',
+  road: 'M8 3 4 21M16 3l4 18M12 4v3M12 10.5v3M12 17v3',
+  gauge: 'M4 18a8 8 0 1 1 16 0M12 18l4-5M7.5 13.5h.01M12 10h.01',
+  parking: 'M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM10 17V7h3a3 3 0 0 1 0 6h-3',
+  walk: 'M13 4.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM10 22l2-7 3 3v4M12 15l-1-6 4 1 2 3M11 9l-3 2v3',
+  truck: 'M2 6h11v10H2zM13 9h4l4 4v3h-8M6.5 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM17.5 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
+  bike: 'M5.5 18a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM18.5 18a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM5.5 14.5 9 7h5l4.5 7.5M9 7l3 7.5h1.5M14 4h2',
+  train: 'M6 3h12a2 2 0 0 1 2 2v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V5a2 2 0 0 1 2-2zM4 11h16M8 21l2-3M16 21l-2-3M8 14.5h.01M16 14.5h.01',
+  wrench: 'M15 4a5 5 0 0 0-4.6 7L3 18.4 5.6 21l7.4-7.4A5 5 0 0 0 20 9l-3 3-3-1-1-3z',
+  bulb: 'M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z',
+  users: 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21a7 7 0 0 1 14 0M16 3.5a4 4 0 0 1 0 7.5M22 21a7 7 0 0 0-4-6.3',
+  medkit: 'M4 7h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1zM9 7V4h6v3M12 10.5v6M9 13.5h6',
+  route: 'M6 21V10a4 4 0 0 1 4-4h8M15 3l3 3-3 3M18 21v-6',
+  octagon: 'M8 2h8l6 6v8l-6 6H8l-6-6V8zM8 12h8',
+  info: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 11v6M12 7.5h.01',
+  intersection: 'M9 3v6H3M15 3v6h6M9 21v-6H3M15 21v-6h6',
+  diamond: 'M12 2l10 10-10 10L2 12zM12 7l5 5-5 5-5-5z',
+  slope: 'M3 20h18L3 8zM8 15.5l3 1.5',
+  school: 'M2 9l10-5 10 5-10 5zM6 11v5c3 2 9 2 12 0v-5M22 9v6',
+  box: 'M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10',
+  siren: 'M7 18v-6a5 5 0 0 1 10 0v6M5 21h14v-3H5zM12 3v2M4.5 6.5l1.4 1.4M19.5 6.5l-1.4 1.4',
 } as const;
+
+export const isIconName = (v: string): v is IconName => Object.prototype.hasOwnProperty.call(PATHS, v);
+export const ICON_NAMES = Object.keys(PATHS) as IconName[];
 
 export type IconName = keyof typeof PATHS;
 

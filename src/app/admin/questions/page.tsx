@@ -60,7 +60,7 @@ export default async function QuestionsAdmin({ searchParams }: { searchParams: P
                 <td className="max-w-lg"><Link href={`/admin/questions/${q.id}`} className="font-medium hover:underline">{q.textUz.slice(0, 110)}</Link></td>
                 <td>{q.category?.code ?? <span className="muted">all</span>}</td>
                 <td>{q.ticketNumber ?? '—'}</td>
-                <td>{q.topic?.icon} {q.topic?.nameUz ?? '—'}</td>
+                <td>{q.topic?.nameUz ?? '—'}</td>
                 <td>{q.imageUrl ? '🖼' : ''}</td>
                 <td>{q.isActive ? <Badge tone="green">active</Badge> : <Badge>hidden</Badge>}</td>
               </tr>

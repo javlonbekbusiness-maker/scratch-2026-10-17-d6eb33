@@ -7,6 +7,8 @@ import { THEMES, contrast } from '../src/styles/tokens';
 import { readFileSync } from 'node:fs';
 import { planTickets, TICKET_SIZE } from '../src/lib/tickets';
 import { pickExamQuestions } from '../src/lib/exam-select';
+import { normalizeSearch } from '../src/lib/search-normalize';
+import { topicStatus } from '../src/lib/topics';
 
 test('design tokens: text colours meet WCAG AA (4.5:1) in both themes', () => {
   for (const [name, t] of Object.entries(THEMES)) {
@@ -211,4 +213,20 @@ test('exam selection: 20 unique, balanced across topics, avoids recently seen wh
   assert.equal(new Set(ids).size, 20);
   assert.ok(small.slice(20).every((q) => ids.includes(q.id)), 'all 5 unseen questions used first');
   assert.equal(pickExamQuestions(small.slice(0, 10), new Set(), 20, rand).length, 10, 'never invents or repeats questions');
+});
+
+test('topic search: apostrophes, case and Russian diacritics are ignored', () => {
+  const s = normalizeSearch("To'xtash va toʻxtab turish Остановка и стоянка Ёлка Йод");
+  for (const q of ['toxtash', "to'xtash", 'toʻxtash', 'TO’XTASH', 'остановка', 'елка', 'иод']) assert.ok(s.includes(normalizeSearch(q)), q);
+  assert.equal(normalizeSearch("  G'arb  "), 'garb');
+});
+
+test('topic status: new, in progress, weak below 70%, done when every question answered', () => {
+  const p = (answered: number, accuracy: number | null) => ({ answered, mastered: 0, correct: 0, attempts: answered, accuracy });
+  assert.equal(topicStatus(undefined, 10), 'new');
+  assert.equal(topicStatus(p(0, null), 10), 'new');
+  assert.equal(topicStatus(p(4, 80), 10), 'progress');
+  assert.equal(topicStatus(p(4, 69), 10), 'weak');
+  assert.equal(topicStatus(p(10, 90), 10), 'done');
+  assert.equal(topicStatus(p(10, 50), 10), 'weak', 'weak wins over done');
 });

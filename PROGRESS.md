@@ -603,3 +603,54 @@ Users are never asked for a licence category: one shared pool of all active ques
 | `npm test` | ✅ 18/18 (new: ticket planning, exam selection) |
 | `npm run test:db` | ✅ 16/16 (new `tests/pool.db.test.ts`: generation idempotent, edits don't reshuffle, new questions form a new ticket only; TICKET mode global; exam 20 unique, balanced, avoids previous exam) |
 | `npm run test:e2e` | ✅ 26/26 (new `tests/pool.e2e.ts`: no category field anywhere; ticket started from the list is unchanged after new questions are added; exam from /tests is unique, balanced and avoids the previous exam; topic search and pagination) |
+
+## Topics page redesign (✅ tested)
+
+Details are in `docs/topics.md`.
+
+**Topics**
+- 40 topics taken from the official Traffic Rules headings (Resolution No. 172 of 12.04.2022, read from lex.uz in Uzbek Latin and Russian), in 7 editable groups.
+- Descriptions are our own wording.
+- The 8 demo topics keep their slugs, so their questions and progress stay attached.
+
+**List (`/tests/topics`)**
+- Sticky top bar with back, "Mavzular" and a debounced search that ignores apostrophes and diacritics and matches both Uzbek and Russian names.
+- Collapsible group sections.
+- Filter chips: Hammasi, Boshlanmagan, Jarayonda, Zaif, Tugatilgan. Sort: tartib bo'yicha, zaiflari birinchi, yangi.
+- Cards show the group-coloured icon, the full name, the question count, a progress bar, "X / Y yechilgan" and accuracy.
+- A skeleton shows while loading; section rendering uses `content-visibility`.
+
+**Detail (`/tests/topics/[slug]`, new route)**
+- Description, source chapter, stats.
+- Buttons: Boshlash, Faqat xatolar, Tezkor 10 ta savol. Link to the library.
+
+**Free users**
+- Every topic shows a lock chip and "Bepul: 3 savol". The sample size is an admin setting, and 0 makes topics subscriber-only.
+- The sample is the topic's first 3 questions; the paywall sheet opens once they are answered.
+- The rule is enforced in `startTest` and in `/api/tests/answer` (402).
+
+**Admin**
+- New `/admin/topics`: groups and topics (create, rename, reorder, regroup, hide), with counts computed read-only.
+- Categories now have their own page.
+- New setting: "Free questions per topic".
+
+**Schema** (`db push`, additive)
+- `TopicGroup` table.
+- `Topic` gets descUz, descRu, ruleRef, libraryHref, groupId, isActive, createdAt.
+- `TestSession.isSample`.
+- Index `Question(topicId, isActive, sortOrder)`.
+
+**Load times** (1290 questions, 40 topics, a user with 3000 answers)
+- Topics page data: 26.7 ms median.
+- Detail page: 5.3 ms.
+- Full HTML from the dev server: about 0.7 s when run alone.
+
+**Checks**
+
+| Check | Result |
+|---|---|
+| `npm run typecheck` | ✅ |
+| `npm run lint` | ✅ |
+| `npm test` | ✅ 20/20 (new: search normalisation, topic status) |
+| `npm run test:db` | ✅ 20/20 (new `tests/topics.db.test.ts`: free sample fixed and server-side, setting 0 locks, subscriber variants, hidden/empty topics) |
+| `npm run test:e2e` | ✅ 32/32 after replacing the superseded server-side topic search test (new `tests/topics.e2e.ts`: list and groups, search incl. Russian, collapse and filters, free label + sample + paywall + API 402, subscriber without locks, no overflow and 48 px targets at 375 px, response time) |

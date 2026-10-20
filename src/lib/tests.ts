@@ -14,6 +14,7 @@ import { userStats } from './stats';
 import { pickAdaptive } from './adaptive';
 import { getTrickyQuestions } from './tricky';
 import { pickExamQuestions } from './exam-select';
+import { QUICK_TOPIC_SIZE, freeTopicQuestions, topicSampleIds } from './topics';
 
 export function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -37,7 +38,8 @@ export async function defaultExamTemplate() {
   );
 }
 
-type StartOpts = { mode: TestMode; ticket?: number; topic?: string };
+export type TopicVariant = 'all' | 'mistakes' | 'quick';
+type StartOpts = { mode: TestMode; ticket?: number; topic?: string; variant?: TopicVariant };
 export type StartResult = { ok: true; sessionId: string } | { ok: false; error: 'locked' | 'empty' | 'limit' };
 
 const PRACTICE_SIZE = 20;
@@ -66,6 +68,7 @@ export async function startTest(user: User, opts: StartOpts): Promise<StartResul
   let timeLimitSec: number | undefined;
   let passPercent: number | undefined;
   let topicId: string | undefined;
+  let isSample = false;
 
   switch (opts.mode) {
     case 'TICKET': {
@@ -95,12 +98,26 @@ export async function startTest(user: User, opts: StartOpts): Promise<StartResul
       break;
     }
     case 'TOPIC': {
-      if (!active) return { ok: false, error: 'locked' };
       const topic = await db.topic.findUnique({ where: { slug: opts.topic ?? '' } });
-      if (!topic) return { ok: false, error: 'empty' };
+      if (!topic || !topic.isActive) return { ok: false, error: 'empty' };
       topicId = topic.id;
+      if (!active) {
+        // Free users get the topic's fixed free sample (admin setting), whatever variant they asked for.
+        const n = await freeTopicQuestions();
+        if (n === 0) return { ok: false, error: 'locked' };
+        questionIds = await topicSampleIds(topic.id, n);
+        isSample = true;
+        break;
+      }
+      if (opts.variant === 'mistakes') {
+        // The user's open mistakes (Xatolarim) in this topic.
+        const due = await db.reviewItem.findMany({ where: { userId: user.id, question: { ...base, topicId: topic.id } }, select: { questionId: true } });
+        questionIds = shuffle(due.map((d) => d.questionId));
+        break;
+      }
       const qs = await db.question.findMany({ where: { ...base, topicId: topic.id }, select: { id: true } });
       questionIds = shuffle(qs.map((q) => q.id));
+      if (opts.variant === 'quick') questionIds = questionIds.slice(0, QUICK_TOPIC_SIZE);
       break;
     }
     case 'MARATHON': {
@@ -151,6 +168,7 @@ export async function startTest(user: User, opts: StartOpts): Promise<StartResul
       userId: user.id,
       mode: opts.mode,
       topicId,
+      isSample,
       ticketNumber: opts.mode === 'TICKET' ? opts.ticket : undefined,
       questionIds,
       totalQ: questionIds.length,

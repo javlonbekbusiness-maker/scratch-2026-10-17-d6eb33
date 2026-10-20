@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/session';
 import { recordReview } from '@/lib/srs';
 import { isPracticeMode } from '@/lib/tests';
+import { freeTopicQuestions, topicSampleIds } from '@/lib/topics';
 import { getLocale } from '@/i18n/server';
 import { pick } from '@/i18n/config';
 
@@ -19,6 +20,12 @@ export async function POST(req: Request) {
   const s = await db.testSession.findUnique({ where: { id: sessionId } });
   if (!s || s.userId !== user.id || s.finishedAt || !s.questionIds.includes(questionId)) {
     return NextResponse.json({ error: 'session' }, { status: 400 });
+  }
+  // Free topic sample: only the topic's first N questions (admin setting), checked again here so a
+  // tampered or stale session can't reach beyond the free part.
+  if (s.isSample) {
+    const free = s.topicId ? await topicSampleIds(s.topicId, await freeTopicQuestions()) : [];
+    if (!free.includes(questionId)) return NextResponse.json({ error: 'locked' }, { status: 402 });
   }
   if (s.timeLimitSec && Date.now() - s.startedAt.getTime() > (s.timeLimitSec + 10) * 1000) {
     return NextResponse.json({ error: 'time' }, { status: 409 });

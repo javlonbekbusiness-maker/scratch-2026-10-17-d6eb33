@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { requireUser } from '@/lib/session';
 import { finishSession, isPracticeMode } from '@/lib/tests';
 import { getDailyStatus } from '@/lib/daily-limit';
+import { freeTopicQuestions, topicSampleIds } from '@/lib/topics';
 import { getT } from '@/i18n/server';
 import { pick } from '@/i18n/config';
 import { TestRunner, type RunnerQuestion } from './TestRunner';
@@ -28,8 +29,11 @@ export default async function TestPage({ params }: { params: Promise<{ id: strin
   if (s.mode === 'EXAM' && (await getDailyStatus(db, user.id)).remaining === 0) redirect('/tests?limit=1');
 
   const practice = isPracticeMode(s.mode);
+  // A free topic sample only ever shows the topic's free questions (the answer API checks this too).
+  const freeIds = s.isSample && s.topicId ? new Set(await topicSampleIds(s.topicId, await freeTopicQuestions())) : null;
+  const questionIds = freeIds ? s.questionIds.filter((qid) => freeIds.has(qid)) : s.questionIds;
   const [questions, bookmarks, notes] = await Promise.all([
-    db.question.findMany({ where: { id: { in: s.questionIds } }, include: { answers: { orderBy: { sortOrder: 'asc' } } } }),
+    db.question.findMany({ where: { id: { in: questionIds } }, include: { answers: { orderBy: { sortOrder: 'asc' } } } }),
     db.bookmark.findMany({ where: { userId: user.id, questionId: { in: s.questionIds } }, select: { questionId: true } }),
     db.note.findMany({ where: { userId: user.id, questionId: { in: s.questionIds } } }),
   ]);
@@ -38,7 +42,7 @@ export default async function TestPage({ params }: { params: Promise<{ id: strin
   const noteMap = new Map(notes.map((n) => [n.questionId, n.text]));
   const answered = new Map(s.answers.map((a) => [a.questionId, a]));
 
-  const payload: RunnerQuestion[] = s.questionIds
+  const payload: RunnerQuestion[] = questionIds
     .map((qid) => byId.get(qid))
     .filter((q): q is NonNullable<typeof q> => !!q)
     .map((q) => {
@@ -69,8 +73,13 @@ export default async function TestPage({ params }: { params: Promise<{ id: strin
     s.mode === 'TICKET'
       ? t('modes.ticketN', { n: s.ticketNumber ?? '' })
       : topic
-        ? `${topic.icon} ${pick(topic, 'name', locale)}`
+        ? pick(topic, 'name', locale)
         : t(`modes.${s.mode.toLowerCase()}` as 'modes.exam');
+  const sample =
+    s.isSample && topic
+      ? { topicHref: `/tests/topics/${topic.slug}`, remaining: Math.max(0, (await db.question.count({ where: { topicId: topic.id, isActive: true } })) - payload.length) }
+      : null;
+  if (payload.length === 0) redirect(topic ? `/tests/topics/${topic.slug}?empty=1` : '/tests?empty=1');
 
   return (
     <TestRunner
@@ -80,6 +89,7 @@ export default async function TestPage({ params }: { params: Promise<{ id: strin
       questions={payload}
       startedAt={s.startedAt.toISOString()}
       timeLimitSec={s.timeLimitSec}
+      sample={sample}
     />
   );
 }

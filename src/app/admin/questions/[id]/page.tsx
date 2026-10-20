@@ -63,7 +63,7 @@ export default async function EditQuestion({ params, searchParams }: { params: P
           <Field label="Topic">
             <select name="topicId" defaultValue={q?.topicId ?? ''} className={inputSm}>
               <option value="">—</option>
-              {topics.map((t) => <option key={t.id} value={t.id}>{t.icon} {t.nameUz}</option>)}
+              {topics.map((t) => <option key={t.id} value={t.id}>{t.ruleRef ? ` · ` : ''}{t.nameUz}</option>)}
             </select>
           </Field>
           <Field label="Ticket #"><input name="ticketNumber" type="number" min={1} defaultValue={q?.ticketNumber ?? ''} className={inputSm} /></Field>

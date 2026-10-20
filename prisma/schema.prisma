@@ -132,15 +132,44 @@ model Category {
   examTemplates ExamTemplate[]
 }
 
-model Topic {
-  id        String @id @default(cuid())
-  slug      String @unique
+/// A heading on the topics page (e.g. "Yo'l belgilari"); groups are editable in admin.
+model TopicGroup {
+  id        String  @id @default(cuid())
+  slug      String  @unique
   nameUz    String
   nameRu    String
-  icon      String @default("📘")
-  sortOrder Int    @default(0)
+  /// Colour of every topic icon in the group: brand | accent | warning | danger | violet | sky | slate
+  tone      String  @default("brand")
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+
+  topics Topic[]
+}
+
+/// A topic follows a chapter or section of the Traffic Rules (Resolution No. 172, 12.04.2022).
+model Topic {
+  id          String      @id @default(cuid())
+  slug        String      @unique
+  nameUz      String
+  nameRu      String
+  descUz      String      @default("")
+  descRu      String      @default("")
+  /// Name of an icon in src/components/ui/Icon.tsx (older rows may still hold an emoji).
+  icon        String      @default("book")
+  /// Where the topic comes from in the rules, e.g. "7-bob" or "1-ilova, 3".
+  ruleRef     String?
+  /// Link to the related part of the library, e.g. "/library?tab=signs".
+  libraryHref String?
+  groupId     String?
+  group       TopicGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  sortOrder   Int         @default(0)
+  /// Hidden topics are not shown to users (their questions still count in other modes).
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
 
   questions Question[]
+
+  @@index([groupId, sortOrder])
 }
 
 model Question {
@@ -175,8 +204,8 @@ model Question {
   @@index([categoryId, ticketNumber])
   /// Shared pool: tickets list / ticket start filter on active + ticket number.
   @@index([isActive, ticketNumber])
-  /// Topic tests and per-topic counts.
-  @@index([topicId, isActive])
+  /// Topic tests, per-topic counts and the free sample (first questions by sortOrder).
+  @@index([topicId, isActive, sortOrder])
 }
 
 model Answer {
@@ -261,6 +290,8 @@ model TestSession {
   passPercent  Int?
   timeLimitSec Int?
   timeSpentSec Int?
+  /// A free user's sample of a topic (the first N questions); ends with the paywall.
+  isSample     Boolean   @default(false)
   startedAt    DateTime  @default(now())
   finishedAt   DateTime?
 

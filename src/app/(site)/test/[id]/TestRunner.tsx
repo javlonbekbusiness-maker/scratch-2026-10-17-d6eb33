@@ -36,6 +36,8 @@ export function TestRunner(props: {
   questions: RunnerQuestion[];
   startedAt: string;
   timeLimitSec: number | null;
+  /** A free user's topic sample: when its questions are answered, the paywall sheet opens. */
+  sample?: { topicHref: string; remaining: number } | null;
 }) {
   const { t } = useT();
   const router = useRouter();
@@ -47,12 +49,21 @@ export function TestRunner(props: {
   const [finishing, setFinishing] = useState(false);
   const [left, setLeft] = useState<number | null>(null);
   const [blocked, setBlocked] = useState<string | null>(null);
-  const [sheet, setSheet] = useState<'nav' | 'confirm' | null>(null);
+  const [sheet, setSheet] = useState<'nav' | 'confirm' | 'paywall' | null>(null);
   const finishedRef = useRef(false);
 
   const q = qs[idx];
   const answeredCount = qs.filter((x) => x.result).length;
   const unanswered = qs.length - answeredCount;
+  // Sample finished: stop here with the paywall (shortly after the last answer, so the result shows first).
+  const sampleDone = !!props.sample && unanswered === 0 && qs.every((x) => x.result?.correct !== undefined);
+  const paywallShown = useRef(false);
+  useEffect(() => {
+    if (!sampleDone || paywallShown.current) return;
+    paywallShown.current = true;
+    const id = setTimeout(() => setSheet('paywall'), 900);
+    return () => clearTimeout(id);
+  }, [sampleDone]);
 
   const submit = useCallback(async () => {
     if (finishedRef.current) return;
@@ -271,7 +282,11 @@ export function TestRunner(props: {
           <button className="btn-secondary w-14 px-0" onClick={() => setIdx((i) => Math.max(0, i - 1))} disabled={idx === 0} aria-label={t('common.prev')}>
             <Icon name="chevronLeft" />
           </button>
-          {idx < qs.length - 1 ? (
+          {sampleDone ? (
+            <button className="btn-primary flex-1" onClick={() => setSheet('paywall')}>
+              <Icon name="sparkles" size={20} /> {t('topicsPage.unlockAll')}
+            </button>
+          ) : idx < qs.length - 1 ? (
             <>
               <button className="btn-primary flex-1" onClick={() => setIdx((i) => i + 1)}>
                 {t('common.next')} <Icon name="chevronRight" size={20} />
@@ -313,7 +328,20 @@ export function TestRunner(props: {
         </div>
       </Sheet>
 
-      <Sheet open={sheet === 'confirm'} onClose={() => setSheet(null)} title={t('test.finishTitle')}>
+      {props.sample && (
+        <Sheet open={sheet === 'paywall'} onClose={() => setSheet(null)} title={t('topicsPage.sampleDoneTitle')}>
+          <div data-testid="sample-paywall">
+            <p className="text-ink">{t('topicsPage.sampleDoneText', { n: props.sample.remaining })}</p>
+            <div className="mt-5 grid gap-2 pb-2">
+              <Link href="/pricing" className="btn-primary w-full"><Icon name="sparkles" size={20} /> {t('topicsPage.unlockAll')}</Link>
+              <button className="btn-secondary w-full" onClick={submit} disabled={finishing}>{t('topicsPage.seeResult')}</button>
+              <Link href={props.sample.topicHref} className="btn-ghost w-full">{t('common.back')}</Link>
+            </div>
+          </div>
+        </Sheet>
+      )}
+
+      <Sheet open={sheet === 'confirm'}onClose={() => setSheet(null)} title={t('test.finishTitle')}>
         <p className="text-ink">{t('test.finishConfirm')}</p>
         <p className="mt-2 font-semibold text-warning">{t('test.unanswered', { n: unanswered })}</p>
         <div className="mt-5 grid gap-2 pb-2 sm:grid-cols-2">

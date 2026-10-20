@@ -18,6 +18,7 @@ import { pickExamQuestions } from '../src/lib/exam-select';
 import { pickAdaptive } from '../src/lib/adaptive';
 import { dueCount } from '../src/lib/srs';
 import { FULL_TEST_QUESTIONS } from '../src/lib/daily-limit';
+import { topicsOverview, topicSampleIds } from '../src/lib/topics';
 
 const RUNS = 15;
 const WARMUP = 3;
@@ -59,6 +60,12 @@ async function main() {
       const page = await db.topic.findMany({ where, orderBy: [{ sortOrder: 'asc' }], take: 24 });
       await db.question.groupBy({ by: ['topicId'], where: { ...base, topicId: { in: page.map((t) => t.id) } }, _count: true });
     }],
+    ['topics page: groups + topics + counts + progress', () => topicsOverview(user.id)],
+    ['topic detail: count + mistakes', async () => {
+      const tp = await db.topic.findFirstOrThrow({ where: { slug: 'parking' } });
+      await Promise.all([db.question.count({ where: { topicId: tp.id, isActive: true } }), db.reviewItem.count({ where: { userId: user.id, question: { topicId: tp.id, isActive: true } } })]);
+    }],
+    ['topic free sample (first 3)', async () => topicSampleIds((await db.topic.findFirstOrThrow({ where: { slug: 'parking' } })).id, 3)],
     ['progress per ticket (user)', () => progressBy(user.id, 'ticketNumber')],
     ['progress per topic (user)', () => progressBy(user.id, 'topicId')],
     ['exam: pool + recent + pick 20', async () => {

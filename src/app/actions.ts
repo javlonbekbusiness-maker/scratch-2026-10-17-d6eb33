@@ -36,8 +36,12 @@ export async function startTestAction(formData: FormData) {
   const mode = String(formData.get('mode')) as TestMode;
   const ticket = formData.get('ticket') ? Number(formData.get('ticket')) : undefined;
   const topic = formData.get('topic') ? String(formData.get('topic')) : undefined;
-  const r = await startTest(user, { mode, ticket, topic });
+  const v = String(formData.get('variant') ?? 'all');
+  const variant = v === 'mistakes' || v === 'quick' ? v : 'all';
+  const r = await startTest(user, { mode, ticket, topic, variant });
   if (r.ok) redirect(`/test/${r.sessionId}`);
+  // Topic tests go back to the topic's page with the reason.
+  if (mode === 'TOPIC' && topic) redirect(`/tests/topics/${encodeURIComponent(topic)}?${r.error === 'locked' ? 'locked' : 'empty'}=1`);
   if (r.error === 'locked') redirect(`/tests?locked=1`);
   if (r.error === 'limit') redirect(`/tests?limit=1`);
   redirect(`/tests?empty=1`);

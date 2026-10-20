@@ -12,7 +12,8 @@ const MESSAGES: Record<string, [string, boolean]> = {
   'bad-days': ['Referrer reward must be 0–365 days.', false],
   'bad-phone': ['Enter a valid support phone number.', false],
   'bad-email': ['Enter a valid support email.', false],
-  'bad-telegram': ['Telegram username: 5–32 letters, digits or _ (with or without @).', false],
+  'bad-free': ['Free questions per topic must be 0–20.', false],
+  'bad-telegram':['Telegram username: 5–32 letters, digits or _ (with or without @).', false],
 };
 
 const inp = 'input min-h-[40px] rounded-xl px-3 text-sm';
@@ -64,6 +65,11 @@ export default async function SettingsAdmin({ searchParams }: { searchParams: Pr
               <label className="block"><span className="label">Email</span><input name="supportEmail" type="email" required defaultValue={s.supportEmail} className={inp} /></label>
               <label className="block"><span className="label">Telegram</span><input name="telegram" defaultValue={s.telegram} placeholder="@yhqtest_support" className={inp} /></label>
             </div>
+          </fieldset>
+          <fieldset className="space-y-3">
+            <legend className="font-bold">Free access</legend>
+            <p className="text-sm muted">Free users can try this many questions of every topic, then see the paywall. 0 makes topics subscriber-only.</p>
+            <label className="block max-w-xs"><span className="label">Free questions per topic</span><input name="freeTopicQuestions" type="number" min={0} max={20} required defaultValue={s.freeTopicQuestions} className={inp} /></label>
           </fieldset>
           <button className="btn-primary btn-sm">Save settings</button>
         </form>

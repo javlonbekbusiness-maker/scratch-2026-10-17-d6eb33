@@ -94,7 +94,7 @@ export default async function TicketsAdmin({ searchParams }: { searchParams: Pro
                   <td>
                     <div className="flex flex-wrap gap-1">
                       {info?.topics.sort((a, b) => b.count - a.count).map((tp) => (
-                        <span key={tp.name} className="chip bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300" title={tp.name}>{tp.icon} {tp.count}</span>
+                        <span key={tp.name} className="chip bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300" title={tp.name}>{tp.name.slice(0, 18)}{tp.name.length > 18 ? '…' : ''} · {tp.count}</span>
                       )) ?? <span className="muted">—</span>}
                     </div>
                   </td>
