@@ -338,5 +338,56 @@
     ],
     "correct": 1,
     "explanation": { "uz": "Qayta tizilish — yo'nalishni o'zgartirmasdan bir tasmadan boshqasiga o'tish. Bunda o'tilayotgan tasmadagi transportga yo'l berish kerak.", "ru": "Перестроение — переход из полосы в полосу без изменения направления движения. При этом нужно уступить дорогу транспорту на полосе, куда перестраиваетесь." }
+  },
+  {
+    "externalId": "UQ-041", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Quyidagi javoblardan qaysi birida «Xavf» atamasining to'g'ri ta'rifi ko'rsatilgan?", "ru": "В каком ответе дано правильное определение термина «опасность»?" },
+    "answers": [
+      { "uz": "Yo'l harakati xavfsizligiga xavf soluvchi har qanday omil", "ru": "Любой фактор, создающий угрозу безопасности дорожного движения" },
+      { "uz": "Yo'l harakati qatnashchilarining yo'nalishini o'zgartirishga majbur qiladigan har qanday to'siq", "ru": "Любое препятствие, вынуждающее участников движения изменить направление" },
+      { "uz": "Yo'l harakati jarayonida o'sha yo'nalishda va o'sha tezlikda harakatlanishni davom ettirish yo'l-transport hodisasi sodir bo'lishiga tahdid soladigan omil", "ru": "Фактор, при котором продолжение движения в том же направлении и с той же скоростью создаёт угрозу ДТП" }
+    ],
+    "correct": 1,
+    "explanation": { "uz": "Qoidalardagi ta'rif qisqa: xavf — yo'l harakati xavfsizligiga xavf soluvchi har qanday omil. Uni faqat to'siq yoki faqat tezlik bilan bog'lab bo'lmaydi.", "ru": "Определение в Правилах короткое: опасность — любой фактор, создающий угрозу безопасности дорожного движения. Его нельзя сводить только к препятствию или скорости." }
+  },
+  {
+    "externalId": "UQ-042", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "«Transport vositasi harakatini 10 daqiqagacha bo'lgan muddatga to'xtatish (harakatsiz holatga keltirish)» ta'rifi qaysi atamaga tegishli?", "ru": "К какому термину относится определение «прекращение движения транспортного средства на время до 10 минут (приведение в неподвижное состояние)»?" },
+    "answers": [
+      { "uz": "To'xtash", "ru": "Остановка" },
+      { "uz": "Majburiy to'xtash", "ru": "Вынужденная остановка" },
+      { "uz": "Yo'l berish", "ru": "Уступить дорогу" },
+      { "uz": "To'xtab turish", "ru": "Стоянка" }
+    ],
+    "correct": 1,
+    "explanation": { "uz": "To'xtash — 10 daqiqagacha. To'xtab turish — yo'lovchi yoki yuk bilan bog'liq bo'lmagan hollarda 10 daqiqadan ko'proq vaqtga atayin to'xtatish.", "ru": "Остановка — до 10 минут. Стоянка — преднамеренное прекращение движения более чем на 10 минут, не связанное с посадкой, высадкой или грузовыми работами." }
+  },
+  {
+    "externalId": "UQ-043", "topic": "ch-01", "ruleRef": "108",
+    "text": { "uz": "Agar haydovchi o'zi harakatlanayotgan yo'lning qoplamasi bor-yo'qligini aniqlay olmasa (qorong'i vaqt, loy, qor) va imtiyoz belgilari bo'lmasa, u qanday hisoblashi kerak?", "ru": "Как должен считать водитель, если он не может определить наличие покрытия на дороге (тёмное время, грязь, снег), а знаков приоритета нет?" },
+    "answers": [
+      { "uz": "O'zini asosiy yo'lda deb hisoblashi kerak", "ru": "Что находится на главной дороге" },
+      { "uz": "O'zini ikkinchi darajali yo'lda deb hisoblashi kerak", "ru": "Что находится на второстепенной дороге" },
+      { "uz": "Teng ahamiyatli yo'llar kesishgan chorrahada deb hisoblashi kerak", "ru": "Что находится на перекрёстке равнозначных дорог" }
+    ],
+    "correct": 2,
+    "explanation": { "uz": "Qoidalarning 108-bandiga ko'ra, bunday holatda haydovchi o'zini ikkinchi darajali yo'lda deb hisoblashi kerak — ya'ni boshqalarga yo'l beradi.", "ru": "По пункту 108 Правил в такой ситуации водитель должен считать, что находится на второстепенной дороге, то есть уступать." }
+  },
+  {
+    "externalId": "UQ-045", "topic": "ch-01", "ruleRef": "186",
+    "text": { "uz": "Vazirlar Mahkamasining 172-sonli qaroriga muvofiq, Yo'l harakati qoidalari nechta banddan iborat?", "ru": "Сколько пунктов содержат Правила дорожного движения, утверждённые постановлением Кабинета Министров № 172?" },
+    "answers": [ { "uz": "184", "ru": "184" }, { "uz": "186", "ru": "186" }, { "uz": "216", "ru": "216" }, { "uz": "220", "ru": "220" } ],
+    "correct": 2,
+    "explanation": { "uz": "Amaldagi tahrirda Qoidalarning oxirgi bandi — 186-band (185- va 186-bandlar keyingi o'zgartirishlar bilan qo'shilgan).", "ru": "В действующей редакции последний пункт Правил — 186-й (пункты 185 и 186 добавлены последующими изменениями)." }
+  },
+  {
+    "externalId": "UQ-046", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Qaysi javobda «Avariya holatini yuzaga keltirish» atamasi ko'rsatilgan?", "ru": "В каком ответе дано определение термина «создание аварийной ситуации»?" },
+    "answers": [
+      { "uz": "Yo'l harakatining boshqa ishtirokchilarini harakat yo'nalishi yoki tezligini keskin o'zgartirishga, shuningdek, o'z xavfsizligini yoxud boshqa fuqarolar xavfsizligini ta'minlash uchun o'zga choralarni ko'rishga majbur qilish", "ru": "Вынуждение других участников движения резко изменить направление или скорость движения, а также предпринять иные меры по обеспечению собственной безопасности либо безопасности других граждан" },
+      { "uz": "Yo'l-transport hodisalarining kelib chiqish sabablarining oldini olishga, ularning og'ir oqibatlarini kamaytirishga qaratilgan faoliyat", "ru": "Деятельность, направленная на предупреждение причин ДТП и снижение тяжести их последствий" }
+    ],
+    "correct": 1,
+    "explanation": { "uz": "Avariya holatini yuzaga keltirish — boshqalarni keskin manyovr qilishga yoki o'zini himoya qilish choralarini ko'rishga majbur qilish. Ikkinchi javob — «yo'l harakati xavfsizligini ta'minlash» ta'rifi.", "ru": "Создание аварийной ситуации — вынуждение других резко маневрировать или принимать меры защиты. Второй ответ — определение «обеспечения безопасности дорожного движения»." }
   }
 ]
