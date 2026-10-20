@@ -48,7 +48,7 @@ function StatsSkeleton() {
 async function StatsContent({ user }: { user: User }) {
   const { t, locale } = await getT();
   const [stats, topics, recent] = await Promise.all([
-    userStats(user.id, user.categoryId),
+    userStats(user.id),
     db.topic.findMany(),
     db.testSession.findMany({ where: { userId: user.id, finishedAt: { not: null } }, orderBy: { finishedAt: 'desc' }, take: 8 }),
   ]);

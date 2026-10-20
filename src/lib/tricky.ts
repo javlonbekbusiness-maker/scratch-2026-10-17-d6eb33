@@ -10,13 +10,13 @@ export const TRICKY_MIN_WRONG_RATE = 0.35;
  * "Qopqonli savollar": questions admins flagged as traps, plus the ones users miss most often.
  * Real data only — no question is listed just to fill the page.
  */
-export const getTrickyQuestions = cache(async (categoryId: string, limit = 60) => {
+export const getTrickyQuestions = cache(async (limit = 60) => {
   const [flagged, missed] = await Promise.all([
-    db.question.findMany({ where: { categoryId, isActive: true, isTricky: true }, select: { id: true } }),
+    db.question.findMany({ where: { isActive: true, isTricky: true }, select: { id: true } }),
     db.$queryRaw<{ questionId: string; total: number; wrong: number }[]>`
       SELECT sa."questionId", count(*)::int AS total, sum(CASE WHEN sa."isCorrect" THEN 0 ELSE 1 END)::int AS wrong
       FROM "SessionAnswer" sa JOIN "Question" q ON q.id = sa."questionId"
-      WHERE q."categoryId" = ${categoryId} AND q."isActive" = true
+      WHERE q."isActive" = true
       GROUP BY sa."questionId"
       HAVING count(*) >= ${TRICKY_MIN_ANSWERS}
         AND sum(CASE WHEN sa."isCorrect" THEN 0 ELSE 1 END)::float / count(*) >= ${TRICKY_MIN_WRONG_RATE}

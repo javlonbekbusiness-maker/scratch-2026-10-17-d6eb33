@@ -108,11 +108,11 @@ Notes:
 
 | Data | Details |
 |---|---|
-| Categories | A, B, C, D, BE, CE |
+| Categories | A, B, C, D, BE, CE (optional metadata only; users are never asked for a category) |
 | Topics | 8: signs, priority, speed, parking, overtaking, pedestrians, safety, lights |
-| Questions | 40 **sample** questions in category B, in 4 tickets of 10; tickets 1–2 are the free demo. Sample images are in `public/signs/` and `public/placeholders/`. |
+| Questions | 40 **sample** questions in one shared pool, in 4 tickets of 10; tickets 1–2 are the free demo. Sample images are in `public/signs/` and `public/placeholders/`. |
 | Plans | 1 week 29 000, 1 month 79 000, 3 months 179 000 ("Best value"), until-pass 249 000 so'm |
-| Exam templates | Per category: 20 questions, 25 min, 90%. **Placeholder values; see below.** Plus a 10-question ticket template for B. |
+| Exam templates | 20 questions, 25 min, 90% (the first default EXAM template is used for everyone). **Placeholder values; see below.** |
 | Library | 16 sample road signs, 8 placeholder rule articles |
 | Message templates | 48 (8 messages × SMS/email/push × 2 languages) |
 | Campaigns | Active welcome offer: −20% for 24 h after sign-up |
@@ -209,16 +209,22 @@ tests/unit.test.ts     unit tests
 
 ## Content: question bank and exam format
 
-**Importing questions.** Use Admin → Bulk import. Download the CSV or JSON template there; columns cover category, ticket, topic, the text in Uzbek and Russian (`_uz` / `_ru`), image URL, up to 5 answers, the correct answer number, explanation, rule reference and difficulty.
+**Importing questions.** Use Admin → Bulk import. Download the CSV or JSON template there; columns cover category (optional; empty or `all` = shared pool), ticket (optional), topic, the text in Uzbek and Russian (`_uz` / `_ru`), image URL, up to 5 answers, the correct answer number, explanation, rule reference and difficulty.
 
 - **Validation first:** every row is checked and errors are shown row by row before anything is saved.
 - **Updating questions:** rows with an existing `external_id` update that question.
 - **Older files:** `_cy` (Uzbek Cyrillic) columns from earlier templates are ignored; the app no longer has a Cyrillic version.
 - **Replacing the samples:** use your own `external_id`s and delete the sample questions (`SAMPLE-B-001…040`) in Admin → Questions, or reuse those IDs to overwrite them.
 
-**Exam format.** The official number of questions, time limit and pass mark were **not verified** for this project. They appear to be set by Cabinet of Ministers Resolution No. 408 (31 May 2018) and the Unified Examination Center. Practice apps commonly use 20 questions with at most 2 mistakes. Set the confirmed values on each category's default template in Admin → Exam templates.
+**Exam format.** The official number of questions, time limit and pass mark were **not verified** for this project. They appear to be set by Cabinet of Ministers Resolution No. 408 (31 May 2018) and the Unified Examination Center. Practice apps commonly use 20 questions with at most 2 mistakes. Set the confirmed values on the default exam template in Admin → Exam templates (the first default EXAM template applies to everyone).
 
-**Tickets.** A ticket is the set of questions sharing a ticket number. Admin → Tickets toggles which tickets are free demos and can regenerate tickets from a ticket template (size and topic mix).
+**One shared pool.** There is no licence-category choice for users: all active questions are visible to everyone. `Question.categoryId` stays as an optional field (admin form and CSV) in case categories come back; a category saved on old user profiles is ignored.
+
+**Tickets.** Tickets of 10 are dealt automatically from the pool (`src/lib/tickets.ts`). The order is a SHA-256 hash of a fixed seed and the question id, so it is reproducible. A question keeps its ticket number once it has one; only questions without a ticket are dealt, only into whole tickets, numbered after the last ticket. Adding or editing questions therefore never reshuffles tickets users have completed. Dealing runs after saving a new question, after a CSV import, in the seed, and from Admin → Tickets ("Create new tickets"). Admin → Tickets also toggles which tickets are free demos.
+
+**Exam selection.** 20 questions from the whole pool, round-robin over topics in random order (balanced), never repeated within one exam. Questions the user answered in the last 3 days are used only when the pool runs short (`src/lib/exam-select.ts`).
+
+**Performance test data.** `npm run db:seed-bulk` adds 1250 placeholder questions (`BULK-…`, text starting `[TEST]`), 30 test topics and 40 bench users with answer history; `npm run db:seed-bulk -- --remove` deletes exactly that. `npm run bench:pool` times the main queries (results in `docs/shared-pool.md`).
 
 **Library.** Replace the sample signs and the `[NAMUNA]` rule articles with the official traffic rules (YHQ) in Admin → Signs & rules.
 
@@ -322,7 +328,7 @@ Examples: a Linux crontab, a GitHub Actions schedule, or your host's cron featur
 
 **Content and legal**
 - [ ] Licensed question bank imported; sample questions (`SAMPLE-B-*`) removed
-- [ ] Official exam format set on each category's default exam template
+- [ ] Official exam format set on the default exam template
 - [ ] Rule articles and sign descriptions replaced; no `[NAMUNA]` warning in Admin → Signs & rules
 - [ ] Privacy policy and terms reviewed by a lawyer (Admin → Translations → `legal.*`)
 - [ ] Support contacts set (Admin → Settings)

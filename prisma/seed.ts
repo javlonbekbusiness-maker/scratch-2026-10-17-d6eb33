@@ -9,6 +9,7 @@
 import { randomBytes } from 'node:crypto';
 import { PrismaClient, type MessageChannel } from '@prisma/client';
 import { DEFAULT_TEMPLATES, TEMPLATE_KEYS } from '../src/lib/template-defaults';
+import { assignNewTickets } from '../src/lib/tickets';
 
 const db = new PrismaClient();
 const SAMPLE_NOTE_UZ = ' (Namuna — rasmiy matn bilan almashtiring.)';
@@ -265,12 +266,10 @@ async function main() {
     }
   }
   for (let n = 1; n <= 4; n++) {
-    await db.ticket.upsert({
-      where: { categoryId_number: { categoryId: catIds.B, number: n } },
-      create: { categoryId: catIds.B, number: n, isFree: n <= 2 },
-      update: { isFree: n <= 2 },
-    });
+    await db.ticket.upsert({ where: { number: n }, create: { number: n, isFree: n <= 2 }, update: { isFree: n <= 2 } });
   }
+  // Any other active questions without a ticket (e.g. imported ones) go into new tickets after the last.
+  await assignNewTickets(db);
 
   await db.roadSign.deleteMany();
   await db.roadSign.createMany({

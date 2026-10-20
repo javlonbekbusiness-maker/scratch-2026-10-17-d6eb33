@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function TrickyPage() {
   const user = await requireUser();
   const { t, locale } = await getT();
-  const [access, tricky] = await Promise.all([getAccess(user.id), getTrickyQuestions(user.categoryId!)]);
+  const [access, tricky] = await Promise.all([getAccess(user.id), getTrickyQuestions()]);
   const preview = await db.question.findMany({ where: { id: { in: tricky.ids.slice(0, 8) } }, select: { id: true, textUz: true, textRu: true, isTricky: true } });
   const order = new Map(tricky.ids.map((id, i) => [id, i]));
   preview.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));

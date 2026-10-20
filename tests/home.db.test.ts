@@ -44,7 +44,7 @@ test('trap questions: admin-flagged ones are always included; most-missed need e
   const cat = await catB();
   const flagged = await makeQuestion(true);
   const missed = await makeQuestion(false);
-  const before = await getTrickyQuestions(cat.id);
+  const before = await getTrickyQuestions();
   assert.ok(before.ids.includes(flagged.id), 'flagged question listed');
   assert.ok(!before.ids.includes(missed.id), 'no answers yet → not listed');
 
@@ -59,7 +59,7 @@ test('trap questions: admin-flagged ones are always included; most-missed need e
     await db.sessionAnswer.create({ data: { sessionId: si.id, questionId: missed.id, answerId: wrong.id, isCorrect: false } });
   }
   // getTrickyQuestions is cached per request in the app; call the query fresh here.
-  const afterAnswers = await (await import('../src/lib/tricky')).getTrickyQuestions(cat.id, 500);
+  const afterAnswers = await (await import('../src/lib/tricky')).getTrickyQuestions(500);
   assert.ok(afterAnswers.ids.includes(missed.id), 'now listed from real data');
   assert.equal(afterAnswers.missRate.get(missed.id), 100);
 });

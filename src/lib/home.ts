@@ -35,11 +35,9 @@ export async function answersToday(userId: string) {
 
 /** Counts shown on the home cards. */
 export async function homeCounts(user: User) {
-  const categoryId = user.categoryId;
-  if (!categoryId) return { tickets: 0, topics: 0, reviewTotal: 0 };
   const [tickets, topics, reviewTotal] = await Promise.all([
-    db.ticket.count({ where: { categoryId } }),
-    db.topic.count({ where: { questions: { some: { categoryId, isActive: true } } } }),
+    db.ticket.count(),
+    db.topic.count({ where: { questions: { some: { isActive: true } } } }),
     db.reviewItem.count({ where: { userId: user.id } }),
   ]);
   return { tickets, topics, reviewTotal };

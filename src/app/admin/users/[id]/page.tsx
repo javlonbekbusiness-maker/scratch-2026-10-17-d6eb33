@@ -34,7 +34,7 @@ export default async function UserDetail({ params, searchParams }: { params: Pro
   const [subs, payments, stats, tests, invited, rewards, messages] = await Promise.all([
     db.subscription.findMany({ where: { userId: id }, include: { plan: true }, orderBy: { expiresAt: 'desc' } }),
     db.payment.findMany({ where: { userId: id }, include: { plan: true, promoCode: true }, orderBy: { createdAt: 'desc' }, take: 30 }),
-    userStats(id, user.categoryId),
+    userStats(id),
     db.testSession.count({ where: { userId: id, finishedAt: { not: null } } }),
     db.user.count({ where: { referredById: id } }),
     db.referralReward.count({ where: { referrerId: id } }),

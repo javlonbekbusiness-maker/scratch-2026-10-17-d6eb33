@@ -58,7 +58,7 @@ export default async function QuestionsAdmin({ searchParams }: { searchParams: P
               <tr key={q.id}>
                 <td className="font-mono text-xs muted">{q.externalId ?? q.id.slice(-6)}</td>
                 <td className="max-w-lg"><Link href={`/admin/questions/${q.id}`} className="font-medium hover:underline">{q.textUz.slice(0, 110)}</Link></td>
-                <td>{q.category.code}</td>
+                <td>{q.category?.code ?? <span className="muted">all</span>}</td>
                 <td>{q.ticketNumber ?? '—'}</td>
                 <td>{q.topic?.icon} {q.topic?.nameUz ?? '—'}</td>
                 <td>{q.imageUrl ? '🖼' : ''}</td>

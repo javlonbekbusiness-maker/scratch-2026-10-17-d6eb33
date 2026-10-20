@@ -1,0 +1,86 @@
+{
+  "dataset": {
+    "questions": 1290,
+    "tickets": 129,
+    "topics": 38,
+    "totalAnswers": 14769,
+    "benchUserAnswers": 3000
+  },
+  "results": [
+    {
+      "query": "tickets list: page of 40 + counts",
+      "median": 7.44,
+      "p95": 9.68
+    },
+    {
+      "query": "ticket start: questions of one ticket",
+      "median": 3.39,
+      "p95": 5.18
+    },
+    {
+      "query": "topics list: search + page + counts",
+      "median": 10.34,
+      "p95": 17.35
+    },
+    {
+      "query": "progress per ticket (user)",
+      "median": 20.28,
+      "p95": 50.49
+    },
+    {
+      "query": "progress per topic (user)",
+      "median": 28.81,
+      "p95": 36.48
+    },
+    {
+      "query": "exam: pool + recent + pick 20",
+      "median": 9.66,
+      "p95": 13.74
+    },
+    {
+      "query": "marathon: pool + mastered",
+      "median": 14.2,
+      "p95": 21.78
+    },
+    {
+      "query": "smart practice: stats + pool + pick",
+      "median": 238.16,
+      "p95": 271.18
+    },
+    {
+      "query": "mistakes: due review items",
+      "median": 4.29,
+      "p95": 6.62
+    },
+    {
+      "query": "mistakes: due count",
+      "median": 2.81,
+      "p95": 4.45
+    },
+    {
+      "query": "trap questions (all users)",
+      "median": 31.36,
+      "p95": 48.18
+    },
+    {
+      "query": "statistics: userStats",
+      "median": 238.11,
+      "p95": 283.54
+    },
+    {
+      "query": "home counts",
+      "median": 4.45,
+      "p95": 5.75
+    },
+    {
+      "query": "bookmarks page",
+      "median": 10.55,
+      "p95": 16.74
+    },
+    {
+      "query": "leaderboard (7 days)",
+      "median": 23.09,
+      "p95": 26.53
+    }
+  ]
+}

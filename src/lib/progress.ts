@@ -1,33 +1,29 @@
+import { Prisma } from '@prisma/client';
 import { db } from './db';
 
 export type Progress = { answered: number; mastered: number; correct: number; attempts: number; accuracy: number | null };
 
 /**
- * The user's progress per ticket number or per topic within a category:
+ * The user's progress per ticket number or per topic over the shared pool:
  * distinct questions answered / answered correctly at least once, and overall accuracy.
+ * Aggregated in SQL so it stays fast for users with thousands of answers.
  */
-export async function progressBy(userId: string, categoryId: string, key: 'ticketNumber' | 'topicId') {
-  const answers = await db.sessionAnswer.findMany({
-    where: { session: { userId }, question: { categoryId } },
-    select: { questionId: true, isCorrect: true, question: { select: { ticketNumber: true, topicId: true } } },
-  });
-  const acc = new Map<string, { answered: Set<string>; mastered: Set<string>; correct: number; attempts: number }>();
-  for (const a of answers) {
-    const k = a.question[key];
-    if (k === null || k === undefined) continue;
-    const id = String(k);
-    const s = acc.get(id) ?? { answered: new Set(), mastered: new Set(), correct: 0, attempts: 0 };
-    s.answered.add(a.questionId);
-    if (a.isCorrect) {
-      s.mastered.add(a.questionId);
-      s.correct++;
-    }
-    s.attempts++;
-    acc.set(id, s);
-  }
+export async function progressBy(userId: string, key: 'ticketNumber' | 'topicId') {
+  const col = key === 'ticketNumber' ? Prisma.sql`q."ticketNumber"::text` : Prisma.sql`q."topicId"`;
+  const rows = await db.$queryRaw<{ k: string; answered: number; mastered: number; correct: number; attempts: number }[]>`
+    SELECT ${col} AS k,
+           count(DISTINCT sa."questionId")::int AS answered,
+           count(DISTINCT sa."questionId") FILTER (WHERE sa."isCorrect")::int AS mastered,
+           count(*) FILTER (WHERE sa."isCorrect")::int AS correct,
+           count(*)::int AS attempts
+    FROM "SessionAnswer" sa
+    JOIN "TestSession" s ON s.id = sa."sessionId"
+    JOIN "Question" q ON q.id = sa."questionId"
+    WHERE s."userId" = ${userId} AND ${col} IS NOT NULL
+    GROUP BY 1`;
   const out = new Map<string, Progress>();
-  for (const [id, s] of acc) {
-    out.set(id, { answered: s.answered.size, mastered: s.mastered.size, correct: s.correct, attempts: s.attempts, accuracy: s.attempts ? Math.round((100 * s.correct) / s.attempts) : null });
+  for (const r of rows) {
+    out.set(r.k, { answered: r.answered, mastered: r.mastered, correct: r.correct, attempts: r.attempts, accuracy: r.attempts ? Math.round((100 * r.correct) / r.attempts) : null });
   }
   return out;
 }

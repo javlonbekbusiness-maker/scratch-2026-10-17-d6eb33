@@ -4,6 +4,9 @@ import { db } from './db';
 import { parseCsv } from './csv';
 import { normalizePhone, PHONE_RE } from './phone';
 import { normalizeCode } from './promo';
+import { ensureTicket } from './tickets';
+
+const isAllCategory = (v: string | undefined) => !v || ['ALL', '*', '-'].includes(v.trim().toUpperCase());
 
 export type RowError = { row: number; messages: string[] };
 export type ImportKind = 'questions' | 'promo' | 'users';
@@ -26,7 +29,8 @@ const l3 = z.object({ uz: z.string().trim().min(1, 'uz text required'), ru: z.st
 const questionSchema = z
   .object({
     externalId: z.string().trim().max(64).optional().or(z.literal('')),
-    category: z.string().trim().min(1, 'category required'),
+    /** Optional: the pool is shared by everyone. Empty, "all" or "*" means no category. */
+    category: z.string().trim().optional().default(''),
     ticket: optInt,
     topic: z.string().trim().optional().default(''),
     text: l3,
@@ -89,7 +93,7 @@ export async function validateQuestions(text: string, format: 'csv' | 'json') {
     const messages: string[] = [];
     if (!parsed.success) messages.push(...parsed.error.issues.map((e) => `${e.path.join('.') || 'row'}: ${e.message}`));
     else {
-      if (!lk.cat.has(parsed.data.category.toUpperCase())) messages.push(`unknown category "${parsed.data.category}" (have: ${lk.catCodes})`);
+      if (!isAllCategory(parsed.data.category) && !lk.cat.has(parsed.data.category.toUpperCase())) messages.push(`unknown category "${parsed.data.category}" (have: ${lk.catCodes})`);
       if (parsed.data.topic && !lk.topic.has(parsed.data.topic.toLowerCase())) messages.push(`unknown topic "${parsed.data.topic}" (have: ${lk.topicSlugs})`);
     }
     if (messages.length) errors.push({ row: i + 2, messages });
@@ -103,11 +107,9 @@ export async function commitQuestions(rows: QuestionRow[]) {
   let created = 0;
   let updated = 0;
   for (const r of rows) {
-    const categoryId = lk.cat.get(r.category.toUpperCase())!;
+    const categoryId = isAllCategory(r.category) ? null : lk.cat.get(r.category.toUpperCase()) ?? null;
     const data = {
-      categoryId,
       topicId: r.topic ? lk.topic.get(r.topic.toLowerCase()) ?? null : null,
-      ticketNumber: r.ticket ?? null,
       textUz: r.text.uz,
       textRu: r.text.ru,
       imageUrl: r.imageUrl || null,
@@ -121,15 +123,18 @@ export async function commitQuestions(rows: QuestionRow[]) {
     await db.$transaction(async (tx) => {
       if (existing) {
         await tx.answer.deleteMany({ where: { questionId: existing.id } });
-        await tx.question.update({ where: { id: existing.id }, data: { ...data, answers: { create: answers } } });
+        // Updating never moves a question out of its ticket unless the row names a ticket explicitly,
+        // and a blank category keeps whatever the question had.
+        await tx.question.update({
+          where: { id: existing.id },
+          data: { ...data, ...(r.ticket ? { ticketNumber: r.ticket } : {}), ...(categoryId ? { categoryId } : {}), answers: { create: answers } },
+        });
         updated++;
       } else {
-        await tx.question.create({ data: { ...data, externalId: r.externalId || null, answers: { create: answers } } });
+        await tx.question.create({ data: { ...data, categoryId, ticketNumber: r.ticket ?? null, externalId: r.externalId || null, answers: { create: answers } } });
         created++;
       }
-      if (r.ticket) {
-        await tx.ticket.upsert({ where: { categoryId_number: { categoryId, number: r.ticket } }, create: { categoryId, number: r.ticket }, update: {} });
-      }
+      if (r.ticket) await ensureTicket(r.ticket, tx);
     });
   }
   return { created, updated };

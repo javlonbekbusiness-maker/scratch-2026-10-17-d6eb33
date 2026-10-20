@@ -21,7 +21,7 @@ export async function grantDays(userId: string, days: number, source: string, ex
   return db.subscription.create({ data: { userId, source, startsAt, expiresAt, ...extra } });
 }
 
-export async function freeTicketNumbers(categoryId: string) {
-  const rows = await db.ticket.findMany({ where: { categoryId, isFree: true }, select: { number: true } });
+export async function freeTicketNumbers() {
+  const rows = await db.ticket.findMany({ where: { isFree: true }, select: { number: true } });
   return rows.map((r) => r.number);
 }

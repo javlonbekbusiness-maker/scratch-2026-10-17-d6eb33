@@ -555,3 +555,51 @@ npm test
 npm run build
 ```
 Then start the database (see above), run `npx prisma db push` and `npm run db:seed`, then `npm run dev`.
+
+## Shared question pool (licence category removed from the UX) (✅ tested)
+
+Users are never asked for a licence category: one shared pool of all active questions. Details and query timings are in `docs/shared-pool.md`.
+
+**What changed for users**
+- The "Toifa" selector is removed from /tests, onboarding (now only name and optional email), settings and the profile form.
+- A category saved on an existing profile is ignored. Progress and history are untouched.
+
+**Tickets**
+- Tickets of 10 are dealt automatically and deterministically from the whole pool.
+- Questions keep their ticket; new questions only form new tickets numbered after the last one.
+- The ticket list is paginated (40 per page).
+
+**Topics**
+- Search by name (Uzbek or Russian) and pagination (24 per page), with per-topic progress and accuracy.
+- Still a single "Mavzulashtirilgan testlar" entry point.
+
+**Exam**
+- 20 questions balanced over topics, no repeats.
+- Questions answered in the last 3 days are avoided unless the pool runs short.
+
+**Marathon**
+- Rounds of 100 questions, not-yet-mastered questions first.
+
+**Admin**
+- Category is optional in the question form ("— all") and in CSV import (empty or `all`).
+- Admin → Tickets is now one global list with "Create new tickets", which replaces the destructive "Regenerate tickets".
+- CSV updates no longer clear a question's ticket when the row has no ticket.
+
+**Performance**
+- 4 new indexes.
+- `progressBy` and `userStats` aggregate in SQL.
+- With 1290 questions, statistics went from 238 ms to 32 ms and smart practice from 238 ms to 16 ms (medians); everything else is under 25 ms.
+
+**Test data**
+- `npm run db:seed-bulk` adds 1250 `[TEST]` questions, 30 test topics and 40 bench users; `--remove` deletes them.
+- The local DB currently **contains this bulk data**.
+
+**Checks**
+
+| Check | Result |
+|---|---|
+| `npm run typecheck` | ✅ |
+| `npm run lint` | ✅ 0 problems |
+| `npm test` | ✅ 18/18 (new: ticket planning, exam selection) |
+| `npm run test:db` | ✅ 16/16 (new `tests/pool.db.test.ts`: generation idempotent, edits don't reshuffle, new questions form a new ticket only; TICKET mode global; exam 20 unique, balanced, avoids previous exam) |
+| `npm run test:e2e` | ✅ 26/26 (new `tests/pool.e2e.ts`: no category field anywhere; ticket started from the list is unchanged after new questions are added; exam from /tests is unique, balanced and avoids the previous exam; topic search and pagination) |

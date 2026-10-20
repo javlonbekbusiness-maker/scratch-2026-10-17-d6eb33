@@ -11,7 +11,7 @@ const ERRORS: Record<string, string> = {
   answers: 'Fill in 3 to 5 answers.',
   'answer-langs': 'Every answer needs Uzbek and Russian text.',
   correct: 'Select the correct answer (it must be one of the filled rows).',
-  category: 'Choose a category.',
+  category: 'That category no longer exists. Pick another or leave it empty.',
   ticket: 'Ticket number must be a whole number from 1 to 999.',
   'image-url': 'Image URL must start with https:// or /.',
   'image-file': 'The image must be a PNG, JPEG or WebP file under 2 MB. Nothing was saved.',
@@ -54,8 +54,9 @@ export default async function EditQuestion({ params, searchParams }: { params: P
         <QuestionFormChecks />
         <input type="hidden" name="id" value={q?.id ?? ''} />
         <section className="card grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-6">
-          <Field label="Category">
-            <select name="categoryId" defaultValue={q?.categoryId} className={inputSm} required>
+          <Field label="Category (optional)">
+            <select name="categoryId" defaultValue={q?.categoryId ?? ''} className={inputSm}>
+              <option value="">— all</option>
               {cats.map((c) => <option key={c.id} value={c.id}>{c.code}</option>)}
             </select>
           </Field>

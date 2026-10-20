@@ -40,17 +40,7 @@ export async function startTestAction(formData: FormData) {
   if (r.ok) redirect(`/test/${r.sessionId}`);
   if (r.error === 'locked') redirect(`/tests?locked=1`);
   if (r.error === 'limit') redirect(`/tests?limit=1`);
-  if (r.error === 'category') redirect('/onboarding');
   redirect(`/tests?empty=1`);
-}
-
-export async function setCategory(formData: FormData) {
-  const user = await requireUser();
-  const categoryId = String(formData.get('categoryId'));
-  if (await db.category.findUnique({ where: { id: categoryId } })) {
-    await db.user.update({ where: { id: user.id }, data: { categoryId } });
-  }
-  revalidatePath('/tests');
 }
 
 export async function toggleBookmark(questionId: string) {
@@ -74,7 +64,6 @@ export async function saveNote(questionId: string, text: string) {
 const profileSchema = z.object({
   name: z.string().trim().min(1).max(60),
   email: z.union([z.literal(''), z.string().trim().email().max(120)]),
-  categoryId: z.string().min(1),
   password: z.string().max(100).optional(),
   remindSms: z.boolean(),
   remindEmail: z.boolean(),
@@ -87,7 +76,6 @@ export async function updateProfile(_: unknown, formData: FormData) {
   const parsed = profileSchema.safeParse({
     name: formData.get('name'),
     email: formData.get('email') ?? '',
-    categoryId: formData.get('categoryId'),
     password: formData.get('password') || undefined,
     remindSms: formData.get('remindSms') === 'on',
     remindEmail: formData.get('remindEmail') === 'on',
@@ -106,7 +94,6 @@ export async function updateProfile(_: unknown, formData: FormData) {
     data: {
       name: d.name,
       email: d.email || null,
-      categoryId: d.categoryId,
       remindSms: d.remindSms,
       remindEmail: d.remindEmail,
       remindPush: d.remindPush,

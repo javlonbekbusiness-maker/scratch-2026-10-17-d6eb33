@@ -146,8 +146,9 @@ model Topic {
 model Question {
   id            String   @id @default(cuid())
   externalId    String?  @unique
-  categoryId    String
-  category      Category @relation(fields: [categoryId], references: [id])
+  /// Optional: the app uses one shared pool for everyone. Kept so categories can be brought back later.
+  categoryId    String?
+  category      Category? @relation(fields: [categoryId], references: [id])
   topicId       String?
   topic         Topic?   @relation(fields: [topicId], references: [id])
   ticketNumber  Int?
@@ -172,7 +173,10 @@ model Question {
   reviews        ReviewItem[]
 
   @@index([categoryId, ticketNumber])
-  @@index([topicId])
+  /// Shared pool: tickets list / ticket start filter on active + ticket number.
+  @@index([isActive, ticketNumber])
+  /// Topic tests and per-topic counts.
+  @@index([topicId, isActive])
 }
 
 model Answer {
@@ -190,14 +194,14 @@ model Answer {
 }
 
 /// Ticket membership comes from Question.ticketNumber; this row holds metadata.
+/// A numbered ticket over the shared question pool (questions with Question.ticketNumber = number).
 model Ticket {
-  id         String   @id @default(cuid())
-  categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
-  number     Int
-  isFree     Boolean  @default(false)
-
-  @@unique([categoryId, number])
+  id         String    @id @default(cuid())
+  /// Optional legacy field; tickets are global now.
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+  number     Int       @unique
+  isFree     Boolean   @default(false)
 }
 
 /// kind = EXAM (exam simulation format) or TICKET (auto-generated practice tickets).
@@ -263,6 +267,7 @@ model TestSession {
   answers SessionAnswer[]
 
   @@index([userId, startedAt])
+  @@index([userId, finishedAt])
 }
 
 model SessionAnswer {
@@ -278,6 +283,8 @@ model SessionAnswer {
 
   @@unique([sessionId, questionId])
   @@index([questionId])
+  /// Leaderboard window and recently seen questions.
+  @@index([createdAt])
 }
 
 /// Leitner-style spaced repetition for mistakes.

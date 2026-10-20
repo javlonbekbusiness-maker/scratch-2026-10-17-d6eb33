@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
 import { getT } from '@/i18n/server';
-import { pick } from '@/i18n/config';
-import { db } from '@/lib/db';
 import { requireUser } from '@/lib/session';
 import { formatPhone } from '@/lib/phone';
 import { logout, logoutEverywhere } from '@/app/actions';
@@ -17,8 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function SettingsPage() {
   const user = await requireUser();
-  const { t, locale } = await getT();
-  const cats = await db.category.findMany({ where: { isActive: true }, orderBy: { sortOrder: 'asc' } });
+  const { t } = await getT();
 
   return (
     <div className="page max-w-3xl space-y-4">
@@ -33,8 +30,7 @@ export default async function SettingsPage() {
         <SectionHeader id="me-h" title={t('profile.personal')} />
         <p className="text-small text-muted">{formatPhone(user.phone)}</p>
         <ProfileForm
-          user={{ name: user.name ?? '', email: user.email ?? '', categoryId: user.categoryId ?? '', remindSms: user.remindSms, remindEmail: user.remindEmail, remindPush: user.remindPush, leaderboardOptIn: user.leaderboardOptIn }}
-          categories={cats.map((c) => ({ id: c.id, label: `${c.code} — ${pick(c, 'name', locale)}` }))}
+          user={{ name: user.name ?? '', email: user.email ?? '', remindSms: user.remindSms, remindEmail: user.remindEmail, remindPush: user.remindPush, leaderboardOptIn: user.leaderboardOptIn }}
         />
       </section>
 

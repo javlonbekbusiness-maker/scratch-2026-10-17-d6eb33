@@ -46,7 +46,7 @@ export async function GET(req: Request) {
   const streakers = await db.user.findMany({ where: { lastActiveAt: { gt: new Date(now - 48 * H), lt: new Date(now - 20 * H) } }, take: 500 });
   for (const u of streakers) {
     if (await recentlySent(u.id, 'STREAK', 20 * H)) continue;
-    const { streak } = await userStats(u.id, u.categoryId);
+    const { streak } = await userStats(u.id);
     if (streak < 2) continue;
     await notifyUser(u, 'STREAK', { name: u.name ?? '', streak });
     sent.streak++;

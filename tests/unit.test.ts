@@ -5,6 +5,8 @@ import { parseCsv, toCsv } from '../src/lib/csv';
 import { LOCALES, pick, toLocale } from '../src/i18n/config';
 import { THEMES, contrast } from '../src/styles/tokens';
 import { readFileSync } from 'node:fs';
+import { planTickets, TICKET_SIZE } from '../src/lib/tickets';
+import { pickExamQuestions } from '../src/lib/exam-select';
 
 test('design tokens: text colours meet WCAG AA (4.5:1) in both themes', () => {
   for (const [name, t] of Object.entries(THEMES)) {
@@ -173,4 +175,40 @@ test('i18n: every locale has exactly the same keys as uz', () => {
 test('i18n: interpolation', () => {
   const t = makeT({ 'a.b': 'Salom, {name}!' });
   assert.equal(t('a.b' as never, { name: 'Ali' }), 'Salom, Ali!');
+});
+
+test('tickets: deterministic whole tickets of 10, numbered after the last, leftovers wait', () => {
+  const ids = Array.from({ length: 37 }, (_, i) => `q${i}`);
+  const a = planTickets(ids, 5);
+  const b = planTickets([...ids].reverse(), 5);
+  assert.deepEqual(a, b, 'input order does not matter');
+  assert.equal(a.tickets.length, 3);
+  assert.deepEqual(a.tickets.map((t) => t.number), [5, 6, 7]);
+  assert.ok(a.tickets.every((t) => t.questionIds.length === TICKET_SIZE));
+  assert.equal(a.leftover, 7);
+  assert.equal(new Set(a.tickets.flatMap((t) => t.questionIds)).size, 30, 'no question in two tickets');
+  assert.deepEqual(planTickets(ids.slice(0, 9), 1).tickets, [], 'fewer than 10 → no ticket yet');
+});
+
+test('exam selection: 20 unique, balanced across topics, avoids recently seen when possible', () => {
+  let s = 7;
+  const rand = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  const pool = Array.from({ length: 1200 }, (_, i) => ({ id: `q${i}`, topicId: `t${i % 8}` }));
+  const recent = new Set(pool.slice(0, 600).map((q) => q.id));
+  for (let run = 0; run < 50; run++) {
+    const ids = pickExamQuestions(pool, recent, 20, rand);
+    assert.equal(ids.length, 20);
+    assert.equal(new Set(ids).size, 20, 'no repeats');
+    assert.ok(ids.every((id) => !recent.has(id)), 'none of the recently seen');
+    const perTopic = new Map<string, number>();
+    for (const id of ids) perTopic.set(pool.find((q) => q.id === id)!.topicId, (perTopic.get(pool.find((q) => q.id === id)!.topicId) ?? 0) + 1);
+    assert.equal(perTopic.size, 8, 'every topic represented');
+    assert.ok(Math.max(...perTopic.values()) - Math.min(...perTopic.values()) <= 1, 'balanced (20 over 8 topics → 2 or 3 each)');
+  }
+  // Small pool: falls back to recently seen questions instead of returning fewer than 20.
+  const small = pool.slice(0, 25);
+  const ids = pickExamQuestions(small, new Set(small.slice(0, 20).map((q) => q.id)), 20, rand);
+  assert.equal(new Set(ids).size, 20);
+  assert.ok(small.slice(20).every((q) => ids.includes(q.id)), 'all 5 unseen questions used first');
+  assert.equal(pickExamQuestions(small.slice(0, 10), new Set(), 20, rand).length, 10, 'never invents or repeats questions');
 });

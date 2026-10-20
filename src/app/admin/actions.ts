@@ -20,7 +20,7 @@ import { sniffImage } from '@/lib/image-sniff';
 import { rateLimit } from '@/lib/rate-limit';
 import { isLocale } from '@/i18n/config';
 import { MESSAGES, flatten } from '@/i18n/translate';
-import { shuffle } from '@/lib/tests';
+import { assignNewTickets, ensureTicket } from '@/lib/tickets';
 import {
   commitPromos, commitQuestions, commitUsers, validatePromos, validateQuestions, validateUsers,
   type ImportKind, type RowError,
@@ -67,7 +67,9 @@ export async function saveQuestion(fd: FormData) {
   if (answers.length < 3 || answers.length > 5) back('answers');
   if (answers.some((a) => !a.uz || !a.ru)) back('answer-langs');
   if (!answers.some((a) => a.i === correct)) back('correct');
-  if (!(await db.category.findUnique({ where: { id: s(fd, 'categoryId') } }))) back('category');
+  // Category is optional (one shared pool); when given it must exist.
+  const categoryId = s(fd, 'categoryId') || null;
+  if (categoryId && !(await db.category.findUnique({ where: { id: categoryId } }))) back('category');
   const ticket = n(fd, 'ticketNumber');
   if (ticket !== null && (!Number.isInteger(ticket) || ticket < 1 || ticket > 999)) back('ticket');
   const imageUrlField = s(fd, 'imageUrl');
@@ -80,7 +82,7 @@ export async function saveQuestion(fd: FormData) {
   }
 
   const data = {
-    categoryId: s(fd, 'categoryId'),
+    categoryId,
     topicId: s(fd, 'topicId') || null,
     ticketNumber: n(fd, 'ticketNumber'),
     sortOrder: n(fd, 'sortOrder') ?? 0,
@@ -103,14 +105,11 @@ export async function saveQuestion(fd: FormData) {
     } else {
       await tx.question.create({ data: { ...data, answers: { create: answerRows } } });
     }
-    if (data.ticketNumber) {
-      await tx.ticket.upsert({
-        where: { categoryId_number: { categoryId: data.categoryId, number: data.ticketNumber } },
-        create: { categoryId: data.categoryId, number: data.ticketNumber },
-        update: {},
-      });
-    }
+    if (data.ticketNumber) await ensureTicket(data.ticketNumber, tx);
   });
+  // A new question without a ticket waits in the pool until there are enough for a new whole ticket;
+  // existing tickets are never re-dealt.
+  if (!id && !data.ticketNumber) await assignNewTickets();
   revalidatePath('/admin/questions');
   redirect('/admin/questions?saved=1');
 }
@@ -151,12 +150,13 @@ export async function importCommit(fd: FormData) {
   const { kind, rows } = JSON.parse(raw);
   await kv.del(`import:${s(fd, 'token')}`);
   const r = kind === 'promo' ? await commitPromos(rows) : kind === 'users' ? await commitUsers(rows) : await commitQuestions(rows);
+  if (kind === 'questions') await assignNewTickets();
   redirect(`/admin/import?done=${kind}&created=${r.created}&updated=${r.updated}`);
 }
 
 // ─── Tickets ─────────────────────────────────────────────────────────────────
 
-const ticketsBack = (categoryId: string, msg: string) => redirect(`/admin/tickets?category=${encodeURIComponent(categoryId)}&msg=${msg}`);
+const ticketsBack = (msg: string, page?: string) => redirect(`/admin/tickets?msg=${msg}${page ? `&page=${encodeURIComponent(page)}` : ''}`);
 
 export async function toggleTicketFree(fd: FormData) {
   await requireAdmin();
@@ -164,7 +164,7 @@ export async function toggleTicketFree(fd: FormData) {
   if (!t) redirect('/admin/tickets');
   await db.ticket.update({ where: { id: t.id }, data: { isFree: !t.isFree } });
   revalidatePath('/', 'layout');
-  ticketsBack(t.categoryId, t.isFree ? `locked-${t.number}` : `free-${t.number}`);
+  ticketsBack(t.isFree ? `locked-${t.number}` : `free-${t.number}`, s(fd, 'page'));
 }
 
 /** Removes a ticket row that no longer has any questions. */
@@ -172,52 +172,22 @@ export async function deleteEmptyTicket(fd: FormData) {
   await requireAdmin();
   const t = await db.ticket.findUnique({ where: { id: s(fd, 'id') } });
   if (!t) redirect('/admin/tickets');
-  const count = await db.question.count({ where: { categoryId: t.categoryId, ticketNumber: t.number } });
-  if (count) ticketsBack(t.categoryId, 'not-empty');
+  const count = await db.question.count({ where: { ticketNumber: t.number } });
+  if (count) ticketsBack('not-empty', s(fd, 'page'));
   await db.ticket.delete({ where: { id: t.id } });
   revalidatePath('/admin/tickets');
-  ticketsBack(t.categoryId, `deleted-${t.number}`);
+  ticketsBack(`deleted-${t.number}`, s(fd, 'page'));
 }
 
 /**
- * Re-deals the active questions of a category into numbered tickets using a TICKET template's size and topic mix.
- * Questions that don't fill a whole last ticket stay unassigned (still used by topic, marathon and exam modes).
+ * Deals active questions that have no ticket yet into new whole tickets numbered after the last one.
+ * Existing tickets are never touched, so users' completed tickets stay the same.
  */
-export async function generateTickets(fd: FormData) {
+export async function assignTicketsAction() {
   await requireAdmin();
-  const tpl = await db.examTemplate.findUnique({ where: { id: s(fd, 'templateId') } });
-  if (!tpl || tpl.kind !== 'TICKET') redirect('/admin/tickets?msg=no-template');
-  const categoryId = tpl.categoryId;
-  const all = shuffle(await db.question.findMany({ where: { categoryId, isActive: true }, select: { id: true, topic: { select: { slug: true } } } }));
-  const size = tpl.questionCount;
-  // Never wipe existing tickets when there aren't enough questions for even one.
-  if (all.length < size) ticketsBack(categoryId, `too-few-${all.length}-${size}`);
-
-  const mix = (tpl.topicMix ?? {}) as Record<string, number>;
-  const pool = [...all];
-  const tickets: string[][] = [];
-  while (pool.length >= size) {
-    const pick: string[] = [];
-    for (const [slug, count] of Object.entries(mix)) {
-      for (let k = 0; k < count && pick.length < size; k++) {
-        const idx = pool.findIndex((q) => q.topic?.slug === slug);
-        if (idx >= 0) pick.push(pool.splice(idx, 1)[0].id);
-      }
-    }
-    while (pick.length < size && pool.length) pick.push(pool.shift()!.id);
-    tickets.push(pick);
-  }
-  const freeBefore = new Set((await db.ticket.findMany({ where: { categoryId, isFree: true } })).map((t) => t.number));
-  await db.$transaction([
-    db.question.updateMany({ where: { categoryId }, data: { ticketNumber: null } }),
-    db.ticket.deleteMany({ where: { categoryId } }),
-    ...tickets.flatMap((ids, i) => [
-      db.ticket.create({ data: { categoryId, number: i + 1, isFree: freeBefore.size ? freeBefore.has(i + 1) : i < 2 } }),
-      ...ids.map((id, j) => db.question.update({ where: { id }, data: { ticketNumber: i + 1, sortOrder: j } })),
-    ]),
-  ]);
+  const r = await assignNewTickets();
   revalidatePath('/', 'layout');
-  ticketsBack(categoryId, `generated-${tickets.length}-${pool.length}`);
+  ticketsBack(`assigned-${r.created}-${r.leftover}`);
 }
 
 // ─── Categories & topics ─────────────────────────────────────────────────────

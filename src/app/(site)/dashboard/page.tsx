@@ -27,7 +27,7 @@ export default async function Dashboard() {
   const user = await requireUser();
   const { t } = await getT();
   const [stats, access, due, offer, resume, today, counts, daily, tricky] = await Promise.all([
-    userStats(user.id, user.categoryId),
+    userStats(user.id),
     getAccess(user.id),
     dueCount(user.id),
     getActiveOffer(user),
@@ -35,7 +35,7 @@ export default async function Dashboard() {
     answersToday(user.id),
     homeCounts(user),
     getDailyStatus(db, user.id),
-    user.categoryId ? getTrickyQuestions(user.categoryId) : Promise.resolve({ ids: [] as string[], flagged: 0, missRate: new Map<string, number>() }),
+    getTrickyQuestions(),
   ]);
   const modeLabel = (m: string, n: number | null) => (m === 'TICKET' ? t('modes.ticketN', { n: n ?? '' }) : t(`modes.${m.toLowerCase()}` as 'modes.exam'));
   const heroBtn = 'btn w-full bg-white text-brand-700 shadow-lg shadow-black/10 hover:bg-white/90';

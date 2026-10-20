@@ -13,6 +13,7 @@ import { getAccess } from './access';
 import { userStats } from './stats';
 import { pickAdaptive } from './adaptive';
 import { getTrickyQuestions } from './tricky';
+import { pickExamQuestions } from './exam-select';
 
 export function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -23,10 +24,11 @@ export function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export async function defaultExamTemplate(categoryId: string) {
+/** Exam format (time limit, pass mark). Questions come from the shared pool, so the first default EXAM template applies. */
+export async function defaultExamTemplate() {
   return (
-    (await db.examTemplate.findFirst({ where: { categoryId, kind: 'EXAM', isDefault: true } })) ??
-    (await db.examTemplate.findFirst({ where: { categoryId, kind: 'EXAM' } })) ?? {
+    (await db.examTemplate.findFirst({ where: { kind: 'EXAM', isDefault: true }, orderBy: { createdAt: 'asc' } })) ??
+    (await db.examTemplate.findFirst({ where: { kind: 'EXAM' }, orderBy: { createdAt: 'asc' } })) ?? {
       questionCount: 20,
       timeLimitSec: 1500,
       passPercent: 90,
@@ -36,15 +38,29 @@ export async function defaultExamTemplate(categoryId: string) {
 }
 
 type StartOpts = { mode: TestMode; ticket?: number; topic?: string };
-export type StartResult = { ok: true; sessionId: string } | { ok: false; error: 'locked' | 'empty' | 'category' | 'limit' };
+export type StartResult = { ok: true; sessionId: string } | { ok: false; error: 'locked' | 'empty' | 'limit' };
 
 const PRACTICE_SIZE = 20;
+/** A marathon is played in rounds of this many questions, unseen/unmastered ones first. */
+export const MARATHON_SIZE = 100;
+/** Questions answered within this window count as "just seen" for exam selection. */
+const RECENT_DAYS = 3;
+
+/** Question ids the user answered recently (for avoiding repeats in exams). */
+export async function recentQuestionIds(userId: string) {
+  const rows = await db.sessionAnswer.findMany({
+    where: { session: { userId }, createdAt: { gte: new Date(Date.now() - RECENT_DAYS * 86400_000) } },
+    select: { questionId: true },
+    orderBy: { createdAt: 'desc' },
+    take: 600,
+  });
+  return new Set(rows.map((r) => r.questionId));
+}
 
 export async function startTest(user: User, opts: StartOpts): Promise<StartResult> {
-  const categoryId = user.categoryId;
-  if (!categoryId) return { ok: false, error: 'category' };
   const { active } = await getAccess(user.id);
-  const base = { categoryId, isActive: true };
+  // One shared pool for everyone; a saved user category (legacy) is ignored.
+  const base = { isActive: true };
 
   let questionIds: string[] = [];
   let timeLimitSec: number | undefined;
@@ -53,33 +69,28 @@ export async function startTest(user: User, opts: StartOpts): Promise<StartResul
 
   switch (opts.mode) {
     case 'TICKET': {
-      const ticket = await db.ticket.findUnique({ where: { categoryId_number: { categoryId, number: opts.ticket ?? 1 } } });
+      const ticket = await db.ticket.findUnique({ where: { number: opts.ticket ?? 1 } });
       if (!ticket) return { ok: false, error: 'empty' };
       if (!ticket.isFree && !active) return { ok: false, error: 'locked' };
       const qs = await db.question.findMany({ where: { ...base, ticketNumber: ticket.number }, orderBy: { sortOrder: 'asc' }, select: { id: true } });
       questionIds = qs.map((q) => q.id);
-      passPercent = (await defaultExamTemplate(categoryId)).passPercent;
+      passPercent = (await defaultExamTemplate()).passPercent;
       break;
     }
     case 'EXAM': {
       if (!active) return { ok: false, error: 'locked' };
       // Friendly early stop; the binding check happens again when the test is finished.
       if ((await countFullTestsToday(db, user.id)) >= DAILY_FULL_TEST_LIMIT) return { ok: false, error: 'limit' };
-      const tpl = await defaultExamTemplate(categoryId);
+      const [tpl, pool, recent] = await Promise.all([
+        defaultExamTemplate(),
+        db.question.findMany({ where: base, select: { id: true, topicId: true } }),
+        recentQuestionIds(user.id),
+      ]);
       timeLimitSec = tpl.timeLimitSec;
       passPercent = tpl.passPercent;
-      const mix = (tpl.topicMix ?? {}) as Record<string, number>;
-      const picked: string[] = [];
-      for (const [slug, count] of Object.entries(mix)) {
-        const qs = await db.question.findMany({ where: { ...base, topic: { slug } }, select: { id: true } });
-        picked.push(...shuffle(qs.map((q) => q.id)).slice(0, count));
-      }
-      // A full test is always exactly FULL_TEST_QUESTIONS questions, whatever the template says.
-      if (picked.length < FULL_TEST_QUESTIONS) {
-        const rest = await db.question.findMany({ where: { ...base, id: { notIn: picked } }, select: { id: true } });
-        picked.push(...shuffle(rest.map((q) => q.id)).slice(0, FULL_TEST_QUESTIONS - picked.length));
-      }
-      questionIds = shuffle(picked).slice(0, FULL_TEST_QUESTIONS);
+      // A full test is always exactly FULL_TEST_QUESTIONS questions: balanced over topics, no repeats,
+      // and questions seen in the last few days only when the pool runs short.
+      questionIds = pickExamQuestions(pool, recent, FULL_TEST_QUESTIONS);
       if (questionIds.length !== FULL_TEST_QUESTIONS) return { ok: false, error: 'empty' };
       break;
     }
@@ -94,8 +105,15 @@ export async function startTest(user: User, opts: StartOpts): Promise<StartResul
     }
     case 'MARATHON': {
       if (!active) return { ok: false, error: 'locked' };
-      const qs = await db.question.findMany({ where: base, select: { id: true } });
-      questionIds = shuffle(qs.map((q) => q.id));
+      // Rounds of MARATHON_SIZE so a 1000+ question pool doesn't load at once; questions the user
+      // hasn't answered correctly yet come first, so successive rounds work through the pool.
+      const [qs, mastered] = await Promise.all([
+        db.question.findMany({ where: base, select: { id: true } }),
+        db.sessionAnswer.findMany({ where: { session: { userId: user.id }, isCorrect: true }, select: { questionId: true }, distinct: ['questionId'] }),
+      ]);
+      const done = new Set(mastered.map((m) => m.questionId));
+      const ids = shuffle(qs.map((q) => q.id));
+      questionIds = [...ids.filter((id) => !done.has(id)), ...ids.filter((id) => done.has(id))].slice(0, MARATHON_SIZE);
       break;
     }
     case 'MISTAKES': {
@@ -113,7 +131,7 @@ export async function startTest(user: User, opts: StartOpts): Promise<StartResul
     case 'ADAPTIVE': {
       if (!active) return { ok: false, error: 'locked' };
       const [stats, all] = await Promise.all([
-        userStats(user.id, categoryId),
+        userStats(user.id),
         db.question.findMany({ where: base, select: { id: true, topicId: true } }),
       ]);
       questionIds = pickAdaptive(all, stats.topics, PRACTICE_SIZE);
@@ -121,7 +139,7 @@ export async function startTest(user: User, opts: StartOpts): Promise<StartResul
     }
     case 'TRICKY': {
       if (!active) return { ok: false, error: 'locked' };
-      questionIds = shuffle((await getTrickyQuestions(categoryId)).ids).slice(0, PRACTICE_SIZE);
+      questionIds = shuffle((await getTrickyQuestions()).ids).slice(0, PRACTICE_SIZE);
       break;
     }
   }
@@ -132,7 +150,6 @@ export async function startTest(user: User, opts: StartOpts): Promise<StartResul
     data: {
       userId: user.id,
       mode: opts.mode,
-      categoryId,
       topicId,
       ticketNumber: opts.mode === 'TICKET' ? opts.ticket : undefined,
       questionIds,

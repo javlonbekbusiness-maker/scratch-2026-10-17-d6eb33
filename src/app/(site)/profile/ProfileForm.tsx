@@ -7,10 +7,10 @@ import { updateProfile } from '@/app/actions';
 import { Field, Switch } from '@/components/ui/Primitives';
 import { Icon } from '@/components/ui/Icon';
 
-type U = { name: string; email: string; categoryId: string; remindSms: boolean; remindEmail: boolean; remindPush: boolean; leaderboardOptIn: boolean };
+type U = { name: string; email: string; remindSms: boolean; remindEmail: boolean; remindPush: boolean; leaderboardOptIn: boolean };
 
-/** Personal details, category, optional password and reminders. Same action and validation as before. */
-export function ProfileForm({ user, categories }: { user: U; categories: { id: string; label: string }[] }) {
+/** Personal details, optional password and reminders. */
+export function ProfileForm({ user }: { user: U }) {
   const { t } = useT();
   const [state, action, pending] = useActionState(updateProfile, null);
   const toggles = [
@@ -29,11 +29,6 @@ export function ProfileForm({ user, categories }: { user: U; categories: { id: s
           <input id="p-email" name="email" type="email" defaultValue={user.email} autoComplete="email" className="input" />
         </Field>
       </div>
-      <Field label={t('auth.category')} htmlFor="p-cat">
-        <select id="p-cat" name="categoryId" defaultValue={user.categoryId} className="input">
-          {categories.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
-        </select>
-      </Field>
       <Field label={t('profile.setPassword')} htmlFor="p-pass" hint={t('auth.passwordShort')}>
         <input id="p-pass" name="password" type="password" minLength={8} autoComplete="new-password" className="input" />
       </Field>
