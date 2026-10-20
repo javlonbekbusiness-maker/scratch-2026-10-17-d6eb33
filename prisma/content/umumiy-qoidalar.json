@@ -177,5 +177,166 @@
     ],
     "correct": 2,
     "explanation": { "uz": "Imtiyoz — mo'ljallangan yo'nalishda boshqalarga nisbatan oldin harakatlanish huquqi. Birinchi javob «yo'l berish» talabining ta'rifi.", "ru": "Приоритет — право на первоочередное движение в намеченном направлении. Первый ответ — определение требования «уступить дорогу»." }
+  },
+  {
+    "externalId": "UQ-021", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Mexanik transport vositasi — bu ...", "ru": "Механическое транспортное средство — это ..." },
+    "answers": [
+      { "uz": "Dvigatel bilan harakatga keltiriladigan transport vositasi. Bu atama barcha traktor va o'ziyurar moslamalarga ham taalluqlidir", "ru": "Транспортное средство, приводимое в движение двигателем. Этот термин также относится ко всем тракторам и самоходным машинам" },
+      { "uz": "Odamlarni, yuklarni tashishga yoki maxsus ishlarni bajarishga mo'ljallangan qurilma", "ru": "Устройство, предназначенное для перевозки людей, грузов или выполнения специальных работ" },
+      { "uz": "Mexanik transport vositasi tarkibida harakatlanishga mo'ljallangan, dvigatel bilan jihozlanmagan transport vositasi. Bu atama yarim tirkama va uzaytiriladigan tirkamalarga ham taalluqlidir", "ru": "Транспортное средство без двигателя, предназначенное для движения в составе механического транспортного средства. Термин относится также к полуприцепам и раздвижным прицепам" }
+    ],
+    "correct": 1,
+    "explanation": { "uz": "Mexanik transport vositasi dvigatel bilan harakatlanadi, traktor va o'ziyurar mashinalar ham shunga kiradi. Ikkinchi javob — umuman «transport vositasi», uchinchisi — «tirkama» ta'rifi.", "ru": "Механическое ТС приводится в движение двигателем, включая тракторы и самоходные машины. Второй ответ — определение «транспортного средства», третий — «прицепа»." }
+  },
+  {
+    "externalId": "UQ-022", "topic": "ch-01", "ruleRef": "1-ilova",
+    "text": { "uz": "Yo'l harakati qoidalariga ko'ra yo'l belgilari necha guruhga bo'linadi?", "ru": "На сколько групп делятся дорожные знаки по Правилам дорожного движения?" },
+    "answers": [ { "uz": "5 ta", "ru": "5" }, { "uz": "6 ta", "ru": "6" }, { "uz": "7 ta", "ru": "7" } ],
+    "correct": 3,
+    "explanation": { "uz": "Qoidalarning 1-ilovasida 7 guruh bor: ogohlantiruvchi, imtiyoz, taqiqlovchi, buyuruvchi, axborot-ko'rsatgich, servis va qo'shimcha axborot belgilari.", "ru": "В приложении 1 к Правилам 7 групп: предупреждающие, приоритета, запрещающие, предписывающие, информационно-указательные, сервиса и дополнительной информации." }
+  },
+  {
+    "externalId": "UQ-023", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Yondosh hudud — bu ...", "ru": "Прилегающая территория — это ..." },
+    "answers": [
+      { "uz": "Bevosita yo'lga tutashgan va transport vositalari o'tib ketishi uchun mo'ljallanmagan hudud (hovlilar, turar joy dahalari, avtomobil to'xtab turish joylari, yonilg'i quyish shoxobchalari, korxona va shunga o'xshashlar)", "ru": "Территория, непосредственно прилегающая к дороге и не предназначенная для сквозного движения (дворы, жилые массивы, парковки, АЗС, предприятия и т. п.)" },
+      { "uz": "Yo'lning relssiz transport vositalari harakati uchun mo'ljallangan qismi", "ru": "Часть дороги, предназначенная для движения безрельсовых транспортных средств" },
+      { "uz": "Yo'llarning o'zaro bir sathda kesishadigan, tutashadigan va ayriladigan joyi", "ru": "Место пересечения, примыкания и разветвления дорог на одном уровне" }
+    ],
+    "correct": 1,
+    "explanation": { "uz": "Yondosh hudud — yo'lga tutashgan, lekin transport o'tib ketishi uchun mo'ljallanmagan joy. Undan chiqayotgan haydovchi hammaga yo'l berishi shart.", "ru": "Прилегающая территория примыкает к дороге, но не предназначена для сквозного проезда. Выезжающий с неё водитель обязан уступить дорогу всем." }
+  },
+  {
+    "externalId": "UQ-025", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Ajratuvchi mintaqa — bu ...", "ru": "Разделительная полоса — это ..." },
+    "answers": [
+      { "uz": "Yo'lning yonma-yon joylashgan qatnov qismlarini ajratuvchi, transport vositalari harakatlanishi yoki to'xtashi uchun mo'ljallanmagan, yo'l sathidan ko'tarilgan yoki maysazor, ariq, maxsus to'siqlar bilan ajratilgan baland qismi", "ru": "Приподнятый участок дороги, разделяющий смежные проезжие части и не предназначенный для движения или остановки транспортных средств, выше уровня дороги или отделённый газонами, арыками, ограждениями" },
+      { "uz": "Yo'lning relssiz transport vositalari harakati uchun mo'ljallangan qismi", "ru": "Часть дороги, предназначенная для движения безрельсовых транспортных средств" },
+      { "uz": "Avtomobillarning bir qator bo'lib harakatlanishi uchun yetarlicha keng bo'lgan, yo'l chiziqlari bilan belgilangan yoki belgilanmagan yo'l qatnov qismining har qanday bo'ylama mintaqasi", "ru": "Любая продольная полоса проезжей части шириной для движения автомобилей в один ряд, обозначенная или не обозначенная разметкой" }
+    ],
+    "correct": 1,
+    "explanation": { "uz": "Ajratuvchi mintaqa qatnov qismlarini bir-biridan ajratadi va unda harakatlanish ham, to'xtash ham mumkin emas. Ikkinchi javob — qatnov qismi, uchinchisi — harakatlanish tasmasi.", "ru": "Разделительная полоса разделяет проезжие части; двигаться и останавливаться на ней нельзя. Второй ответ — проезжая часть, третий — полоса движения." }
+  },
+  {
+    "externalId": "UQ-026", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "«Aholi punkti» atamasi nimani bildiradi?", "ru": "Что означает термин «населённый пункт»?" },
+    "answers": [
+      { "uz": "Kirish va chiqish yo'llari 5.22–5.25 belgilari bilan belgilangan hududni", "ru": "Территорию, въезды и выезды которой обозначены знаками 5.22–5.25" },
+      { "uz": "Shahar, qishloq joylari hududini", "ru": "Территорию городов и сёл" },
+      { "uz": "Aholi yashaydigan hududni", "ru": "Территорию, где живут люди" }
+    ],
+    "correct": 1,
+    "explanation": { "uz": "Qoidalar uchun aholi punktini belgilar aniqlaydi: kirish va chiqishda 5.22–5.25 belgilari o'rnatilgan hudud. Aholi punkti tezlik cheklovlari shu belgilarga bog'liq.", "ru": "Для Правил населённый пункт определяют знаки 5.22–5.25 на въезде и выезде. От них зависят ограничения скорости в населённом пункте." }
+  },
+  {
+    "externalId": "UQ-027", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Yo'l harakati xavfsizligi — bu ...", "ru": "Безопасность дорожного движения — это ..." },
+    "answers": [
+      { "uz": "Yo'l harakati qatnashchilarining yo'l-transport hodisalari va ularning oqibatlaridan himoyalanganlik darajasini aks ettiruvchi yo'l harakati holati", "ru": "Состояние дорожного движения, отражающее уровень защищённости его участников от дорожно-транспортных происшествий и их последствий" },
+      { "uz": "Yo'l-transport hodisalarining kelib chiqish sabablarini oldini olishga, ularning og'ir oqibatlarini kamaytirishga qaratilgan faoliyat", "ru": "Деятельность, направленная на предупреждение причин ДТП и снижение тяжести их последствий" }
+    ],
+    "correct": 1,
+    "explanation": { "uz": "Xavfsizlik — bu holat (himoyalanganlik darajasi). Ikkinchi javob esa «yo'l harakati xavfsizligini ta'minlash» faoliyatining ta'rifi.", "ru": "Безопасность — это состояние (уровень защищённости). Второй ответ — определение деятельности по «обеспечению безопасности дорожного движения»." }
+  },
+  {
+    "externalId": "UQ-032", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Yo'lning qatnov qismi — bu ...", "ru": "Проезжая часть дороги — это ..." },
+    "answers": [
+      { "uz": "Yo'lning relssiz transport vositalari harakati uchun mo'ljallangan qismi", "ru": "Часть дороги, предназначенная для движения безрельсовых транспортных средств" },
+      { "uz": "Yo'lning avtomobillar harakati uchun mo'ljallangan qismi", "ru": "Часть дороги, предназначенная для движения автомобилей" },
+      { "uz": "Yo'lning transport vositalari harakati uchun mo'ljallangan qismi", "ru": "Часть дороги, предназначенная для движения транспортных средств" }
+    ],
+    "correct": 1,
+    "explanation": { "uz": "Ta'rifdagi asosiy so'z — «relssiz»: qatnov qismi relssiz transport (avtomobil, mototsikl, avtobus va boshqalar) uchun. Tramvay yo'li qatnov qismiga kirmaydi.", "ru": "Ключевое слово — «безрельсовых»: проезжая часть предназначена для безрельсового транспорта. Трамвайные пути в неё не входят." }
+  },
+  {
+    "externalId": "UQ-033", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Harakatlanish tasmasi — bu ...", "ru": "Полоса движения — это ..." },
+    "answers": [
+      { "uz": "Avtomobillarning bir qator bo'lib harakatlanishi uchun yetarlicha keng bo'lgan, yo'l chiziqlari bilan belgilangan yoki belgilanmagan yo'l qatnov qismining har qanday bo'ylama tasmasi", "ru": "Любая продольная полоса проезжей части шириной для движения автомобилей в один ряд, обозначенная или не обозначенная разметкой" },
+      { "uz": "Yo'lning yonma-yon joylashgan qatnov qismlarini ajratuvchi, transport vositalari harakatlanishi yoki to'xtashi uchun mo'ljallanmagan, yo'l sathidan baland va (yoki) 1.1 yotiq chizig'i bilan belgilangan qismi", "ru": "Часть дороги, разделяющая смежные проезжие части, не предназначенная для движения или остановки, выше уровня дороги и (или) обозначенная разметкой 1.1" },
+      { "uz": "Yo'lning relssiz transport vositalari harakati uchun mo'ljallangan qismi", "ru": "Часть дороги, предназначенная для движения безрельсовых транспортных средств" }
+    ],
+    "correct": 1,
+    "explanation": { "uz": "Harakatlanish tasmasi chiziqlar bilan belgilangan bo'lishi shart emas — muhimi, bir qator bo'lib harakatlanishga yetarli kenglik.", "ru": "Полоса движения не обязательно обозначена разметкой — важно, чтобы её ширины хватало для движения в один ряд." }
+  },
+  {
+    "externalId": "UQ-034", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Transport vositasining ruxsat etilgan to'liq vazni — bu ...", "ru": "Разрешённая максимальная масса транспортного средства — это ..." },
+    "answers": [
+      { "uz": "Jihozlangan transport vositasining ishlab chiqargan korxona tomonidan belgilangan, yuk, haydovchi va yo'lovchilari bilan birgalikdagi eng yuqori vazni (o'lchovi)", "ru": "Установленная заводом-изготовителем наибольшая масса снаряжённого транспортного средства с грузом, водителем и пассажирами" },
+      { "uz": "Transport vositasining yuki, haydovchi va yo'lovchilari bilan birgalikdagi vazni", "ru": "Масса транспортного средства вместе с грузом, водителем и пассажирами" },
+      { "uz": "Jihozlangan transport vositasining ishlab chiqargan korxona tomonidan belgilangan, yuksiz, haydovchisiz va yo'lovchilarsiz eng yuqori vazni (o'lchovi)", "ru": "Установленная заводом-изготовителем наибольшая масса снаряжённого транспортного средства без груза, водителя и пассажиров" }
+    ],
+    "correct": 1,
+    "explanation": { "uz": "Bu haqiqiy vazn emas, balki ishlab chiqaruvchi belgilagan eng yuqori ruxsat: yuk, haydovchi va yo'lovchilar bilan birga.", "ru": "Это не фактическая масса, а установленный изготовителем максимум — вместе с грузом, водителем и пассажирами." }
+  },
+  {
+    "externalId": "UQ-035", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Qaysi transport vositalari yo'nalishli transport vositalari hisoblanadi?", "ru": "Какие транспортные средства считаются маршрутными?" },
+    "answers": [
+      { "uz": "Belgilangan yo'nalishi va bekatlari bo'lgan, yo'lovchi tashish uchun mo'ljallangan umumiy foydalanishdagi transport vositalari (trolleybus, tramvay, avtobus, yo'nalishli taksi)", "ru": "Транспортные средства общего пользования для перевозки пассажиров с установленным маршрутом и остановками (троллейбус, трамвай, автобус, маршрутное такси)" },
+      { "uz": "Yo'lovchilarni tashuvchi istalgan transport vositalari", "ru": "Любые транспортные средства, перевозящие пассажиров" },
+      { "uz": "Avtobuslar", "ru": "Автобусы" }
+    ],
+    "correct": 1,
+    "explanation": { "uz": "Yo'nalishli transportning belgisi — belgilangan yo'nalish va bekatlar. Oddiy taksi yoki yo'lovchi tashiyotgan har qanday mashina bunga kirmaydi.", "ru": "Признак маршрутного транспорта — установленный маршрут и остановки. Обычное такси или любая машина с пассажирами к нему не относится." }
+  },
+  {
+    "externalId": "UQ-036", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Asosiy yo'l — bu ...", "ru": "Главная дорога — это ..." },
+    "answers": [
+      { "uz": "Ikki tasmali yo'lga nisbatan uch yoki undan ko'p tasmali yo'l", "ru": "Дорога с тремя и более полосами по отношению к двухполосной" },
+      { "uz": "Tuproqli yoki shag'alli yo'lga nisbatan qattiq qoplamali (asfalt, sement-betonli va shunga o'xshashlar yotqizilgan) yo'l", "ru": "Дорога с твёрдым покрытием (асфальт, цементобетон и аналогичные) по отношению к грунтовой или гравийной" },
+      { "uz": "Toshli yo'lga nisbatan asfalt qoplamali yo'l", "ru": "Асфальтированная дорога по отношению к каменистой" },
+      { "uz": "Barcha javoblar to'g'ri", "ru": "Все ответы верны" }
+    ],
+    "correct": 2,
+    "explanation": { "uz": "Tasmalar soni yo'lni asosiy qilmaydi. Asosiy yo'l — tuproqli yoki shag'alli yo'lga nisbatan qattiq qoplamali yo'l, tegishli belgilar bilan belgilangan yo'l yoki yondosh hududdan chiqadigan yo'lga nisbatan har qanday yo'l.", "ru": "Число полос не делает дорогу главной. Главная — дорога с твёрдым покрытием по отношению к грунтовой или гравийной, обозначенная знаками или любая дорога по отношению к выезду с прилегающей территории." }
+  },
+  {
+    "externalId": "UQ-037", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Quyidagi javoblardan qaysi birida «Yo'lovchi» atamasining to'g'ri ta'rifi ko'rsatilgan?", "ru": "В каком ответе дано правильное определение термина «пассажир»?" },
+    "answers": [
+      { "uz": "Transport vositasidagi barcha shaxslar", "ru": "Все лица, находящиеся в транспортном средстве" },
+      { "uz": "Transport vositasidagi (haydovchidan tashqari) shaxs, shuningdek transport vositasiga kirayotgan (unga chiqib o'tirayotgan) yoki transport vositasidan chiqayotgan (undan tushayotgan) shaxs", "ru": "Лицо в транспортном средстве (кроме водителя), а также лицо, садящееся в транспортное средство или выходящее из него" },
+      { "uz": "Har ikkala ta'rif to'g'ri", "ru": "Оба определения верны" }
+    ],
+    "correct": 2,
+    "explanation": { "uz": "Haydovchi yo'lovchi hisoblanmaydi, shuning uchun «barcha shaxslar» noto'g'ri. Mashinaga chiqayotgan va undan tushayotgan shaxs ham yo'lovchi.", "ru": "Водитель пассажиром не является, поэтому «все лица» — неверно. Садящийся в машину и выходящий из неё тоже считается пассажиром." }
+  },
+  {
+    "externalId": "UQ-038", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "O'zib ketish deb nimaga aytiladi?", "ru": "Что называется опережением?" },
+    "answers": [
+      { "uz": "Transport vositasining bir yo'nalishda transport vositasi tezligidan ortiq tezlikda harakatlanishi", "ru": "Движение транспортного средства в том же направлении со скоростью, большей скорости другого транспортного средства" },
+      { "uz": "Qarama-qarshi yo'nalishda harakatlanish uchun mo'ljallangan tasmaga chiqib, so'ngra ilgari egallagan qatoriga qaytib o'tish bilan bog'liq bo'lgan harakat", "ru": "Движение с выездом на полосу встречного движения и последующим возвращением на ранее занимаемую полосу" },
+      { "uz": "Kam tezlik bilan qo'shni qatorda harakatlanayotgan bir yoki bir nechta transport vositasidan o'zib ketish", "ru": "Опережение одного или нескольких транспортных средств, движущихся с меньшей скоростью в соседнем ряду" }
+    ],
+    "correct": 1,
+    "explanation": { "uz": "O'zib ketish — bir yo'nalishda boshqa transportdan tezroq harakatlanish. Qarama-qarshi tasmaga chiqib qaytish bilan bog'liq o'zib ketish esa quvib o'tish deyiladi.", "ru": "Опережение — движение в том же направлении быстрее другого ТС. Опережение с выездом на встречную полосу и возвращением называется обгоном." }
+  },
+  {
+    "externalId": "UQ-039", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "To'siq deb nimaga aytiladi?", "ru": "Что называется препятствием?" },
+    "answers": [
+      { "uz": "Yo'lning qatnov qismida harakatsiz holda bo'lgan jism", "ru": "Неподвижный объект на проезжей части" },
+      { "uz": "Tirbandlik tufayli qatnov qismida to'xtab turgan transport vositasi", "ru": "Транспортное средство, остановившееся на проезжей части из-за затора" },
+      { "uz": "Yo'l harakati xavfsizligiga xavf soluvchi har qanday omil", "ru": "Любой фактор, угрожающий безопасности дорожного движения" }
+    ],
+    "correct": 1,
+    "explanation": { "uz": "To'siq — qatnov qismidagi harakatsiz jism: buzilib qolgan transport, tushib qolgan yuk, yiqilgan daraxt va boshqalar. Tirbandlikda turgan mashina to'siq hisoblanmaydi.", "ru": "Препятствие — неподвижный объект на проезжей части: неисправное ТС, упавший груз, поваленное дерево и т. п. Машина, стоящая в заторе, препятствием не считается." }
+  },
+  {
+    "externalId": "UQ-040", "topic": "ch-01", "ruleRef": "6",
+    "text": { "uz": "Qayta tizilish deb nimaga aytiladi?", "ru": "Что называется перестроением?" },
+    "answers": [
+      { "uz": "Dastlabki harakat yo'nalishini saqlagan holda o'z harakatlanish tasmasidan boshqa harakatlanish qatoriga o'tish", "ru": "Переход из одной полосы движения в другую с сохранением первоначального направления движения" },
+      { "uz": "Qatnov qismining maxsus ajratilgan, 5.35–5.37 yo'l belgilari, 1.9 yo'l chizig'i bilan belgilangan va ustida reversiv svetofor o'rnatilgan bo'lagida harakatlanish yo'nalishini qarama-qarshi tomonga o'zgartirish", "ru": "Изменение направления движения на противоположное на выделенной полосе, обозначенной знаками 5.35–5.37, разметкой 1.9 и оборудованной реверсивным светофором" },
+      { "uz": "Xavf tug'ilganda yo'ldagi boshqa harakat qatnashchilarining harakatlanishiga to'sqinlik qilmaslik uchun haydovchilar tomonidan bajariladigan harakat (manyovr)", "ru": "Манёвр, выполняемый водителем при возникновении опасности, чтобы не мешать другим участникам движения" }
+    ],
+    "correct": 1,
+    "explanation": { "uz": "Qayta tizilish — yo'nalishni o'zgartirmasdan bir tasmadan boshqasiga o'tish. Bunda o'tilayotgan tasmadagi transportga yo'l berish kerak.", "ru": "Перестроение — переход из полосы в полосу без изменения направления движения. При этом нужно уступить дорогу транспорту на полосе, куда перестраиваетесь." }
   }
 ]

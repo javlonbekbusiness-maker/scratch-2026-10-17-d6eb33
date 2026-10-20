@@ -674,3 +674,12 @@ Details are in `docs/topics.md`.
 **Test fix**
 - The ticket tests (`tests/pool.db.test.ts`, `tests/pool.e2e.ts`) set aside real questions that are waiting for a ticket while they run.
 - Before this fix, one run dealt 6 real questions into throwaway tickets 6–7. They were returned to the waiting pool and the empty tickets were deleted.
+
+## Umumiy qoidalar: 15 more questions (✅ checked)
+
+- Added `UQ-021`–`UQ-040` from the second batch of screenshots.
+- Left out:
+  - picture questions 24, 29, 30, 31
+  - question 28, which duplicates `UQ-020`
+- Answers were checked against the definitions in point 6 and Annex 1 on lex.uz, with Russian from the official Russian text.
+- The topic now has 32 questions, in tickets 5–7, with 2 waiting for a ticket. There are 71 active questions in total.
